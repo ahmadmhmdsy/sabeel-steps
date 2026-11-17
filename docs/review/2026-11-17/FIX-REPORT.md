@@ -116,7 +116,7 @@ distribution-strategy decision.
 | G4 emulator smoke: skip permissions, grant, status cards, delete-all | **Met** — dumps 01–14 (including permission-skip and grant paths) |
 | G5 emulator Arabic RTL screens | **Met with a documented limitation** — in-app switch and `ar-IQ` device locale dumps for Home/History/Insights; no PNGs because the ATD image renders blank framebuffers |
 | G6 Room schema committed, no destructive migration | **Met** |
-| G7 git history: baseline + workstream commits + verification commit | **Met in this close-out commit** (see `git log`) |
+| G7 git history: baseline + workstream commits + verification commit | **Met** — baseline `0663edf`, plan `478d134`, then `b2f4b3a` (core), `43f75f9` (UI), `b76cda6` (release/docs), `ec226b1` (verification evidence) |
 
 ## 9. Reproduce
 

@@ -1,112 +1,176 @@
 # Sabeel — سبيل
 
-An original, offline, ad-free step counter and walking tracker for Android, built clean-room from
-public store-listing research (no APK, no decompilation, no copied assets or copy). Arabic and
-English are first-class languages.
+An original, offline, ad-free step counter and walking tracker for Android,
+built clean-room from public product research (no decompilation, no copied
+assets or copy). Arabic and English are first-class languages.
 
-- **Package / applicationId:** com.sabeel.steps (permanent once published)
-- **Status:** v1 feature-complete, debug APK green, unit tests green. Not yet published.
-- **Platform:** Android 8.0+ (minSdk 26), targetSdk/compileSdk 36 (Play requirement for new apps).
-- **Stack:** Kotlin 2.0.21 · Jetpack Compose (Material 3) · Room · DataStore · WorkManager ·
-  Navigation-Compose · AGP 8.10.1 · Gradle 8.11.1 · JDK 21.
+- **Package / applicationId:** `com.sabeel.steps` (permanent once published)
+- **Version:** 1.0.0 (versionCode 1)
+- **Status:** v1.0 production-readiness fix pass in progress. **Not published.**
+  No device/emulator run is claimed by this repository's final state — see
+  *Verification status* below for what is and is not evidenced.
+- **Platform:** Android 8.0+ (minSdk 26), targetSdk/compileSdk 36.
+- **Stack:** Kotlin 2.0.21 · Jetpack Compose (Material 3) · Room (KSP) ·
+  DataStore · WorkManager · Navigation-Compose · AGP 8.10.1 · Gradle wrapper
+  8.11.1 · JDK 21.
+- **License:** Apache-2.0 (see [LICENSE](LICENSE), [NOTICE](NOTICE) and
+  [third-party notices](app/src/main/assets/THIRD-PARTY-NOTICES.txt)).
 
 ## What it does (v1)
 
-- **Steps:** reads the hardware step counter (TYPE_STEP_COUNTER) in a foreground service; survives
-  reboot, midnight rollover and process death; honest distance/calorie estimates from stride.
-- **Home:** progress ring against a personal goal, distance, active calories, active minutes,
-  streak, last-7-day bars, one-tap walk.
-- **History:** 7/30-day bars with goal line and a per-day list.
-- **Walk:** GPS walk in a location foreground service with a route drawn on our own Canvas —
-  no map tiles, no Google Maps key, no network. Sensor-only fallback when location is denied.
-  Checkpointed every 20 s; discard really discards.
-- **Insights:** 7-day average, best day, goal-hit rate, total distance, plain-language summary.
-- **Reminders & goal notification:** user-set daily reminder + goal-reached notification
-  (WorkManager, POST_NOTIFICATIONS).
-- **Settings:** goal, units, reminder, height/weight/gender, language (EN/AR switch in-app),
-  CSV export **and import** (SAF), delete all data.
-- **Privacy screen:** what is on the device and what the app can/cannot do — verifiable from the
-  permission list.
-- **Accessibility / RTL:** full RTL, start/end layout, content descriptions, 48dp targets,
-  font-scale 2.0 layouts, light/dark theme.
+- **Steps:** reads the hardware step counter (`TYPE_STEP_COUNTER`) from a
+  foreground service; the step pipeline seeds its baseline from the first
+  sample, rolls over at local midnight and keeps per-day totals monotonic.
+- **Home:** progress ring against a personal goal, distance, active minutes,
+  streak, last-7-day bars, counting-status card and one-tap walk.
+- **History:** 7/30-day bars with goal line, per-day list and saved walks.
+- **Walk:** GPS walk in a location foreground service with a Canvas route (no
+  map tiles, no API key, no network); sensor-only fallback when location is not
+  granted; checkpoint/resume after process death.
+- **Insights:** window averages, best day, goal-hit rate, total distance.
+- **Reminders & goal notification:** WorkManager reminder plus a goal-reached
+  notification (POST_NOTIFICATIONS aware).
+- **Settings:** goal, units, reminder, body data, language (EN/AR), CSV export
+  and import (SAF), delete-all.
+- **Privacy & About screens:** what is stored on the device and what the app
+  can/cannot do.
 
-Deliberately **not** in v1: accounts, cloud sync, ads, subscriptions, social, Health Connect.
-A home-screen widget is the planned v1.1 fast follow.
+Deliberately **not** in v1: accounts, cloud sync, ads, subscriptions, social,
+Health Connect, widgets.
 
-## Privacy (what the build actually does)
+## Architecture
 
-- **No INTERNET permission.** The merged manifest contains no `android.permission.INTERNET`.
-- `ACCESS_NETWORK_STATE` (pulled in transitively by WorkManager) is removed with
-  `tools:node="remove"`.
-- `android:allowBackup="false"` plus backup/data-extraction rules that exclude everything: Android
-  auto-backup cannot upload the database.
-- No analytics, crash-reporting, ads or attribution SDKs.
-- Data lives in Room/DataStore on the device. The only data that ever leaves the app is the CSV the
-  user explicitly exports.
+```
+app/src/main/java/com/sabeel/steps/
+  domain/     pure Kotlin: models, step math, step pipeline, window math
+  data/       Room DB + DAOs, repositories, DataStore settings, CSV codec/IO
+  service/    StepCounterService (health FGS), WalkTrackingService (location FGS),
+              WalkTracker (checkpoint state)
+  platform/   permissions, notifications, reminders/workers, boot receiver,
+              service status store
+  ui/         Compose theme/components/screens, view models, i18n (EN/AR)
+app/src/test/ JVM unit tests (pipeline, math, CSV, cadence, merge rules)
+```
 
-## Build and run
+Data flow: sensor events → `StepPipeline` → `StepsRepository` → Room; user
+settings → DataStore; walks → `WalkTracker` + Room. Nothing leaves the device:
+the merged manifest has no `INTERNET` permission and the app ships no
+networking, ads or analytics SDKs.
 
-Prerequisites: JDK 21, Android SDK platform 36 + build-tools 36, and either Android Studio or the
-Gradle wrapper (included).
+## Build, test, lint, package
+
+Prerequisites: JDK 21, Android SDK platform 36 + build-tools 36, Gradle wrapper
+(included; do not install Gradle separately). Windows PowerShell example:
 
 ```powershell
 $env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot'
 $env:ANDROID_HOME='C:\Android\Sdk'
 $env:ANDROID_SDK_ROOT=$env:ANDROID_HOME
 
-.\gradlew.bat --console=plain ':app:assembleDebug'        # debug APK
-.\gradlew.bat --console=plain ':app:testDebugUnitTest'    # 41 unit tests
+.\gradlew.bat --console=plain :app:assembleDebug          # debug APK
+.\gradlew.bat --console=plain :app:testDebugUnitTest      # unit tests
+.\gradlew.bat --console=plain :app:lintDebug              # lint gate (must be exit 0)
+.\gradlew.bat --console=plain :app:assembleRelease        # release APK
+.\gradlew.bat --console=plain :app:bundleRelease          # AAB for Play
 ```
 
-Debug APK: `app/build/outputs/apk/debug/app-debug.apk`. Install with
-`adb install -r app/build/outputs/apk/debug/app-debug.apk`.
+Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
+Release AAB: `app/build/outputs/bundle/release/app-release.aab`.
+Unit-test report: `app/build/reports/tests/testDebugUnitTest/index.html`.
 
-Release builds are unsigned by design (no production keystore in this repository). Signing and
-Play App Signing enrolment are owner actions.
+### Release signing
 
-## Project layout
+The release build has `isMinifyEnabled = true` and `isShrinkResources = true`.
+Signing is loaded from `keystore.properties` **only when that file exists**;
+CI and fresh clones therefore still build unsigned release artifacts.
+
+```properties
+# keystore.properties (gitignored — never commit)
+storeFile=keystore/sabeel-upload.jks
+storePassword=<secret>
+keyAlias=sabeel-upload
+keyPassword=<secret>
+```
+
+The upload keystore and Play App Signing procedure are documented in
+[docs/release/KEYSTORE.md](docs/release/KEYSTORE.md). Passwords are never
+committed or written into documentation.
+
+### Privacy-policy URL
+
+The in-app link is driven by a BuildConfig field supplied at build time:
+
+```powershell
+.\gradlew.bat --console=plain :app:bundleRelease `
+  -Psabeel.privacyPolicyUrl=https://your-hosted-policy.example/privacy
+```
+
+Without the property, `BuildConfig.PRIVACY_POLICY_URL` is an empty string and
+the in-app link must be hidden. Filling and hosting the policy is an owner
+action: [docs/privacy-site/FILL-AND-HOST.md](docs/privacy-site/FILL-AND-HOST.md).
+
+## Verification status (2026-11-17)
+
+> Everything below is either measured in this repository or explicitly marked
+> pending. Nothing here claims device/emulator validation or publication.
+
+| Item | State |
+|---|---|
+| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-17 — `dist/Sabeel-1.0-debug.apk`, 11,482,549 B, SHA-256 `6be50393…5fc41` |
+| Unit tests | **55 tests, 0 failures** (`testDebugUnitTest` exit 0): CsvCodec 12, StepMerge 7, StepMath 18, StepPipeline 13, StepCadence 5 |
+| Lint | `lintDebug` **exit 0** — 0 errors, 37 warnings, 1 hint (non-blocking; report in `app/build/reports/lint-results-debug.txt`) |
+| Release APK / AAB | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL — signed with the upload key, `apksigner verify` and `zipalign -c -P 16` OK; APK 1,529,962 B, AAB 3,332,738 B; hashes in `dist/SHA256SUMS.txt` |
+| Release signing | Upload keystore generated; fingerprint in docs/release/KEYSTORE.md; Play App Signing registration pending (owner) |
+| Device / emulator run | **Emulator run completed** on the API 36 ATD image (1080x2400) with the signed release APK: onboarding EN, skip-permissions and grant paths, honest no-sensor status, Arabic RTL (in-app switch and `ar-IQ` device locale) for Home/History/Insights, walk foreground service with location denied, delete-all, relaunch; no crashes. Evidence: 17 UI-hierarchy dumps in [docs/review/2026-11-17/smoke/](docs/review/2026-11-17/smoke/). The ATD image returns blank `screencap` frames, so no PNGs are kept. Physical-device validation is still pending |
+| Play publication | **Not published.** Declarations and assets are owner actions |
+
+Do not copy a count or hash into a release note unless it was produced by the
+command that built that artifact.
+
+## Known limitations
+
+- Validation is emulator-only so far (API 36 ATD image, no hardware step
+  sensor); a physical-device matrix over API 26–36 with a real step counter is
+  still required before publishing.
+- Arabic copy has not had a native-speaker review; Arabic launch is blocked
+  until that review happens (owner action).
+- Store assets (screenshots, feature graphic, FGS demo video) are not ready.
+- CSV export/import covers daily totals; individual walks are stored in the app
+  but are not part of the CSV format.
+- There is no analytics or crash reporting by design; release verification must
+  come from Play vitals and manual runs.
+- R8/minification is new in this pass: the signed release build was
+  smoke-tested on the emulator (onboarding, Home, Settings, Arabic RTL, walk
+  foreground service, delete-all); repeat that list on a physical device before
+  uploading.
+
+## Owner blockers (not fixable in code)
+
+See [docs/legal/BLOCKERS.md](docs/legal/BLOCKERS.md): privacy-policy placeholders
+and HTTPS hosting, trademark/name clearance, Play Console account/declarations,
+testing-track obligations, store assets, and the distribution decision.
+
+## Repository layout
 
 ```
-app/src/main/java/com/sabeel/steps/
-  domain/        models, step math, step pipeline (pure Kotlin, unit-tested)
-  data/          Room DB + DAOs, DataStore settings, repositories, CSV codec
-  service/       StepCounterService (health FGS), WalkTrackingService (location FGS), WalkTracker
-  platform/      permissions, notifications, reminders/workers, boot receiver
-  ui/            theme, components, screens, view models, i18n (EN/AR)
-app/src/test/    pure JUnit tests (pipeline, math, CSV, cadence)
-docs/product/    brief (locked v1 scope) and engineering spec
-docs/research/   black-box competitor research and name screening
-docs/legal/      clearance memo, Play compliance checklist, privacy policy (+ hostable page)
-docs/council/    Qiyas Council verdict and Step Zero test plan
+app/                Android application module
+docs/product/       brief and locked engineering spec (incl. decisions D1-D14)
+docs/release/       keystore procedure, Play submission checklist
+docs/legal/         privacy policy source, compliance checklist, evidence, blockers
 docs/privacy-site/  static, tracker-free privacy page for hosting
+docs/review/        independent review reports and fix evidence
+.github/workflows/  Android CI (build + tests + lint + unsigned bundle)
 ```
 
-## Roadmap / gates before publishing
+## Contributing
 
-1. Run the **Step Zero** pilot (docs/council/qiyas-council.md §6): 10 walkers, 7 days, kill metrics.
-2. Host the privacy policy (only `docs/privacy-site/`) and fill the placeholders (legal name,
-   email, effective date).
-3. Play Console account, $25 fee, identity verification; closed test with 12 testers for 14
-   continuous days (new personal accounts).
-4. Arabic native review of strings, screenshots and listing; Sabeel trademark screen (Iraq/WIPO)
-   and counsel/scholar sign-off.
-5. Then production listing with EN + AR store assets.
-
-## Verification snapshot (2026-11-17)
-
-- Build: `BUILD SUCCESSFUL` (AGP 8.10.1, Gradle wrapper 8.11.1, JDK 21); **41/41 unit tests pass**
-  (step pipeline, step math, CSV codec, cadence).
-- Debug APK: [dist/Sabeel-1.0-debug.apk](dist/Sabeel-1.0-debug.apk), 11,488,512 bytes,
-  SHA-256 `324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E`.
-- Independent static verification: PASS=33, FAIL=0 — package com.sabeel.steps, targetSdk 36,
-  minSdk 26, **no INTERNET**, **no ACCESS_NETWORK_STATE**, `allowBackup=false`, health/location
-  foreground services, no ads/analytics/network SDKs in the release dependency graph, 16 KB
-  zipalign + ELF `p_align=16384`. Evidence: [docs/legal/evidence/](docs/legal/evidence/).
-- Emulator smoke (API 36): install PASS, cold launch PASS (2.9 s), onboarding renders, runtime
-  permission grants PASS, reboot + boot receiver/WorkManager reschedule PASS, 0 FATAL hits.
-  Deeper flows and screenshots were untestable headless; they remain open device/owner actions.
+The project is currently a single-owner release effort. Before any external
+contribution becomes possible, the owner must clear the name (see blockers) and
+choose a contribution/licensing policy. Do not add network permissions,
+analytics, ads or cloud sync: those would falsify the product's only provable
+claim.
 
 ## License
 
-No license has been chosen yet. Decide before making the repository public or accepting outside
-contributions.
+Apache License 2.0 — see [LICENSE](LICENSE). Third-party attributions are in
+[NOTICE](NOTICE) and [app/src/main/assets/THIRD-PARTY-NOTICES.txt](app/src/main/assets/THIRD-PARTY-NOTICES.txt).

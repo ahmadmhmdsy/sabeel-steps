@@ -5,6 +5,8 @@ app/build/
 .kotlin/
 captures/
 *.hprof
+.externalNativeBuild/
+.cxx/
 
 # Local machine configuration
 local.properties
@@ -12,6 +14,8 @@ keystore/
 keystore.properties
 *.jks
 *.keystore
+*.p12
+*.pfx
 
 # Agent workspace state / transcripts
 .dsh/
@@ -22,6 +26,11 @@ keystore.properties
 .DS_Store
 Thumbs.db
 
-# Release binaries are rebuilt from source; their hashes are tracked in dist/SHA256SUMS.txt
+# Release binaries are rebuilt from source; their hashes are tracked in
+# dist/SHA256SUMS.txt
 dist/*.apk
 dist/*.aab
+*.apks
+
+# release mapping archive (kept locally for deobfuscation)
+dist/mapping/

@@ -1,0 +1,18 @@
+Sabeel — سبيل
+
+Copyright 2026 Sabeel contributors
+
+This product includes software developed by The Android Open Source Project and
+other third-party libraries, each licensed under the Apache License, Version 2.0.
+
+Third-party components and their licenses are listed in
+app/src/main/assets/THIRD-PARTY-NOTICES.txt. The full Apache License 2.0 text is
+in the LICENSE file at the repository root and online at
+https://www.apache.org/licenses/LICENSE-2.0
+
+The app name "Sabeel" and the application icon are original to this project.
+Trademark clearance for the published name is an owner action recorded in
+docs/legal/BLOCKERS.md.
+
+Sabeel is an offline, ad-free step counter. It has no server, no accounts, no
+analytics and does not request the Android INTERNET permission.

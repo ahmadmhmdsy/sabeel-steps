@@ -49,14 +49,18 @@
             android:exported="false"
             android:foregroundServiceType="location|health" />
 
-        <!-- Re-arms the step service and reminders after a reboot (best effort). -->
+        <!-- Re-arms the step service and the reminder/reconcile chain after a reboot and after an
+             app update. Both actions are protected system broadcasts delivered to a non-exported
+             receiver; exported=false keeps any third-party app from invoking it. The OEM-only
+             QUICKBOOT_POWERON action is deliberately absent: it is not an Android-defined broadcast
+             and has no foreground-service-start exemption on Android 12+. -->
         <receiver
             android:name=".platform.BootReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
     </application>

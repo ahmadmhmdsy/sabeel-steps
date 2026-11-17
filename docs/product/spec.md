@@ -138,3 +138,81 @@ Icon: original adaptive icon — sand background, teal abstract stride arc + dot
 [ ] Export CSV opens SAF and writes rows; delete-all-data empties DB and resets prefs
 [ ] Adaptive icon + app name render; launcher icon not the default Android robot
 [ ] No INTERNET permission in merged manifest (verify with aapt2/apkanalyzer)
+
+## 9. Locked implementation decisions (production-readiness plan, 2026-11-17)
+
+These decisions were locked in `docs/superpowers/plans/2026-11-17-production-readiness.md`
+after the six-review council. They refine this spec; where a line below conflicts
+with earlier sections, the decision supersedes that line (noted per item) and the
+older text is kept only as history.
+
+1. **D1 — First run and delete-all seed the baseline from the first sensor
+   sample.** `StepState.initialized=false` until a sample arrives; a fresh
+   install shows 0, not the lifetime boot counter. *Rationale: a fake first day
+   destroys the "honest numbers" promise. Supersedes the implicit baseline=0
+   behaviour and the old fresh-install test.*
+2. **D2 — Any date change rolls over and drops the unattributable delta.**
+   Forward or backward clock movement sets `todaySteps=0`, `baselineRaw=raw`;
+   the old carry-over test is deleted. *Rationale: spec §3.5 says drop the
+   unrecorded delta; an overnight outage must not inflate today. Supersedes any
+   carry-over behaviour in §3.4.*
+3. **D3 — Per-day rows are monotonic.** Writes are
+   `max(pipeline steps, existing row steps)`; no path writes a smaller number.
+   *Rationale: restarts, restore and reconcile must never erase history.
+   Supersedes the "upsert" wording in §3.2/§3.5.*
+4. **D4 — CSV restore is one Room transaction + per-date max-merge + size
+   caps.** Oversized files are refused; the pipeline is seeded from today's
+   restored row with `initialized=false`. *Rationale: import must not be able to
+   truncate or duplicate history; replaces §5 Settings "round-trip safe" as an
+   untested claim with an enforced rule.*
+5. **D5 — Active minutes have no synthetic fallback; cadence is day-aware.**
+   The minutes counter resets at midnight and the writer never stamps
+   yesterday's minutes onto today. *Rationale: §2's cadence ring must not leak
+   across days; the old steps/120 fallback was undocumented and dishonest.*
+6. **D6 — One 365-day streak window and one shared window function.** Home,
+   History and Insights use `StepMath.windowDates/valuesForWindow/averageOverWindow`
+   with zero-filled days. *Rationale: three different denominators made the same
+   data report three different averages. Supersedes the ad-hoc windows in §5.*
+7. **D7 — Language defaults to the device locale (ar → Arabic, else English).**
+   An explicit choice persists; channels and notifications are created in the
+   active language; AAB language splits are disabled (`enableSplit=false`).
+   *Rationale: an Arabic-first app must not open in English; Play language
+   splits would strip Arabic resources on non-AR installs. Supersedes the
+   AppCompatDelegate suggestion in §6 — the app uses its own `AppLocale`
+   configuration wrapper.*
+8. **D8 — Arabic copy is corrected and body data is honest.** Plurals,
+   terminology, GPS wording, no false permission claims; metric defaults stated;
+   imperial setting renamed to miles-only. *Rationale: §5 copy and §7 palette are
+   design contracts; a translation that misstates units or permissions breaks
+   trust.*
+9. **D9 — The health FGS starts only with ACTIVITY_RECOGNITION granted; no
+   background starts.** Foreground entry points, `BOOT_COMPLETED` and
+   `MY_PACKAGE_REPLACED` re-arm it; Home shows counting status. *Rationale:
+   Android 14+ throws after `startForeground(type=health)` when its prerequisite
+   is missing — the app's own onboarding invited users to skip it. Supersedes
+   §3.6's boot-time FGS start and §4's always-on assumption.*
+10. **D10 — Delete-all stops both services, suppresses writes and erases
+    everything.** DB, DataStore, walk checkpoint, locale, notification and
+    status prefs; the app returns to onboarding. *Rationale: "delete all data"
+    is a moral statement; previously the service re-inflated today from its
+    in-memory counter. Supersedes §5's "clears DB + prefs" as incomplete.*
+11. **D11 — Walk tracking uses immutable route snapshots and supports resume.**
+    Checkpoints flush on destroy, resume is offered after an interrupted walk,
+    and History lists saved walks. *Rationale: §4 promises checkpointing, but a
+    concurrent list mutation and an invisible walk history made it unverifiable.
+    Supersedes §4's checkpoint wording.*
+12. **D12 — Release is a minified, resource-shrunk, signed AAB.** Signed from a
+    local gitignored keystore, `language.enableSplit=false`, CI, LICENSE and
+    third-party notices; versionName `1.0.0`, versionCode 1. *Rationale:
+    "release-buildable" is a gate, not a README claim. Supersedes the "unsigned
+    by design" stance.*
+13. **D13 — Privacy-policy URL is a BuildConfig field.** Driven by the Gradle
+    property `sabeel.privacyPolicyUrl`; the in-app link appears only when it is
+    configured. *Rationale: Play requires a live policy URL and the in-app link
+    must point at the same page. Hosting/filling remains an owner action.*
+14. **D14 — Play Console declarations remain owner actions.** Health apps,
+    FGS per-type videos, Data safety, IARC, testing track and rollout are
+    prepared in docs but cannot be completed in code. *Rationale: only the
+    account owner can submit them; see docs/release/PLAY-SUBMISSION-CHECKLIST.md
+    and docs/legal/BLOCKERS.md.*
+

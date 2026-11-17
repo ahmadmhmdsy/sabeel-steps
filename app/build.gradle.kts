@@ -1,9 +1,32 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
+
+// --- Release signing -------------------------------------------------------
+// Signing material is NEVER committed: keystore.properties and keystore/ are
+// gitignored (see .gitignore, docs/release/KEYSTORE.md). When the properties
+// file or the keystore is absent (CI, fresh clone) the release build simply
+// stays unsigned, so assembleRelease / bundleRelease still succeed.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
+}
+val hasReleaseKeystore = keystorePropertiesFile.exists() &&
+    keystoreProperties.getProperty("storeFile")?.let { rootProject.file(it).exists() } == true &&
+    keystoreProperties.getProperty("storePassword") != null &&
+    keystoreProperties.getProperty("keyAlias") != null
+
+// Privacy policy URL is supplied by the owner at build time, e.g.
+//   .\gradlew.bat :app:bundleRelease -Psabeel.privacyPolicyUrl=https://example.org/privacy
+// Exposed as BuildConfig.PRIVACY_POLICY_URL; empty means "not configured".
+val privacyPolicyUrl = providers.gradleProperty("sabeel.privacyPolicyUrl").orElse("").get()
 
 android {
     namespace = "com.sabeel.steps"
@@ -14,21 +37,43 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField(
+            "String",
+            "PRIVACY_POLICY_URL",
+            "\"${privacyPolicyUrl}\"",
+        )
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // D12: minified + resource-shrunk release. Debug stays unminified.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
@@ -43,6 +88,17 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    // D7: keep Arabic resources in every AAB install. The in-app language switch
+    // changes the configuration at runtime and cannot download Play language
+    // splits, so with splitting enabled an English-locale install would show
+    // English strings after switching to Arabic.
+    bundle {
+        language {
+            enableSplit = false
+        }
     }
 
     packaging {
@@ -50,6 +106,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+// Room schema export for reviewable migrations. The Lead commits app/schemas
+// after the first build (docs/review/2026-11-17/fix-release.md has the command).
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {

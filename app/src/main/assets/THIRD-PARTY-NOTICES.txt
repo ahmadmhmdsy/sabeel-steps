@@ -1,0 +1,47 @@
+Sabeel — third-party notices
+
+Sabeel is distributed under the Apache License, Version 2.0 (see LICENSE and
+NOTICE in the repository, and https://www.apache.org/licenses/LICENSE-2.0).
+
+The app is built from the following third-party open-source components. All of
+them are licensed under the Apache License, Version 2.0; the text of that
+license is available at the URL above and in the repository LICENSE file.
+
+AndroidX and Jetpack (https://developer.android.com/jetpack)
+  - androidx.core:core-ktx 1.13.1
+  - androidx.lifecycle:lifecycle-runtime-ktx 2.8.7
+  - androidx.lifecycle:lifecycle-viewmodel-compose 2.8.7
+  - androidx.lifecycle:lifecycle-viewmodel-ktx 2.8.7
+  - androidx.lifecycle:lifecycle-runtime-compose 2.8.7
+  - androidx.activity:activity-compose 1.9.3
+  - androidx.navigation:navigation-compose 2.8.5
+  - androidx.room:room-runtime 2.6.1
+  - androidx.room:room-ktx 2.6.1
+  - androidx.datastore:datastore-preferences 1.1.1
+  - androidx.work:work-runtime-ktx 2.10.0
+  - androidx.compose.ui:ui, ui-graphics, ui-tooling-preview (Jetpack Compose
+    BOM 2024.12.01)
+  - androidx.compose.foundation:foundation (BOM 2024.12.01)
+  - androidx.compose.material3:material3 (BOM 2024.12.01)
+  - androidx.compose.material:material-icons-core (BOM 2024.12.01)
+  Copyright The Android Open Source Project and the AndroidX contributors.
+
+Jetpack Compose is a Jetpack library; "Jetpack" and "AndroidX" are marks of
+Google LLC. Sabeel is not affiliated with or endorsed by Google.
+
+Kotlin (https://kotlinlang.org)
+  - org.jetbrains.kotlinx:kotlinx-coroutines-android 1.9.0
+  - Kotlin standard library (resolved by the Kotlin Gradle plugin)
+  Copyright JetBrains s.r.o. and Kotlin contributors.
+
+Transitive runtime libraries resolved through the components above (for example
+Okio, androidx.startup, androidx.emoji2, androidx.profileinstaller and
+androidx.lifecycle components) are licensed under Apache-2.0 or an
+Apache-2.0-compatible license and do not alter the notice obligations above.
+
+Build-time-only tooling (not shipped in the APK/AAB): Android Gradle Plugin,
+Gradle, Kotlin compiler, KSP (all Apache-2.0).
+
+No GPL, LGPL or other copyleft code is linked into the shipped app.
+
+Last updated: 2026-11-17

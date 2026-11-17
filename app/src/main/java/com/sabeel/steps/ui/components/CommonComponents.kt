@@ -33,18 +33,21 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sabeel.steps.R
 
-/** Small title above a group of controls. */
+/** Small title above a group of controls; marked as a heading so TalkBack can navigate by headings. */
 @Composable
 fun SectionHeader(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { heading() },
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
     )
@@ -144,6 +147,7 @@ fun EmptyState(
         Spacer(Modifier.size(12.dp))
         Text(
             text = title,
+            modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
@@ -204,6 +208,52 @@ fun PermissionCard(
             if (!granted) {
                 Spacer(Modifier.size(12.dp))
                 SabeelPrimaryButton(text = grantLabel, onClick = onGrant)
+            }
+        }
+    }
+}
+
+/**
+ * Non-permission service status: counting has stopped, or this phone has no step sensor.
+ * Deliberately separate from [PermissionCard] so the fix offered matches the cause.
+ */
+@Composable
+fun CountingStatusCard(
+    title: String,
+    body: String,
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Spacer(Modifier.size(6.dp))
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (actionLabel != null && onAction != null) {
+                Spacer(Modifier.size(12.dp))
+                SabeelPrimaryButton(text = actionLabel, onClick = onAction)
             }
         }
     }

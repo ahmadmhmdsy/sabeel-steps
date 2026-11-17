@@ -85,6 +85,17 @@ fun shortDayLabel(date: String): String {
     return runCatching { LocalDate.parse(date).format(formatter) }.getOrDefault("")
 }
 
+/** One date and time for a saved walk, honouring the device's 12/24-hour and locale preferences. */
+@Composable
+fun dateTimeText(millis: Long): String {
+    val context = LocalContext.current
+    return remember(millis, context) {
+        val date = android.text.format.DateFormat.getMediumDateFormat(context).format(Date(millis))
+        val time = android.text.format.DateFormat.getTimeFormat(context).format(Date(millis))
+        "$date · $time"
+    }
+}
+
 @Composable
 fun timeOfDayText(minutes: Int): String {
     val context = LocalContext.current

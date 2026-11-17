@@ -15,12 +15,16 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_ok">OK</string>
     <string name="cd_back">Go back</string>
+    <string name="cd_loading">Loading</string>
     <string name="cd_decrease">Decrease</string>
     <string name="cd_increase">Increase</string>
     <string name="value_none">—</string>
     <string name="value_with_unit">%1$s %2$s</string>
     <string name="percent_value">%1$d%%</string>
-    <string name="value_minutes">%1$d min</string>
+    <plurals name="minutes_value">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
     <string name="value_cm">%1$d cm</string>
     <string name="value_kg">%1$d kg</string>
     <string name="goal_value">%1$s steps</string>
@@ -64,28 +68,46 @@
     <string name="home_status_early">Every few minutes of walking adds up.</string>
     <string name="home_status_mid">Over halfway. Keep the rhythm gentle.</string>
     <string name="home_status_done">Goal reached. Enjoy the rest of your day.</string>
+    <string name="home_status_stopped_title">Counting is paused</string>
+    <string name="home_status_stopped_body">Sabeel’s step counter is not running, so today’s steps are not being counted. Start it again to keep counting.</string>
+    <string name="home_status_action_start">Start counting</string>
+    <string name="home_status_no_sensor_title">No step sensor on this phone</string>
+    <string name="home_status_no_sensor_body">This phone does not report a built-in step counter, so Sabeel cannot count steps or track walks on it.</string>
     <string name="home_distance">Distance (estimate)</string>
     <string name="home_calories">Energy (estimate)</string>
     <string name="home_active_minutes">Active minutes</string>
     <string name="home_last_7_days">Last 7 days</string>
     <string name="home_start_walk">Start a walk</string>
-    <string name="home_cd_chart">Bar chart of steps for the last %1$d days. Average %2$d steps per day.</string>
+    <string name="home_cd_chart">Bar chart of steps for the last %1$s. Average %2$d steps per day.</string>
 
     <!-- History -->
     <string name="history_title">History</string>
     <string name="history_range_7">7 days</string>
     <string name="history_range_30">30 days</string>
-    <string name="history_range_label">Last %1$d days</string>
+    <plurals name="history_range_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="history_range_label">Last %1$s</string>
     <string name="history_total">Total %1$s steps</string>
-    <string name="history_cd_chart">Bar chart of steps over %1$d days with a goal line. Average %2$d steps per day.</string>
+    <string name="history_cd_chart">Bar chart of steps over the last %1$s with a goal line. Average %2$d steps per day.</string>
     <string name="history_empty_title">Nothing here yet</string>
     <string name="history_empty_body">Your daily totals appear once Sabeel has counted a day of steps.</string>
+    <string name="history_walks_title">Saved walks</string>
+    <string name="history_walks_empty">Walks you save appear here.</string>
+    <string name="history_walk_detail_title">Walk details</string>
+    <string name="history_walk_close">Close</string>
 
     <!-- Walk -->
     <string name="walk_title">Walk</string>
     <string name="walk_live_title">Walking</string>
     <string name="walk_idle_title">Track a walk</string>
     <string name="walk_idle_body">Sabeel sketches your route on its own canvas. No map tiles, no network, no account.</string>
+    <string name="walk_resume_title">An earlier walk was interrupted</string>
+    <string name="walk_resume_body">Sabeel kept this walk on your phone. Continue it from where it stopped, or discard it.</string>
+    <string name="walk_resume_action">Resume walk</string>
+    <string name="walk_resume_discard">Discard saved walk</string>
+    <string name="walk_start_blocked">A walk cannot start right now because step counting is unavailable on this phone.</string>
     <string name="walk_location_ready">Location is on. Sabeel will record the route of this walk.</string>
     <string name="walk_location_fallback">You can still walk without location: Sabeel counts steps and estimates distance.</string>
     <string name="walk_start">Start walk</string>
@@ -93,9 +115,9 @@
     <string name="walk_live_distance">Distance</string>
     <string name="walk_live_pace">Pace</string>
     <string name="walk_live_steps">Steps</string>
-    <string name="walk_gps_on">GPS is recording your route.</string>
-    <string name="walk_gps_off">GPS is not available. Counting steps only.</string>
-    <string name="walk_route_waiting">Waiting for the first GPS points…</string>
+    <string name="walk_gps_on">Location is recording your route.</string>
+    <string name="walk_gps_off">Location is not available. Counting steps only.</string>
+    <string name="walk_route_waiting">Waiting for the first location points…</string>
     <string name="walk_cd_route">Route sketch with %1$d recorded points.</string>
     <string name="walk_save">Save walk</string>
     <string name="walk_discard">Discard walk</string>
@@ -113,7 +135,7 @@
     <string name="insights_goal_rate">Goal hit rate</string>
     <string name="insights_total_distance">Total distance</string>
     <string name="insights_sentence_title">This week</string>
-    <string name="insights_sentence">You averaged %1$s steps a day and reached your goal on %2$d of %3$d days.</string>
+    <string name="insights_sentence">You averaged %1$s steps a day and reached your goal on %2$d of %3$s days.</string>
     <string name="insights_best_sentence">Your best day was %1$s with %2$s steps.</string>
     <string name="insights_estimate_note">Distance and energy are estimates, not medical measurements.</string>
     <string name="insights_empty_title">Patterns need a few days</string>
@@ -125,9 +147,10 @@
     <string name="settings_goal_hint">Start gently. You can change this any time.</string>
     <string name="settings_units">Units</string>
     <string name="settings_units_metric">Metric (km, kg)</string>
-    <string name="settings_units_imperial">Imperial (mi, lb)</string>
+    <string name="settings_units_imperial">Imperial (miles)</string>
+    <string name="settings_units_body_note">Height and weight are always entered in centimetres and kilograms.</string>
     <string name="settings_reminder">Daily reminder</string>
-    <string name="settings_reminder_desc">A quiet nudge at a time you choose.</string>
+    <string name="settings_reminder_desc">A quiet nudge around a time you choose.</string>
     <string name="settings_reminder_time">Reminder time</string>
     <string name="settings_body_data">Body data</string>
     <string name="settings_height">Height</string>
@@ -141,6 +164,9 @@
     <string name="settings_export_desc">Save a copy of your daily totals to a file you choose. Nothing is uploaded.</string>
     <string name="settings_import_csv">Import CSV</string>
     <string name="settings_import_desc">Restore daily totals from a Sabeel CSV file.</string>
+    <string name="settings_import_confirm_title">Import daily totals?</string>
+    <string name="settings_import_confirm_body">Importing adds the days in the file to your totals. A day you already have keeps the larger count.</string>
+    <string name="settings_import_confirm_action">Import</string>
     <string name="settings_export_file_name">sabeel-steps.csv</string>
     <string name="settings_export_success">Exported %1$d days.</string>
     <string name="settings_export_error">Export did not finish. Please try again.</string>
@@ -151,6 +177,7 @@
     <string name="settings_delete_confirm_title">Delete everything?</string>
     <string name="settings_delete_confirm_body">This cannot be undone. Your steps, walks and preferences will be erased from this phone.</string>
     <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_web">Privacy policy on the web</string>
     <string name="settings_about">About</string>
     <string name="settings_estimate_note">Distance, energy and active minutes are estimates, not medical advice.</string>
 
@@ -171,9 +198,9 @@
     <string name="onboarding_goal_hint">8,000 steps is a common starting point. Change it later in Settings.</string>
     <string name="onboarding_units_title">Units and body data</string>
     <string name="onboarding_units_body">Sabeel uses height and weight only to estimate distance, energy and stride. Every field is optional.</string>
-    <string name="onboarding_body_hint">You can change or clear this any time in Settings.</string>
+    <string name="onboarding_body_hint">You can change this any time in Settings.</string>
     <string name="onboarding_permissions_title">Two permissions, nothing else</string>
-    <string name="onboarding_permissions_body">Android asks for them separately. You can start without them.</string>
+    <string name="onboarding_permissions_body">Android asks for them separately. Sabeel opens without them, but counting steps needs activity recognition.</string>
     <string name="onboarding_permissions_note">Sabeel does not request internet access, so nothing it records can leave your phone.</string>
     <string name="onboarding_finish">Start walking</string>
 

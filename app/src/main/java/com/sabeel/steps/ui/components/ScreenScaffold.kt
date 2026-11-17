@@ -25,6 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sabeel.steps.R
@@ -46,6 +49,7 @@ fun SabeelTopBar(
         title = {
             Text(
                 text = title,
+                modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -106,12 +110,16 @@ fun ScreenScaffold(
 /** First-frame state while the first settings emission is loading. */
 @Composable
 fun LoadingScreen(modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.cd_loading)
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        CircularProgressIndicator(
+            modifier = Modifier.semantics { contentDescription = label },
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }

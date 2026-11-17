@@ -20,10 +20,16 @@ val DesertSurfaceLight = Color(0xFFFFFFFF)
 val DesertSurfaceDark = Color(0xFF18211F)
 val DesertError = Color(0xFFB3261E)
 
-/** Ring gradient: teal (light) or mint (dark) towards a soft dawn tint. */
+/**
+ * Ring gradient: teal (light) or mint (dark) towards a soft dawn tint.
+ *
+ * Light-theme non-text contrast (WCAG 2.2 SC 1.4.11, >= 3:1 on the #FAF7F2 background): the old
+ * mint end #4FD1B5 measured only 1.77:1 and vanished for low-vision users, so the light gradient
+ * ends at #1F8B72 (3.93:1). The dark gradient is unchanged (9.5:1 on #101817).
+ */
 fun ringGradientColors(dark: Boolean): List<Color> =
     if (dark) listOf(Color(0xFF4FD1B5), Color(0xFFA9F0DF))
-    else listOf(Color(0xFF0F6B5C), Color(0xFF4FD1B5))
+    else listOf(Color(0xFF0F6B5C), Color(0xFF1F8B72))
 
 val LightColorScheme = lightColorScheme(
     primary = Color(0xFF0F6B5C),
@@ -35,8 +41,10 @@ val LightColorScheme = lightColorScheme(
     onSecondary = Color(0xFFFFFFFF),
     secondaryContainer = Color(0xFFFBE0D1),
     onSecondaryContainer = Color(0xFF33160A),
-    tertiary = Color(0xFFD9A441),
-    onTertiary = Color(0xFF2A1E00),
+    // Goal line / warning graphics. The old sand #D9A441 measured 2.10:1 on the background;
+    // WCAG 2.2 SC 1.4.11 needs >= 3:1 for meaningful graphics, so the light goal line is #8C6212 (5.08:1).
+    tertiary = Color(0xFF8C6212),
+    onTertiary = Color(0xFFFFFFFF),
     tertiaryContainer = Color(0xFFFBEBCB),
     onTertiaryContainer = Color(0xFF2A1E00),
     background = Color(0xFFFAF7F2),

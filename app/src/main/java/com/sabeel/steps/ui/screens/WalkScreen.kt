@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,13 +21,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sabeel.steps.R
@@ -58,10 +60,16 @@ fun WalkScreen(onBack: () -> Unit, onDone: () -> Unit) {
     val viewModel: WalkViewModel = viewModel(factory = WalkViewModel.factory(app))
     val live by viewModel.live.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val walkUi by viewModel.state.collectAsStateWithLifecycle()
 
-    var permissionEpoch by remember { mutableIntStateOf(0) }
-    var pendingStart by remember { mutableStateOf(false) }
-    var showDiscardDialog by remember { mutableStateOf(false) }
+    var permissionEpoch by rememberSaveable { mutableIntStateOf(0) }
+    var pendingStart by rememberSaveable { mutableStateOf(false) }
+    var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+    // The user may grant location in system Settings while this screen stays in the back stack.
+    LifecycleResumeEffect(Unit) {
+        permissionEpoch++
+        onPauseOrDispose { }
+    }
     val hasLocation = remember(permissionEpoch) { Permissions.hasLocation(context) }
     val locationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -109,10 +117,20 @@ fun WalkScreen(onBack: () -> Unit, onDone: () -> Unit) {
 
             else -> WalkIdle(
                 hasLocation = hasLocation,
+                pendingCheckpoint = walkUi.pendingCheckpoint,
                 onGrantLocation = {
                     locationLauncher.launch(Permissions.locationPermissions().toTypedArray())
                 },
                 onStart = requestLocationAndStart,
+                onResumePending = { viewModel.resumePending() },
+                onDiscardPending = { viewModel.discardPending() },
+            )
+        }
+        if (walkUi.startBlocked && !live.running && !showSummary) {
+            Text(
+                text = stringResource(R.string.walk_start_blocked),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
             )
         }
         if (live.error != null && !live.running && !showSummary) {
@@ -144,7 +162,10 @@ fun WalkScreen(onBack: () -> Unit, onDone: () -> Unit) {
                         viewModel.discard()
                     },
                 ) {
-                    Text(stringResource(R.string.walk_discard))
+                    Text(
+                        text = stringResource(R.string.walk_discard),
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             },
             dismissButton = {
@@ -159,14 +180,49 @@ fun WalkScreen(onBack: () -> Unit, onDone: () -> Unit) {
 @Composable
 private fun WalkIdle(
     hasLocation: Boolean,
+    pendingCheckpoint: Boolean,
     onGrantLocation: () -> Unit,
     onStart: () -> Unit,
+    onResumePending: () -> Unit,
+    onDiscardPending: () -> Unit,
 ) {
     EmptyState(
         icon = Icons.Filled.LocationOn,
         title = stringResource(R.string.walk_idle_title),
         body = stringResource(R.string.walk_idle_body),
     )
+    if (pendingCheckpoint) {
+        // An interrupted walk was checkpointed on disk: offer both honest choices, resume or discard.
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.walk_resume_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.walk_resume_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(Modifier.height(12.dp))
+                SabeelPrimaryButton(
+                    text = stringResource(R.string.walk_resume_action),
+                    onClick = onResumePending,
+                )
+                Spacer(Modifier.height(8.dp))
+                SabeelSecondaryButton(
+                    text = stringResource(R.string.walk_resume_discard),
+                    onClick = onDiscardPending,
+                )
+            }
+        }
+    }
     PermissionCard(
         title = stringResource(R.string.permission_location_title),
         body = stringResource(R.string.permission_location_body),
@@ -301,6 +357,7 @@ private fun WalkSummary(
 ) {
     Text(
         text = stringResource(R.string.walk_summary_title),
+        modifier = Modifier.semantics { heading() },
         style = MaterialTheme.typography.headlineSmall,
         color = MaterialTheme.colorScheme.onBackground,
     )

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -34,7 +35,10 @@ import androidx.navigation.compose.rememberNavController
 import com.sabeel.steps.AppContainer
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.platform.Notifications
+import com.sabeel.steps.service.StepCounterService
 import com.sabeel.steps.ui.components.LoadingScreen
+import com.sabeel.steps.ui.i18n.AppLocale
 import com.sabeel.steps.ui.screens.AboutScreen
 import com.sabeel.steps.ui.screens.HistoryScreen
 import com.sabeel.steps.ui.screens.HomeScreen
@@ -80,6 +84,17 @@ fun SabeelRoot(container: AppContainer) {
     if (appState.loading) {
         LoadingScreen()
         return
+    }
+
+    // App-open re-arm: an app cannot keep starting background services while it is closed, so every
+    // foreground entry re-checks the counter. ensureStarted() is safe without the permission (it
+    // returns false and the Home status card explains why) and never wakes a service that is running.
+    LifecycleResumeEffect(appState.onboardingDone) {
+        if (appState.onboardingDone) {
+            StepCounterService.ensureStarted(app)
+            Notifications.ensureChannels(AppLocale.wrap(context))
+        }
+        onPauseOrDispose { }
     }
 
     val navController = rememberNavController()

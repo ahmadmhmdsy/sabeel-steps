@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
@@ -24,19 +22,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.DateKey
-import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.platform.Permissions
+import com.sabeel.steps.platform.StepServiceStatus
 import com.sabeel.steps.ui.components.BarChart
 import com.sabeel.steps.ui.components.BarChartEntry
+import com.sabeel.steps.ui.components.CountingStatusCard
 import com.sabeel.steps.ui.components.PermissionCard
 import com.sabeel.steps.ui.components.ProgressRing
 import com.sabeel.steps.ui.components.SabeelPrimaryButton
@@ -51,16 +52,50 @@ import com.sabeel.steps.ui.format.stepsText
 import com.sabeel.steps.ui.viewmodel.HomeUiState
 import com.sabeel.steps.ui.viewmodel.HomeViewModel
 
+/**
+ * Stateful entry point kept for callers that do not hoist the ViewModel: it owns the home
+ * ViewModel and forwards its [HomeViewModel.startCounting] to the status card.
+ */
 @Composable
-fun HomeScreen(
-    onStartWalk: () -> Unit,
-) {
+fun HomeScreen(onStartWalk: () -> Unit) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(app))
     val ui by viewModel.state.collectAsStateWithLifecycle()
+    HomeScreen(
+        ui = ui,
+        onStartWalk = onStartWalk,
+        onStartCounting = { viewModel.startCounting() },
+    )
+}
 
+/** Stateful entry point that lets the caller supply the counting action (Lead wiring). */
+@Composable
+fun HomeScreen(onStartWalk: () -> Unit, onStartCounting: () -> Unit) {
+    val context = LocalContext.current
+    val app = context.applicationContext as SabeelApp
+    val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(app))
+    val ui by viewModel.state.collectAsStateWithLifecycle()
+    HomeScreen(ui = ui, onStartWalk = onStartWalk, onStartCounting = onStartCounting)
+}
+
+/**
+ * Stateless home screen (frozen contract): the ViewModel state is passed in and the counting
+ * action is supplied by the caller.
+ */
+@Composable
+fun HomeScreen(
+    ui: HomeUiState,
+    onStartWalk: () -> Unit,
+    onStartCounting: () -> Unit,
+) {
+    val context = LocalContext.current
     var permissionEpoch by remember { mutableIntStateOf(0) }
+    // Permission state can change in system Settings while Home stays on screen; re-check on resume.
+    LifecycleResumeEffect(Unit) {
+        permissionEpoch++
+        onPauseOrDispose { }
+    }
     val activityPermission = Permissions.activityRecognitionPermission()
     val hasActivityPermission = remember(permissionEpoch, activityPermission) {
         Permissions.hasActivityRecognition(context)
@@ -69,15 +104,15 @@ fun HomeScreen(
         ActivityResultContracts.RequestPermission(),
     ) { permissionEpoch++ }
 
-    val fontScale = LocalConfiguration.current.fontScale
     HomeContent(
         ui = ui,
-        fontScale = fontScale,
+        fontScale = LocalConfiguration.current.fontScale,
         activityPermissionGranted = hasActivityPermission,
         onGrantPermission = {
             activityPermission?.let { permissionLauncher.launch(it) }
         },
         onStartWalk = onStartWalk,
+        onStartCounting = onStartCounting,
     )
 }
 
@@ -88,16 +123,24 @@ private fun HomeContent(
     activityPermissionGranted: Boolean,
     onGrantPermission: () -> Unit,
     onStartWalk: () -> Unit,
+    onStartCounting: () -> Unit,
 ) {
     val steps = ui.today?.steps ?: 0
     val goal = ui.settings.goalSteps.coerceAtLeast(1)
     val progress = (steps.toFloat() / goal.toFloat()).coerceIn(0f, 1f)
     val stackedCards = fontScale > 1.3f
-    val ringSize = if (fontScale > 1.5f) 190.dp else 230.dp
-    val bigStyle = if (fontScale > 1.4f) {
-        MaterialTheme.typography.headlineSmall
-    } else {
-        MaterialTheme.typography.headlineLarge
+    // Shrink the ring and its number as text grows so a 5-digit count never ellipsises.
+    val ringSize = when {
+        fontScale > 1.5f -> 180.dp
+        fontScale > 1.2f -> 210.dp
+        else -> 230.dp
+    }
+    val stepsLabel = stepsText(steps)
+    val bigStyle = when {
+        fontScale > 1.5f && stepsLabel.length >= 6 -> MaterialTheme.typography.titleLarge
+        fontScale > 1.5f -> MaterialTheme.typography.headlineSmall
+        stepsLabel.length >= 6 -> MaterialTheme.typography.headlineMedium
+        else -> MaterialTheme.typography.headlineLarge
     }
     val todayKey = DateKey.today()
     val byDate = remember(ui.last7, todayKey) { ui.last7.associateBy { it.date } }
@@ -111,11 +154,12 @@ private fun HomeContent(
         entry.copy(label = shortDayLabel(days[index]))
     }
     val average = if (entries.isEmpty()) 0 else entries.sumOf { it.value } / entries.size
-    val chartDescription = stringResource(R.string.home_cd_chart, entries.size, average)
+    val rangeLabel = pluralStringResource(R.plurals.history_range_days, days.size, days.size)
+    val chartDescription = stringResource(R.string.home_cd_chart, rangeLabel, average)
     val ringDescription = stringResource(
         R.string.home_cd_ring,
         (progress * 100f).toInt(),
-        stepsText(steps),
+        stepsLabel,
         stepsText(goal),
     )
 
@@ -133,7 +177,9 @@ private fun HomeContent(
             )
         }
 
-        if (!activityPermissionGranted) {
+        // Counting health first: a stopped service or a missing sensor is the cause the user can act
+        // on. NO_PERMISSION keeps the permission card; STOPPED/NO_SENSOR get their own status card.
+        if (!activityPermissionGranted || ui.serviceStatus == StepServiceStatus.NO_PERMISSION) {
             PermissionCard(
                 title = stringResource(R.string.permission_activity_title),
                 body = stringResource(R.string.permission_activity_body),
@@ -142,6 +188,21 @@ private fun HomeContent(
                 grantLabel = stringResource(R.string.permission_grant),
                 onGrant = onGrantPermission,
             )
+        }
+        when (ui.serviceStatus) {
+            StepServiceStatus.STOPPED -> CountingStatusCard(
+                title = stringResource(R.string.home_status_stopped_title),
+                body = stringResource(R.string.home_status_stopped_body),
+                actionLabel = stringResource(R.string.home_status_action_start),
+                onAction = onStartCounting,
+            )
+
+            StepServiceStatus.NO_SENSOR -> CountingStatusCard(
+                title = stringResource(R.string.home_status_no_sensor_title),
+                body = stringResource(R.string.home_status_no_sensor_body),
+            )
+
+            else -> Unit
         }
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -152,7 +213,7 @@ private fun HomeContent(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = stepsText(steps),
+                        text = stepsLabel,
                         style = bigStyle,
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
@@ -162,6 +223,7 @@ private fun HomeContent(
                         text = stringResource(R.string.home_ring_goal, stepsText(goal)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -173,6 +235,13 @@ private fun HomeContent(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
+        )
+
+        // Primary CTA before the stats and the 7-day chart, so it stays above the fold on 360x640.
+        SabeelPrimaryButton(
+            text = stringResource(R.string.home_start_walk),
+            onClick = onStartWalk,
+            icon = Icons.Filled.PlayArrow,
         )
 
         if (stackedCards) {
@@ -188,7 +257,11 @@ private fun HomeContent(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 StatCard(
-                    value = stringResource(R.string.value_minutes, ui.today?.activeMinutes ?: 0),
+                    value = pluralStringResource(
+                        R.plurals.minutes_value,
+                        ui.today?.activeMinutes ?: 0,
+                        ui.today?.activeMinutes ?: 0,
+                    ),
                     label = stringResource(R.string.home_active_minutes),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -206,7 +279,11 @@ private fun HomeContent(
                     modifier = Modifier.weight(1f),
                 )
                 StatCard(
-                    value = stringResource(R.string.value_minutes, ui.today?.activeMinutes ?: 0),
+                    value = pluralStringResource(
+                        R.plurals.minutes_value,
+                        ui.today?.activeMinutes ?: 0,
+                        ui.today?.activeMinutes ?: 0,
+                    ),
                     label = stringResource(R.string.home_active_minutes),
                     modifier = Modifier.weight(1f),
                 )
@@ -219,13 +296,6 @@ private fun HomeContent(
             goal = goal,
             contentDescription = chartDescription,
             chartHeight = 120.dp,
-        )
-
-        Spacer(Modifier.height(4.dp))
-        SabeelPrimaryButton(
-            text = stringResource(R.string.home_start_walk),
-            onClick = onStartWalk,
-            icon = Icons.Filled.PlayArrow,
         )
         Spacer(Modifier.height(8.dp))
     }

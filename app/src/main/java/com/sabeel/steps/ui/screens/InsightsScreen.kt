@@ -18,7 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,7 +31,6 @@ import com.sabeel.steps.ui.components.EmptyState
 import com.sabeel.steps.ui.components.ScreenScaffold
 import com.sabeel.steps.ui.components.StatCard
 import com.sabeel.steps.ui.components.StreakChip
-import com.sabeel.steps.ui.format.caloriesText
 import com.sabeel.steps.ui.format.distanceText
 import com.sabeel.steps.ui.format.dayLabel
 import com.sabeel.steps.ui.format.percentText
@@ -55,6 +57,7 @@ fun InsightsScreen() {
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             StreakChip(days = ui.streak)
         }
+        val rangeLabel = pluralStringResource(R.plurals.history_range_days, ui.days.size, ui.days.size)
         if (stackedCards) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatCard(
@@ -112,6 +115,7 @@ fun InsightsScreen() {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = stringResource(R.string.insights_sentence_title),
+                    modifier = Modifier.semantics { heading() },
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -121,7 +125,7 @@ fun InsightsScreen() {
                         R.string.insights_sentence,
                         stepsText(ui.averageSteps),
                         ui.goalHitDays,
-                        ui.days.size,
+                        rangeLabel,
                     ),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

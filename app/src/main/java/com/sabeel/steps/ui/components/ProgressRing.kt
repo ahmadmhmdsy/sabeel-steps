@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sabeel.steps.ui.theme.ringGradientColors
@@ -43,15 +43,19 @@ fun ProgressRing(
         animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing),
         label = "progress-ring",
     )
-    val trackColor = MaterialTheme.colorScheme.surfaceVariant
+    // outline keeps the unfilled track at 4.34:1 (light) / 5.8:1 (dark) instead of the old 1.11:1.
+    val trackColor = MaterialTheme.colorScheme.outline
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val gradient = ringGradientColors(dark)
-    Box(modifier = modifier.size(ringSize), contentAlignment = Alignment.Center) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .semantics { this.contentDescription = contentDescription },
-        ) {
+    // One TalkBack node: the percentage description replaces the three nodes (canvas + two texts)
+    // that were announced one after another before.
+    Box(
+        modifier = modifier
+            .size(ringSize)
+            .clearAndSetSemantics { this.contentDescription = contentDescription },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
             val stroke = strokeWidth.toPx()
             val inset = stroke / 2f
             val arcSize = Size(size.width - stroke, size.height - stroke)

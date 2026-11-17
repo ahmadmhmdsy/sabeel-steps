@@ -29,7 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sabeel.steps.R
@@ -58,6 +61,11 @@ fun OnboardingScreen(onFinished: () -> Unit) {
 
     var page by rememberSaveable { mutableIntStateOf(0) }
     var permissionEpoch by remember { mutableIntStateOf(0) }
+    // The user can grant a permission in system Settings and come back; re-read on every resume.
+    LifecycleResumeEffect(Unit) {
+        permissionEpoch++
+        onPauseOrDispose { }
+    }
     val activityPermission = Permissions.activityRecognitionPermission()
     val notificationPermission = Permissions.notificationPermission()
     val activityGranted = remember(permissionEpoch) { Permissions.hasActivityRecognition(context) }
@@ -176,6 +184,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
 private fun PageTitle(title: String, body: String) {
     Text(
         text = title,
+        modifier = Modifier.semantics { heading() },
         style = MaterialTheme.typography.headlineMedium,
         color = MaterialTheme.colorScheme.onBackground,
     )

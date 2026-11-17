@@ -21,11 +21,12 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.max
 
@@ -37,6 +38,15 @@ data class BarChartEntry(
 /**
  * Original canvas bar chart: teal bars, dashed sand goal line. No chart library.
  * The drawing itself is hidden from TalkBack; the caller passes one text summary instead.
+ *
+ * The canvas is laid out left-to-right by the drawing API while the label Row is mirrored by RTL
+ * layout, so in RTL the bars are mirrored explicitly: entry 0 sits on the right, exactly above its
+ * label. Without this every Arabic weekday name would sit under the wrong day's bar.
+ *
+ * Light-theme contrast (WCAG 2.2 SC 1.4.11 needs >= 3:1 against the #FAF7F2 background):
+ * goal line #8C6212 = 5.08:1; below-goal bars (#0F6B5C at 70% over the background = #569589) =
+ * 3.24:1; the zero-day marker uses outline #79746C = 4.34:1. Dark-theme colours are already above
+ * 9:1 and are left as designed.
  */
 @Composable
 fun BarChart(
@@ -49,7 +59,7 @@ fun BarChart(
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val tertiary = MaterialTheme.colorScheme.tertiary
-    val track = MaterialTheme.colorScheme.surfaceVariant
+    val track = MaterialTheme.colorScheme.outline
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { appeared = true }
@@ -63,7 +73,7 @@ fun BarChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(chartHeight)
-                .semantics { this.contentDescription = contentDescription },
+                .clearAndSetSemantics { this.contentDescription = contentDescription },
         ) {
             if (entries.isEmpty()) return@Canvas
             val top = (max(entries.maxOf { it.value }, goal) * 1.15f).coerceAtLeast(1f)
@@ -78,8 +88,14 @@ fun BarChart(
             val gap = if (entries.size > 14) 2.dp.toPx() else 6.dp.toPx()
             val barWidth = ((size.width - gap * (entries.size - 1)) / entries.size).coerceAtLeast(1f)
             val radius = CornerRadius(barWidth / 2f, barWidth / 2f)
+            // Mirrored row order for RTL so each bar sits above the label rendered below it.
+            val rtl = layoutDirection == LayoutDirection.Rtl
             entries.forEachIndexed { index, entry ->
-                val x = index * (barWidth + gap)
+                val x = if (rtl) {
+                    size.width - (index + 1) * (barWidth + gap) + gap
+                } else {
+                    index * (barWidth + gap)
+                }
                 val ratio = (entry.value / top) * grow
                 val barHeight = size.height * ratio
                 if (barHeight <= 0.5f) {
@@ -91,7 +107,7 @@ fun BarChart(
                     )
                 } else {
                     drawRoundRect(
-                        color = if (entry.value >= goal) primary else primary.copy(alpha = 0.55f),
+                        color = if (entry.value >= goal) primary else primary.copy(alpha = 0.7f),
                         topLeft = Offset(x, size.height - barHeight),
                         size = Size(barWidth, barHeight.coerceAtLeast(3.dp.toPx())),
                         cornerRadius = radius,
@@ -109,7 +125,8 @@ fun BarChart(
                         color = labelColor,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
-                        overflow = TextOverflow.Clip,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }

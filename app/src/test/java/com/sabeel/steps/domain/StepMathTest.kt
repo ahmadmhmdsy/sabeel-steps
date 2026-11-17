@@ -159,4 +159,80 @@ class StepMathTest {
         assertEquals("2026-11-16", DateKey.minusDays("2026-11-17", 1))
         assertEquals(0L, DateKey.epochDay("1970-01-01"))
     }
+
+    @Test
+    fun restDayPausesInsteadOfBreakingTheStreak() {
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(
+            DailyStep("2026-11-18", 120),
+            DailyStep("2026-11-17", 9000),
+            DailyStep("2026-11-16", 8000),
+            DailyStep("2026-11-15", 100),
+            DailyStep("2026-11-14", 9000),
+        )
+        // Without the rest day the chain ends at the missed 15th.
+        assertEquals(2, StepMath.streak(days, goalSteps = 8000, today = day))
+        assertEquals(3, StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("2026-11-15")))
+    }
+
+    @Test
+    fun restDayTodayKeepsTheStreakAsItIs() {
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(DailyStep("2026-11-17", 9000), DailyStep("2026-11-16", 8000))
+        assertEquals(2, StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("2026-11-18")))
+    }
+
+    @Test
+    fun restDayNeverAddsADayToTheStreak() {
+        assertEquals(
+            0,
+            StepMath.streak(
+                emptyList(),
+                goalSteps = 8000,
+                today = LocalDate.of(2026, 11, 18),
+                restDays = setOf("2026-11-18"),
+            ),
+        )
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(DailyStep("2026-11-18", 9000), DailyStep("2026-11-17", 100))
+        assertEquals(1, StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("2026-11-17")))
+    }
+
+    @Test
+    fun restDayWinsOverAGreatStepDay() {
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(
+            DailyStep("2026-11-18", 12_000),
+            DailyStep("2026-11-17", 9_000),
+            DailyStep("2026-11-16", 8_000),
+        )
+        assertEquals(3, StepMath.streak(days, goalSteps = 8000, today = day))
+        assertEquals(
+            2,
+            StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("2026-11-18")),
+        )
+    }
+
+    @Test
+    fun markedRestDayIsNotCountedEvenWhenStepsReachTheGoal() {
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(
+            DailyStep("2026-11-18", 9_000),
+            DailyStep("2026-11-17", 9_000),
+            DailyStep("2026-11-16", 9_000),
+            DailyStep("2026-11-15", 9_000),
+        )
+        assertEquals(4, StepMath.streak(days, goalSteps = 8000, today = day))
+        assertEquals(
+            3,
+            StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("2026-11-16")),
+        )
+    }
+
+    @Test
+    fun invalidRestDayStringsAreIgnored() {
+        val day = LocalDate.of(2026, 11, 18)
+        val days = listOf(DailyStep("2026-11-18", 9000), DailyStep("2026-11-17", 8000))
+        assertEquals(2, StepMath.streak(days, goalSteps = 8000, today = day, restDays = setOf("not-a-date", "")))
+    }
 }

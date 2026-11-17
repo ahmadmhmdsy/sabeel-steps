@@ -8,17 +8,23 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.sabeel.steps.domain.AppLanguage
+import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.Gender
 import com.sabeel.steps.domain.StepState
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.domain.UserSettings
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 val Context.SabeelDataStore: DataStore<Preferences> by preferencesDataStore(name = "Sabeel_settings")
+
+/** Rest days older than this can no longer affect a streak, so they are pruned on write. */
+private const val REST_DAY_HISTORY_DAYS = 365
 
 private object Keys {
     val goalSteps = intPreferencesKey("goal_steps")
@@ -32,6 +38,9 @@ private object Keys {
     val reminderMinutes = intPreferencesKey("reminder_minutes")
     val onboardingDone = booleanPreferencesKey("onboarding_done")
 
+    // explicit rest days, stored as ISO dates; a rest day pauses the streak instead of breaking it
+    val restDays = stringSetPreferencesKey("rest_days")
+
     // sensor pipeline state
     val baselineRaw = floatPreferencesKey("step_baseline_raw")
     val todaySteps = intPreferencesKey("step_today_steps")
@@ -42,6 +51,11 @@ private object Keys {
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
 
     val settingsFlow: Flow<UserSettings> = dataStore.data.map { it.toUserSettings() }
+
+    /** ISO dates the user marked as rest days. Kept out of [UserSettings] because it is history. */
+    val restDaysFlow: Flow<Set<String>> = dataStore.data
+        .map { it[Keys.restDays] ?: emptySet() }
+        .distinctUntilChanged()
 
     suspend fun current(): UserSettings = settingsFlow.first()
 
@@ -80,9 +94,29 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    /** Marks [date] (ISO) as a rest day. The set is bounded so it cannot grow forever. */
+    suspend fun markRestDay(date: String) {
+        if (runCatching { java.time.LocalDate.parse(date) }.isFailure) return
+        dataStore.edit { prefs ->
+            prefs[Keys.restDays] = pruneRestDays((prefs[Keys.restDays] ?: emptySet()) + date)
+        }
+    }
+
+    suspend fun unmarkRestDay(date: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.restDays] = pruneRestDays((prefs[Keys.restDays] ?: emptySet()) - date)
+        }
+    }
+
     suspend fun clearAll() {
         dataStore.edit { it.clear() }
     }
+}
+
+/** Drops rest days that are too old to influence a streak, keeping the stored set small. */
+private fun pruneRestDays(days: Set<String>): Set<String> {
+    val cutoff = DateKey.minusDays(DateKey.today(), REST_DAY_HISTORY_DAYS)
+    return days.filter { it >= cutoff }.toSet()
 }
 
 private fun Preferences.toUserSettings(): UserSettings = UserSettings(

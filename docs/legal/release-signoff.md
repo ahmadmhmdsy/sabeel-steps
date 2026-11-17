@@ -1,8 +1,24 @@
 # Release sign-off — Sabeel v1.0 (one page)
 
-**Status: FINAL EVIDENCE STAGED — NOT APPROVED FOR SUBMISSION.** Static gates are based on the independent buildsmith batch (EV-01…EV-20 in [release-evidence-log.md](release-evidence-log.md)); runtime rows stay **NOT VERIFIED — EMULATOR-ATTEMPTED**; **C12 stays NOT VERIFIED BY DESIGN**; the **release-artifact gate is OPEN** (no release AAB / release merged manifest). No row below is a Play approval.
+**Status: EVIDENCE STAGED — NOT APPROVED FOR SUBMISSION.** Static gates below are measured on the
+final signed artifacts of 2026-11-17 22:35 +03:00, not on the earlier debug-only evidence. Runtime
+rows remain **EMULATOR-ATTEMPTED**; no row below is a Play approval.
 
-**Artifact:** app-debug.apk, 11,488,512 B, mtime 2026-11-16T23:51:37+03:00, SHA-256 324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E (matches dist/ copy). Batch: PASS=33, FAIL=0, FINDING=1, OPEN=1, stale files none. Prepared 2026-11-17 00:45 +03:00.
+**Artifacts (built from the committed tree, signed locally with the upload key):**
+
+| File | Size | SHA-256 |
+|---|---|---|
+| `dist/Sabeel-1.0-debug.apk` | 12,001,632 B | `dcd1f3359e8554fbffc775b36eb83137bec01db662b78b7c07a5eb00dcbe615d` |
+| `dist/Sabeel-1.0-release.apk` | 1,577,122 B | `e4570fffa3fb39891988615c9c84b60b2cefcea7f34b43d7460fd77c3717acd7` |
+| `dist/Sabeel-1.0-release.aab` | 3,374,452 B | `180c00d0fccb3f569201a70eec29259a582873c98e59719c90b5e8cf0a59629c` |
+
+`dist/SHA256SUMS.txt` is regenerated from these files. Signer (release APK): upload cert
+`CN=Sabeel Upload, OU=Mobile, O=Sabeel, L=Baghdad, ST=Baghdad, C=IQ`, SHA-256
+`7B:12:AD:6B:FA:F0:78:17:E7:6A:25:39:95:4F:7B:4B:DE:2E:13:F6:B3:34:54:82:48:30:10:25:66:B6:15:2D`;
+`apksigner verify`: **Verifies** (v2 scheme). Keystore material is local and gitignored.
+Supporting gates on this tree: `testDebugUnitTest` 79 tests / 0 failures; `lintDebug` exit 0
+(0 errors, 39 warnings, 1 hint); emulator UI pass in EN and AR recorded in
+[docs/review/2026-11-17/adoption-smoke/](../review/2026-11-17/adoption-smoke/EVIDENCE.md).
 
 ---
 
@@ -10,30 +26,32 @@
 
 | # | Gate | Evidence | Status |
 |---|---|---|---|
-| G1 | Package / target API | C2: com.sabeel.steps, targetSdk 36, minSdk 26 | **PASS** |
-| G2 | Backup flag | C5/C6: allowBackup=false | **PASS** |
-| G3 | No INTERNET | C4: permission absent | **PASS** |
-| G4 | No ACCESS_NETWORK_STATE | C4: permission absent | **PASS** |
-| G5 | No transmitting SDKs | C8: releaseRuntimeClasspath free of ad/analytics/crashlytics/firebase/play-services; C10-S | **PASS (static)** |
-| G6 | 16 KB page sizes | C9: zipalign -P 16 + ELF p_align=16384 | **PASS (debug artifact; recheck release AAB)** |
-| G7 | FGS declaration + demo video | types health + location\|health PASS static; no Play declaration; demo video 0 bytes | **OPEN** |
-| G8 | User-facing permissions | C4: expected 8 present (ACCESS_FINE included); ACCESS_COARSE also present in runtime dump; no background location | **PASS (static)** |
-| G9 | Runtime QA | boot 132 s, install, cold launch 2889 ms, 4 grants, reboot 52 s; onboarding uiautomator text; FATAL 0 | **OPEN — NOT VERIFIED — EMULATOR-ATTEMPTED** |
-| G10 | Privacy policy live | draft policy + hosted page exist; placeholders, hosting, in-app link, Arabic native review pending | **OPEN — OWNER** |
-| G11 | Data safety form | not submitted; C10-S is the evidence basis | **OPEN** |
+| G1 | Package / target API | release APK: com.sabeel.steps, targetSdk 36, minSdk 26 | **PASS** |
+| G2 | Backup flag | release APK manifest: allowBackup=false | **PASS** |
+| G3 | No INTERNET | release APK permissions: absent | **PASS** |
+| G4 | No ACCESS_NETWORK_STATE | release APK permissions: absent | **PASS** |
+| G5 | No transmitting SDKs | release runtime classpath free of ad/analytics/crashlytics/firebase/play-services | **PASS (static)** |
+| G6 | 16 KB page sizes | `zipalign -c -P 16 4` exit 0 on release APK; no uncompressed .so shipped | **PASS (release APK)** |
+| G7 | FGS declaration + demo video | service types health + location\|health static; Play declaration and demo video still missing | **OPEN** |
+| G8 | User-facing permissions | release APK: ACTIVITY_RECOGNITION, POST_NOTIFICATIONS, FOREGROUND_SERVICE, FOREGROUND_SERVICE_HEALTH, FOREGROUND_SERVICE_LOCATION, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, RECEIVE_BOOT_COMPLETED, WAKE_LOCK, DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION; no background location | **PASS (static)** |
+| G9 | Runtime QA | emulator install, onboarding, Home/Settings/History/Insights EN + AR, diagnostics, goal suggestion, rest day, walk denial path; crash buffer empty. Emulator-only, synthetic seed for data UI | **OPEN — EMULATOR-ATTEMPTED** |
+| G10 | Privacy policy live | policy draft + static site exist; placeholders, hosting, console/in-app links, native Arabic review pending | **OPEN — OWNER** |
+| G11 | Data safety form | not submitted | **OPEN** |
 | G12 | Health apps declaration | not submitted | **OPEN** |
 | G13 | Content rating | not obtained | **OPEN** |
-| G14 | Store listing | not written; screenshots black | **OPEN** |
+| G14 | Store listing | not written; real screenshots missing | **OPEN** |
 | G15 | App access / ads / audience | not declared | **OPEN** |
-| G16 | Name / package clearance | Khatwa rejected, Sabeel chosen; registry + applicationId check pending | **PARTIAL — OWNER** |
-| G17 | Signing | no signingConfig; no release artifact yet; eventual release unsigned by design until owner signs; keystore none present; C12 NOT VERIFIED BY DESIGN | **OWNER ACTION** |
+| G16 | Name / package clearance | Sabeel chosen; trade-mark registry + applicationId clearance pending | **PARTIAL — OWNER** |
+| G17 | Signing | upload keystore exists (local, gitignored), release APK/AAB signed and verified (v2); Play App Signing registration pending | **PARTIAL — OWNER** |
 | G18 | Closed testing 12/14 | not started | **OWNER ACTION** |
 | G19 | Counsel + scholar review | memo ready, reviews pending | **OPEN** |
-| G20 | Clean-room statement | pending Lead/owner confirmation | **OPEN** |
-| R1 | Release artifact | FINDING: no release APK/AAB, no release merged manifest; C2/C4/C5/C9 measured on debug only | **OPEN** |
-| S1 | Unit tests (supporting, not a Play gate) | 41/41 platform-engineer self-report; not in batch | **PROVISIONAL** |
+| G20 | Clean-room statement | pending owner confirmation | **OPEN** |
+| R1 | Release artifact | **CLOSED** — signed release APK + AAB exist; C2/C4/C5 measured on the release APK; manifests inspected | **PASS** |
+| S1 | Unit tests (supporting, not a Play gate) | JUnit XML: 79/79, 0 failures, 0 errors, 0 skipped (2026-11-17 22:26) | **PASS** |
 
-**Counts:** 7 PASS static (G1–G6, G8) · 10 OPEN (G7, G9–G15, G19, G20) · 1 PARTIAL/OWNER (G16) · 2 OWNER ACTION (G17, G18) · R1 OPEN · S1 PROVISIONAL. **0 final Play approvals.**
+**Counts:** 8 PASS (G1–G6, G8, R1) · 1 PASS static elsewhere (S1) · 1 OPEN-EMULATOR (G9) · 8 OPEN
+(G7, G10–G15, G19, G20) · 2 PARTIAL/OWNER (G16, G17) · 1 OWNER ACTION (G18). **0 final Play
+approvals.**
 
 ---
 
@@ -41,36 +59,49 @@
 
 | # | Action | Blocks |
 |---|---|---|
-| O1 | Build unsigned release AAB and rerun C2/C4/C5/C6/C9 on the release artifact; then owner signs | R1, G6 recheck |
-| O2 | Fill privacy-policy placeholders (legal name EN/AR, monitored email, optional address, date), host only docs/privacy-site, link in console + in-app; native Arabic review | G10 |
-| O3 | Create upload keystore outside the repo, configure signing, enrol Play App Signing; keep keystore SEALED | G17 |
-| O4 | Name/package clearance: Iraqi trade-mark registry, WIPO, Play applicationId | G16 |
-| O5 | Closed testing with 12 real testers for 14 continuous days (if personal account created after 2023-11-13) | G18 |
-| O6 | Play Console: Data safety, Health declaration, FGS declaration + demo video, content rating, listing, app access/ads/audience | G7, G11–G15 |
-| O7 | Capture real visual evidence on a windowed emulator or device; never use black frames or fake screenshots | G14, part of G7 |
-| O8 | Counsel review (Iraq + markets) and scholar review; accept memo §7.1 gate | G19 |
-| O9 | Confirm no team member worked on the target apps; grep repo for target names/logos/comparisons | G20 |
+| O1 | Enrol Play App Signing and register the upload certificate; keep the keystore SEALED and backed up | G17 |
+| O2 | Fill privacy-policy placeholders (legal name EN/AR, monitored email, date), host only docs/privacy-site, link in console and in-app; native Arabic review | G10 |
+| O3 | Name/package clearance: Iraqi trade-mark registry, WIPO, Play applicationId | G16 |
+| O4 | Closed testing with 12 real testers for 14 continuous days (if the account requires it) | G18 |
+| O5 | Play Console: Data safety, Health declaration, FGS declaration + demo video, content rating, listing, app access/ads/audience | G7, G11–G15 |
+| O6 | Capture real screenshots and the FGS demo video on a windowed emulator or a physical device; never use black frames | G14, part of G7 |
+| O7 | Counsel review (Iraq + markets) and scholar review; accept the memo §7.1 gate | G19 |
+| O8 | Confirm no team member worked on the reference apps; grep repo for target names/logos/comparisons | G20 |
 
 ---
 
 ## 3. Owner-facing readiness (≈120 words)
 
-Sabeel v1.0 (com.sabeel.steps) is not ready to publish. Static verification reproduced the candidate APK (SHA-256 324690…9B9E): targetSdk 36, minSdk 26, allowBackup false, no INTERNET or ACCESS_NETWORK_STATE, expected health/location permissions, declared foreground-service types, 16 KB alignment, no ad, analytics, Firebase or Play-services dependencies, and no keystore material in the repository. Seven build gates pass on that artifact. Submission remains blocked because no release AAB or release merged manifest exists; runtime evidence is emulator-attempted only (boot, install, cold launch, onboarding, reboot), screenshots are black, the FGS demo video is missing, and FGS, notification, reminder and walk flows are unverified. Still open: Play declarations, live bilingual privacy policy, rating, listing, signing, name clearance, closed testing, and counsel and scholar reviews. C12 stays NOT VERIFIED BY DESIGN.
+Sabeel v1.0 (com.sabeel.steps) is not ready to publish, but the build itself is complete. The signed
+release APK (SHA-256 e4570ff…7acd7) and AAB (180c00d…9629c) were built from the committed tree and
+verified; targetSdk 36, minSdk 26, allowBackup false, no INTERNET or ACCESS_NETWORK_STATE, the
+expected health/location permissions, declared foreground-service types and 16 KB alignment all hold
+on the release artifact, and 79 JVM tests plus lint pass. Remaining blockers are owner work, not
+code: Play App Signing enrolment, hosted bilingual privacy policy and its in-app link, truthful Data
+safety / Health / FGS declarations with a real demo video, store screenshots and listing, name
+clearance, closed testing, and counsel and scholar reviews. Runtime evidence is emulator-only;
+physical-device validation and sensor accuracy are still pending.
 
 ---
 
 ## 4. Do not publish until (hard list)
 
-1. An unsigned release AAB exists and C2/C4/C5/C6/C9 are rerun on the release artifact (release merged manifest present), and the owner-signed artifact is re-checked.
-2. The FGS declaration demo video is captured from a real walk flow on a windowed emulator/device (never faked) and the Play Console FGS declaration is submitted.
-3. Real screenshots exist for the Play listing and for any written claim; the four black frames are discarded.
-4. Runtime coverage exists for FGS start/stop, notification and denial behaviour, reminder scheduling, walk flow/route, CSV export and delete-all on a clean emulator or device; sensor accuracy is verified on real hardware.
-5. Privacy-policy placeholders are filled, the page is live at its final public URL, linked in Play Console and in-app, and native Arabic review is signed off.
-6. Data safety, Health declaration, content rating, app access/ads/target audience and store listing are completed truthfully and match the build.
+1. Play App Signing is enrolled with the upload certificate, the keystore is backed up and SEALED, and
+   the final artifacts are re-hashed after any rebuild.
+2. The FGS declaration demo video is captured from a real walk flow and the Play Console FGS
+   declaration is submitted.
+3. Real screenshots exist for the listing and for any written claim; black frames are never used.
+4. Physical-device coverage exists for FGS start/stop, notification behaviour, reminder delivery,
+   walk flow, CSV export/import and delete-all; sensor accuracy is verified on real hardware.
+5. Privacy-policy placeholders are filled, the page is live at its final public URL, linked in Play
+   Console and in-app, and native Arabic review is signed off.
+6. Data safety, Health declaration, content rating, app access/ads/target audience and listing are
+   completed truthfully and match the build.
 7. Name/applicationId clearance is complete.
-8. Closed testing with 12 real testers lasts 14 continuous days.
-9. Counsel and scholar reviews are complete and the memo §7.1 publication gate is accepted.
-10. C12 is re-run on the owner-signed artifact; keystore material stays outside the repo and SEALED.
+8. Closed testing with 12 real testers lasts 14 continuous days, if required.
+9. Counsel and scholar reviews are complete and the memo §7.1 gate accepted.
+10. C12 (`INTERNET` absence, signing identity, release merged manifest) is re-run on the
+    owner-signed artifact before upload.
 
 ---
 
@@ -79,6 +110,6 @@ Sabeel v1.0 (com.sabeel.steps) is not ready to publish. Static verification repr
 | Role | Name | Date | Reference |
 |---|---|---|---|
 | Legal (agent) | legal | 2026-11-17 | task-2; evidence log |
-| Build/verification | buildsmith | | final-20261117-000050 |
+| Build/verification | buildsmith + Lead | 2026-11-17 22:35 | final artifacts above |
 | Team Lead | lead | | |
 | Owner | | | |

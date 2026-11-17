@@ -76,8 +76,12 @@ class StepsRepository(
             dao.observeSince(from).map { rows -> rows.map { it.toDomain() } }
         }
 
-    fun streakFlow(): Flow<Int> = combine(settings.settingsFlow, lastDaysFlow(365)) { s, days ->
-        StepMath.streak(days, s.goalSteps)
+    fun streakFlow(): Flow<Int> = combine(
+        settings.settingsFlow,
+        lastDaysFlow(365),
+        settings.restDaysFlow,
+    ) { s, days, restDays ->
+        StepMath.streak(days, s.goalSteps, restDays = restDays)
     }
 
     /**

@@ -25,18 +25,45 @@ object StepMath {
 
     private fun Double.roundToHalf(): Double = (this * 10).roundToInt() / 10.0
 
-    /** Streak of consecutive days (ending today, or yesterday if today is not done yet). */
-    fun streak(days: List<DailyStep>, goalSteps: Int, today: LocalDate = LocalDate.now()): Int {
+    /**
+     * Streak of consecutive goal days, ending today or yesterday (a day still in progress never
+     * breaks the streak). A day in [restDays] is a pause, not a break: it adds no day to the streak
+     * and it does not end it either, so an intentional rest day keeps the number where it was.
+     *
+     * The rest flag wins over the step count: marking a day as rest never adds a day to the streak,
+     * even if the phone counted enough steps that day (the user said the day was not a walk day).
+     */
+    fun streak(
+        days: List<DailyStep>,
+        goalSteps: Int,
+        today: LocalDate = LocalDate.now(),
+        restDays: Set<String> = emptySet(),
+    ): Int {
         val hit = days.filter { it.steps >= goalSteps }.map { LocalDate.parse(it.date) }.toSet()
         if (hit.isEmpty()) return 0
-        var cursor = if (today in hit) today else today.minusDays(1)
+        val rest = restDays.mapNotNull { date -> runCatching { LocalDate.parse(date) }.getOrNull() }.toSet()
+        var cursor = if (today in hit || today in rest) today else today.minusDays(1)
         var count = 0
-        while (cursor in hit) {
-            count++
-            cursor = cursor.minusDays(1)
+        var checked = 0
+        while (checked < MAX_STREAK_LOOKBACK_DAYS) {
+            checked++
+            when {
+                // Rest wins over the count, so a marked day can never add to the streak.
+                cursor in rest -> cursor = cursor.minusDays(1)
+
+                cursor in hit -> {
+                    count++
+                    cursor = cursor.minusDays(1)
+                }
+
+                else -> break
+            }
         }
         return count
     }
+
+    /** Hard stop for a corrupt or synthetic history; a real streak is never a decade long. */
+    private const val MAX_STREAK_LOOKBACK_DAYS = 4_000
 
     fun totalDistanceMeters(days: List<DailyStep>): Double = days.sumOf { it.distanceMeters }
 

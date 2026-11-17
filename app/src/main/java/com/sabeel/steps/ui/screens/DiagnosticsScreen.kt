@@ -1,0 +1,287 @@
+package com.sabeel.steps.ui.screens
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sabeel.steps.R
+import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.platform.OemBatteryGuide
+import com.sabeel.steps.platform.Permissions
+import com.sabeel.steps.platform.StepServiceStatus
+import com.sabeel.steps.ui.components.CountingStatusCard
+import com.sabeel.steps.ui.components.PermissionCard
+import com.sabeel.steps.ui.components.SabeelSecondaryButton
+import com.sabeel.steps.ui.components.ScreenScaffold
+import com.sabeel.steps.ui.components.SectionHeader
+import com.sabeel.steps.ui.format.stepsText
+import com.sabeel.steps.ui.format.timeText
+import com.sabeel.steps.ui.viewmodel.DiagnosticsViewModel
+
+/**
+ * "Why is my count low?" - an evidence screen, not a coaching one.
+ *
+ * It shows what the app can actually observe (permission, sensor feature, service heartbeat, the
+ * day's stored row and its update time) and then the settings that phone makers use to restrict
+ * background work. It never asks for a new permission, never changes a setting by itself and never
+ * claims steps can be recovered after the sensor was not read: honesty over a bigger number.
+ */
+@Composable
+fun DiagnosticsScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val app = context.applicationContext as SabeelApp
+    val viewModel: DiagnosticsViewModel = viewModel(factory = DiagnosticsViewModel.factory(app))
+    val ui by viewModel.state.collectAsStateWithLifecycle()
+
+    var permissionEpoch by remember { mutableIntStateOf(0) }
+    // Permission and battery settings can change in system Settings while this screen is covered.
+    LifecycleResumeEffect(Unit) {
+        permissionEpoch++
+        onPauseOrDispose { }
+    }
+    val hasActivityPermission = remember(permissionEpoch) { Permissions.hasActivityRecognition(context) }
+    val hasSensor = remember(permissionEpoch) { Permissions.hasStepSensor(context) }
+    val activityPermission = Permissions.activityRecognitionPermission()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { permissionEpoch++ }
+
+    var settingsError by remember { mutableStateOf(false) }
+    val batterySettingsIntent = remember {
+        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    val canOpenBatterySettings = remember {
+        runCatching { context.packageManager.resolveActivity(batterySettingsIntent, 0) != null }
+            .getOrDefault(false)
+    }
+    val appSettingsIntent = remember {
+        Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", context.packageName, null),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    val openSettings: (Intent) -> Unit = { intent ->
+        settingsError = !runCatching { context.startActivity(intent) }.isSuccess
+    }
+
+    val guide = remember { OemBatteryGuide.guideFor(Build.MANUFACTURER) }
+    val statusText = when {
+        !hasActivityPermission || ui.serviceStatus == StepServiceStatus.NO_PERMISSION ->
+            stringResource(R.string.diagnostics_status_no_permission)
+        !hasSensor || ui.serviceStatus == StepServiceStatus.NO_SENSOR ->
+            stringResource(R.string.diagnostics_status_no_sensor)
+        ui.serviceStatus == StepServiceStatus.COUNTING ->
+            stringResource(R.string.diagnostics_status_counting)
+        else -> stringResource(R.string.diagnostics_status_stopped)
+    }
+    val updatedAt = ui.today?.updatedAt ?: 0L
+    val lastUpdateText = if (updatedAt > 0L) {
+        timeText(updatedAt)
+    } else {
+        stringResource(R.string.diagnostics_last_update_none)
+    }
+
+    ScreenScaffold(title = stringResource(R.string.diagnostics_title), onBack = onBack) {
+        Text(
+            text = stringResource(R.string.diagnostics_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        SectionHeader(title = stringResource(R.string.diagnostics_now_title))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column {
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_status_label),
+                    value = statusText,
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_today_label),
+                    value = stringResource(
+                        R.string.diagnostics_today_value,
+                        stepsText(ui.today?.steps ?: 0),
+                    ),
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_last_update_label),
+                    value = lastUpdateText,
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_permission_label),
+                    value = stringResource(
+                        if (hasActivityPermission) R.string.diagnostics_permission_granted
+                        else R.string.diagnostics_permission_missing,
+                    ),
+                )
+            }
+        }
+
+        if (!hasActivityPermission || ui.serviceStatus == StepServiceStatus.NO_PERMISSION) {
+            PermissionCard(
+                title = stringResource(R.string.permission_activity_title),
+                body = stringResource(R.string.diagnostics_permission_body),
+                granted = false,
+                grantedLabel = stringResource(R.string.permission_granted),
+                grantLabel = stringResource(R.string.permission_grant),
+                onGrant = { activityPermission?.let { permissionLauncher.launch(it) } },
+            )
+            SabeelSecondaryButton(
+                text = stringResource(R.string.diagnostics_open_settings),
+                onClick = { openSettings(appSettingsIntent) },
+            )
+        }
+        if (!hasSensor || ui.serviceStatus == StepServiceStatus.NO_SENSOR) {
+            CountingStatusCard(
+                title = stringResource(R.string.home_status_no_sensor_title),
+                body = stringResource(R.string.diagnostics_no_sensor_note),
+            )
+        }
+
+        SectionHeader(title = stringResource(R.string.diagnostics_body_title))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                DiagnosticsBodyText(stringResource(R.string.diagnostics_body_sensor))
+                DiagnosticsBodyText(stringResource(R.string.diagnostics_body_service))
+                DiagnosticsBodyText(stringResource(R.string.diagnostics_body_battery))
+                DiagnosticsBodyText(stringResource(R.string.diagnostics_body_rest))
+            }
+        }
+
+        SectionHeader(title = stringResource(R.string.diagnostics_oem_title, guide.brandLabel))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.diagnostics_oem_intro),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(10.dp))
+                guide.stepResIds.forEach { resId ->
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text(
+                            text = "\u2022",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(resId),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+                Spacer(Modifier.height(4.dp))
+                SabeelSecondaryButton(
+                    text = stringResource(R.string.diagnostics_battery_button),
+                    onClick = { openSettings(batterySettingsIntent) },
+                    enabled = canOpenBatterySettings,
+                )
+                Spacer(Modifier.height(8.dp))
+                SabeelSecondaryButton(
+                    text = stringResource(R.string.diagnostics_open_settings),
+                    onClick = { openSettings(appSettingsIntent) },
+                )
+            }
+        }
+
+        if (settingsError) {
+            Text(
+                text = stringResource(R.string.diagnostics_error_no_settings),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        Text(
+            text = stringResource(R.string.diagnostics_footer),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Start,
+        )
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = value,
+            modifier = Modifier.weight(1.4f),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+        )
+    }
+}
+
+@Composable
+private fun DiagnosticsBodyText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}

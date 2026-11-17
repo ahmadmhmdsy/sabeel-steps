@@ -87,6 +87,9 @@
     <string name="home_last_7_days">آخر 7 أيام</string>
     <string name="home_start_walk">ابدأ مشية</string>
     <string name="home_cd_chart">رسم أعمدة للخطوات في آخر %1$s. المتوسط %2$d خطوة يوميًا.</string>
+    <string name="home_updated_at">آخر تحديث %1$s</string>
+    <string name="home_rest_day_note">يوم راحة. سلسلتك متوقفة مؤقتًا.</string>
+    <string name="home_diagnostics_link">لماذا عدّادي منخفض؟</string>
 
     <!-- السجل -->
     <string name="history_title">السجل</string>
@@ -203,7 +206,7 @@
     <string name="onboarding_welcome_title">أهلًا بك في سبيل</string>
     <string name="onboarding_welcome_body">مكان هادئ يعدّ خطواتك ويحفظ سجلًا بسيطًا لمشيك. بلا منشورات، بلا ضغط.</string>
     <string name="onboarding_privacy_title">خطواتك تبقى على هاتفك</string>
-    <string name="onboarding_privacy_body">بلا حساب، بلا إنترنت، بلا إعلانات أو متتبّعات. لا يُرفع أي شيء أبدًا.</string>
+    <string name="onboarding_privacy_body">بلا حساب، بلا إنترنت، بلا إعلانات أو متتبّعات. لا يغادر شيء هاتفك من تلقاء نفسه؛ فقط ملف CSV تصدّره أنت بنفسك يمكن أن يخرج.</string>
     <string name="onboarding_language_title">اللغة</string>
     <string name="onboarding_goal_title">اختر هدفًا يوميًا</string>
     <string name="onboarding_goal_body">الهدف اليومي يمنح حلقة الخطوات ما تملؤه.</string>
@@ -211,9 +214,9 @@
     <string name="onboarding_units_title">الوحدات وبيانات الجسم</string>
     <string name="onboarding_units_body">يستخدم سبيل الطول والوزن لتقدير المسافة والطاقة وطول الخطوة فقط. كل الحقول اختيارية.</string>
     <string name="onboarding_body_hint">يمكنك تغيير هذا في أي وقت من الإعدادات.</string>
-    <string name="onboarding_permissions_title">إذنان فقط، لا غير</string>
-    <string name="onboarding_permissions_body">يطلب أندرويد كليهما بشكل منفصل. يفتح سبيل بدونهما، لكن عدّ الخطوات يحتاج إلى إذن التعرّف على النشاط.</string>
-    <string name="onboarding_permissions_note">سبيل لا يطلب الوصول إلى الإنترنت، لذا لا يمكن لما يسجّله أن يغادر هاتفك.</string>
+    <string name="onboarding_permissions_title">إذنان للبداية</string>
+    <string name="onboarding_permissions_body">يطلب أندرويد كليهما بشكل منفصل. يفتح سبيل بدونهما، لكن عدّ الخطوات يحتاج إلى إذن التعرّف على النشاط. الموقع اختياري ويُطلب فقط عند تتبّع مشية.</string>
+    <string name="onboarding_permissions_note">سبيل لا يطلب الوصول إلى الإنترنت، لذا لا يمكن لما يسجّله أن يغادر هاتفك من تلقاء نفسه.</string>
     <string name="onboarding_finish">ابدأ المشي</string>
 
     <!-- الخصوصية -->
@@ -231,7 +234,7 @@
     <string name="privacy_permission_activity_body">يقرأ عدّاد الخطوات في الهاتف ليحصي سبيل خطواتك. لا يُقرأ غيره.</string>
     <string name="privacy_permission_notification_body">يظهر تذكيرك اليومي وإشعار بلوغ الهدف. يمكن إيقاف كليهما من الإعدادات.</string>
     <string name="privacy_permission_location_body">يُستخدم فقط أثناء تسجيل مشية لرسم المسار، ولا يُستخدم في الخلفية في غير ذلك.</string>
-    <string name="privacy_permissions_note">هذه هي القائمة كاملة. سبيل لا يطلب غيرها.</string>
+    <string name="privacy_permissions_note">هذه هي الأذونات الوحيدة التي يطلبها سبيل منك.</string>
     <string name="privacy_estimates_title">تقديرات، لا نصيحة طبية</string>
     <string name="privacy_estimates_body">المسافة والطاقة ودقائق النشاط تقديرات تقريبية مبنية على الخطوات والطول والوزن. ليست قياسات طبية ولا تشخيصًا. استشر مختصًا صحيًا في قراراتك الصحية.</string>
 
@@ -240,7 +243,64 @@
     <string name="about_version">الإصدار %1$s</string>
     <string name="about_mission">سبيل سجل خطوات ومشيات صغير يعمل دون اتصال. يبقى هادئًا عن قصد: بلا منشورات، بلا ضغط اجتماعي، بلا اشتراك.</string>
     <string name="about_licenses_title">مبني بمصادر مفتوحة</string>
-    <string name="about_licenses_body">Kotlin وJetpack Compose وAndroidX برخصة Apache 2.0. تأتي إشعارات التراخيص الكاملة مع مصدر التطبيق.</string>
+    <string name="about_licenses_body">Kotlin وJetpack Compose وAndroidX برخصة Apache 2.0. تُحفظ إشعارات التراخيص مع مصدر التطبيق.</string>
     <string name="about_estimates">سبيل ليس جهازًا طبيًا ولا يقدّم نصائح صحية.</string>
     <string name="about_privacy_link">اقرأ وعد الخصوصية</string>
+    <!-- اقتراح الهدف -->
+    <string name="settings_goal_advice_button">اقترح من روتيني</string>
+    <string name="settings_goal_advice_waiting">يحتاج سبيل نحو أسبوعين من الأيام المسجّلة ليقترح هدفًا.</string>
+    <string name="settings_goal_advice_close">وسيط أيامك المسجّلة هو %1$s خطوة، قريب من هذا الهدف.</string>
+    <string name="settings_goal_advice_hint">بناءً على %1$d يومًا مسجّلًا. لا يغيّر الاقتراح هدفك بأكثر من 10%%، وفقط إذا ضغطته.</string>
+    <string name="settings_goal_dialog_title">أيُستخدم هدف من روتينك؟</string>
+    <string name="settings_goal_dialog_body">كان وسيط أيامك المسجّلة خلال الأسابيع الأربعة الماضية %1$s خطوة. هدف %2$s خطوة قريب من ذلك. يمكنك تغييره في أي وقت.</string>
+    <string name="settings_goal_dialog_apply">استخدم %1$s</string>
+    <string name="settings_goal_dialog_keep">أبقِ %1$s</string>
+
+    <!-- يوم الراحة -->
+    <string name="settings_streak">السلسلة</string>
+    <string name="settings_rest_day_title">يوم راحة اليوم</string>
+    <string name="settings_rest_day_desc">يوقف سلسلتك اليوم دون كسرها. لا يضيف يوم الراحة يومًا أبدًا.</string>
+    <string name="settings_rest_day_hint">تبقى سلسلتك كما هي. وتظل الخطوات تُحسب عادةً.</string>
+
+    <!-- سلامة العدّ -->
+    <string name="settings_counting">عدّ الخطوات</string>
+    <string name="settings_counting_desc">إن بدا العدد منخفضًا، فهذا يشرح ما يجب فحصه.</string>
+    <string name="settings_diagnostics">لماذا عدّادي منخفض؟</string>
+
+    <!-- التشخيص -->
+    <string name="diagnostics_title">لماذا عدّادي منخفض؟</string>
+    <string name="diagnostics_intro">يحسب سبيل الخطوات بمستشعر الخطوات في الهاتف. إذا بدا العدد منخفضًا، فغالبًا أحد هذه الأسباب.</string>
+    <string name="diagnostics_now_title">الآن</string>
+    <string name="diagnostics_status_label">العدّ</string>
+    <string name="diagnostics_status_counting">العدّ يعمل على هذا الهاتف</string>
+    <string name="diagnostics_status_stopped">متوقف مؤقتًا</string>
+    <string name="diagnostics_status_no_permission">بلا إذن</string>
+    <string name="diagnostics_status_no_sensor">لا مستشعر خطوات</string>
+    <string name="diagnostics_today_label">اليوم</string>
+    <string name="diagnostics_today_value">%1$s خطوة</string>
+    <string name="diagnostics_last_update_label">آخر تحديث</string>
+    <string name="diagnostics_last_update_none">لم تُحسب خطوات اليوم بعد</string>
+    <string name="diagnostics_permission_label">التعرّف على النشاط</string>
+    <string name="diagnostics_permission_granted">مسموح</string>
+    <string name="diagnostics_permission_missing">غير مسموح</string>
+    <string name="diagnostics_permission_body">بدون هذا الإذن لا يستطيع سبيل قراءة مستشعر الخطوات إطلاقًا. اسمح به ثم افتح سبيل مرة أخرى.</string>
+    <string name="diagnostics_open_settings">افتح إعدادات التطبيق</string>
+    <string name="diagnostics_battery_button">افتح إعدادات البطارية</string>
+    <string name="diagnostics_oem_title">على هذا الهاتف (%1$s)</string>
+    <string name="diagnostics_oem_intro">توقف بعض شركات الهواتف التطبيقات في الخلفية لتوفير البطارية. هذه هي الإعدادات التي تهم عادةً.</string>
+    <string name="diagnostics_oem_xiaomi">افتح الإعدادات › التطبيقات › إدارة التطبيقات › سبيل. فعّل التشغيل التلقائي، ثم اجعل موفّر البطارية «بلا قيود».</string>
+    <string name="diagnostics_oem_samsung">افتح الإعدادات › العناية بالبطارية والجهاز › البطارية › حدود استهلاك الخلفية وتأكد أن سبيل ليس في التطبيقات النائمة. ثم افتح الإعدادات › التطبيقات › سبيل › البطارية واختر «بلا قيود».</string>
+    <string name="diagnostics_oem_huawei">افتح الإعدادات › البطارية › تشغيل التطبيقات، وابحث عن سبيل وأوقف الإدارة التلقائية. ثم اسمح له بالعمل في الخلفية.</string>
+    <string name="diagnostics_oem_oneplus">افتح الإعدادات › البطارية › تحسين البطارية › كل التطبيقات، وابحث عن سبيل واختر «لا تُحسّن». واسمح أيضًا بالنشاط في الخلفية من معلومات التطبيق.</string>
+    <string name="diagnostics_oem_oppo">افتح الإعدادات › البطارية › إدارة بطارية التطبيقات (أو تحسين التطبيقات)، وابحث عن سبيل واسمح بالنشاط في الخلفية. في بعض الطُرز يكون ذلك في الإعدادات › التطبيقات › سبيل › البطارية.</string>
+    <string name="diagnostics_oem_vivo">افتح الإعدادات › البطارية › إدارة استهلاك الطاقة في الخلفية، وابحث عن سبيل واسمح باستهلاك الطاقة في الخلفية. واسمح أيضًا بالتشغيل التلقائي في iManager.</string>
+    <string name="diagnostics_oem_generic">افتح الإعدادات › التطبيقات › سبيل › البطارية واختر «بلا قيود». إن كان هاتفك به مدير تشغيل تلقائي فاسمح بسبيل فيه أيضًا.</string>
+    <string name="diagnostics_body_title">ما قد يوقف العدّ</string>
+    <string name="diagnostics_body_sensor">لا يعدّ مستشعر الخطوات إلا حين يكون الهاتف معك ويتحرك. الخطوات لا تغادر الهاتف، لذا لا يمكن استرجاع خطوات لم تُحسب.</string>
+    <string name="diagnostics_body_service">يبقي سبيل خدمة صغيرة قيد التشغيل. ومع ذلك قد يوقفها أندرويد أو الشركة المصنّعة. يعيد سبيل الاتصال عند فتح التطبيق وبعد إعادة تشغيل الهاتف، ولا يختلق مجموعًا لملء فراغ.</string>
+    <string name="diagnostics_body_battery">قد يقطع موفّر البطارية أو الإيقاف القسري أو إعادة التشغيل العدّ حتى يعمل سبيل من جديد.</string>
+    <string name="diagnostics_body_rest">يوم الراحة لا يغيّر الخطوات المحسوبة؛ تتوقف السلسلة فقط.</string>
+    <string name="diagnostics_no_sensor_note">لا يوفّر هذا الهاتف مستشعر خطوات مدمجًا، لذا لا يمكن تشغيل العدّ بأي إعداد.</string>
+    <string name="diagnostics_footer">تختلف الصياغة والقوائم بين طُرز الهواتف. هذه التعليمات إرشاد لا وعد.</string>
+    <string name="diagnostics_error_no_settings">لم يفتح هذا الهاتف شاشة الإعدادات المطلوبة. افتح تطبيق الإعدادات في هاتفك بدلًا من ذلك.</string>
 </resources>

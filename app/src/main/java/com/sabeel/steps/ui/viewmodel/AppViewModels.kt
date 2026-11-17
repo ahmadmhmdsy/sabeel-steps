@@ -14,6 +14,7 @@ import com.sabeel.steps.domain.AppLanguage
 import com.sabeel.steps.domain.DailyStep
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.Gender
+import com.sabeel.steps.domain.GoalAdvisor
 import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.domain.UserSettings
@@ -73,6 +74,7 @@ data class HomeUiState(
     val last7: List<DailyStep> = emptyList(),
     val streak: Int = 0,
     val serviceStatus: StepServiceStatus = StepServiceStatus.STOPPED,
+    val restDayToday: Boolean = false,
 )
 
 class HomeViewModel(private val app: SabeelApp) : ViewModel() {
@@ -92,13 +94,20 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
         }
     }.distinctUntilChanged()
 
-    val state: StateFlow<HomeUiState> = combine(
+    /** Settings plus whether today is an explicit rest day (streak paused, counting untouched). */
+    private val preferencesFlow: Flow<Pair<UserSettings, Boolean>> = combine(
         container.settings.settingsFlow,
+        container.settings.restDaysFlow,
+    ) { settings, restDays -> settings to (DateKey.today() in restDays) }
+
+    val state: StateFlow<HomeUiState> = combine(
+        preferencesFlow,
         container.steps.todayFlow(),
         container.steps.lastDaysFlow(7),
         container.steps.streakFlow(),
         serviceStatusFlow(),
-    ) { settings, today, last7, streak, serviceStatus ->
+    ) { preferences, today, last7, streak, serviceStatus ->
+        val (settings, restDayToday) = preferences
         val window = StepMath.windowDates(DateKey.today(), 7)
         HomeUiState(
             settings = settings,
@@ -106,6 +115,7 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
             last7 = StepMath.fillWindow(last7, window),
             streak = streak,
             serviceStatus = serviceStatus,
+            restDayToday = restDayToday,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -119,6 +129,45 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
     companion object {
         fun factory(app: SabeelApp) = viewModelFactory {
             initializer { HomeViewModel(app) }
+        }
+    }
+}
+
+data class DiagnosticsUiState(
+    val settings: UserSettings = UserSettings(),
+    val today: DailyStep? = null,
+    val serviceStatus: StepServiceStatus = StepServiceStatus.STOPPED,
+)
+
+/**
+ * Powers the "Why is my count low?" screen. It only reads local state (permission, sensor feature,
+ * service heartbeat, today's row); it never writes anything and never asks for a new permission.
+ */
+class DiagnosticsViewModel(private val app: SabeelApp) : ViewModel() {
+    private fun serviceStatusFlow(): Flow<StepServiceStatus> = flow {
+        while (true) {
+            emit(
+                when {
+                    !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
+                    !Permissions.hasStepSensor(app) -> StepServiceStatus.NO_SENSOR
+                    else -> StatusStore.read(app)
+                },
+            )
+            delay(3_000)
+        }
+    }.distinctUntilChanged()
+
+    val state: StateFlow<DiagnosticsUiState> = combine(
+        app.container.settings.settingsFlow,
+        app.container.steps.todayFlow(),
+        serviceStatusFlow(),
+    ) { settings, today, serviceStatus ->
+        DiagnosticsUiState(settings = settings, today = today, serviceStatus = serviceStatus)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiagnosticsUiState())
+
+    companion object {
+        fun factory(app: SabeelApp) = viewModelFactory {
+            initializer { DiagnosticsViewModel(app) }
         }
     }
 }
@@ -282,6 +331,20 @@ class SettingsViewModel(private val app: SabeelApp) : ViewModel() {
     val settings: StateFlow<UserSettings> = container.settings.settingsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserSettings())
 
+    val restDays: StateFlow<Set<String>> = container.settings.restDaysFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    /** Advice recomputed from the last four weeks of recorded days; null suggestion means "no change". */
+    val goalAdvice: StateFlow<GoalAdvisor.Advice> = combine(
+        container.settings.settingsFlow,
+        container.steps.lastDaysFlow(GoalAdvisor.WINDOW_DAYS),
+    ) { settings, days -> GoalAdvisor.advise(days, settings.goalSteps) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            GoalAdvisor.Advice(recordedDays = 0, medianSteps = null, suggestion = null),
+        )
+
     private fun persist(transform: (UserSettings) -> UserSettings) {
         container.appScope.launch { container.settings.update(transform) }
     }
@@ -299,6 +362,17 @@ class SettingsViewModel(private val app: SabeelApp) : ViewModel() {
     }
 
     fun setGoal(goal: Int) = persist { it.copy(goalSteps = goal.coerceIn(1_000, 60_000)) }
+
+    /** Applies a suggestion the user explicitly confirmed; never called automatically. */
+    fun applySuggestedGoal(suggestion: GoalAdvisor.Suggestion) = setGoal(suggestion.proposedGoal)
+
+    /** Marks or unmarks today as a rest day. Counting is not affected; only the streak pauses. */
+    fun setRestDayToday(rest: Boolean) {
+        container.appScope.launch {
+            val today = DateKey.today()
+            if (rest) container.settings.markRestDay(today) else container.settings.unmarkRestDay(today)
+        }
+    }
 
     fun setUnits(units: Units) = persist { it.copy(units = units) }
 

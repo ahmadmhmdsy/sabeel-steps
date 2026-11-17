@@ -1,0 +1,11 @@
+# Crash-buffer capture — adoption smoke pass (2026-11-17 22:32 +03:00)
+
+$ adb -s emulator-5554 logcat -d -b crash
+(no output: the crash buffer contained no records)
+
+$ adb -s emulator-5554 logcat -d | Select-String 'FATAL EXCEPTION|AndroidRuntime.*com.sabeel'
+(no matches)
+
+This file is a transcript of the two commands and their output, captured while the adoption smoke
+pass was being recorded. It is not a stored raw logcat archive and it is a sampled check, not a proof
+about other devices. Reproduce on a physical device before making a no-crash claim.

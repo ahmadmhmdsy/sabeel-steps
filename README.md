@@ -2,13 +2,14 @@
 
 An original, offline, ad-free step counter and walking tracker for Android,
 built clean-room from public product research (no decompilation, no copied
-assets or copy). Arabic and English are first-class languages.
+assets or copy). Arabic and English are supported; native Arabic review is
+still pending (see *Known limitations*).
 
 - **Package / applicationId:** `com.sabeel.steps` (permanent once published)
 - **Version:** 1.0.0 (versionCode 1)
 - **Status:** v1.0 production-readiness fix pass in progress. **Not published.**
-  No device/emulator run is claimed by this repository's final state — see
-  *Verification status* below for what is and is not evidenced.
+  Emulator validation exists; physical-device validation is still pending — see
+  *Verification status* below for exactly what is evidenced and what is not.
 - **Platform:** Android 8.0+ (minSdk 26), targetSdk/compileSdk 36.
 - **Stack:** Kotlin 2.0.21 · Jetpack Compose (Material 3) · Room (KSP) ·
   DataStore · WorkManager · Navigation-Compose · AGP 8.10.1 · Gradle wrapper
@@ -112,16 +113,17 @@ action: [docs/privacy-site/FILL-AND-HOST.md](docs/privacy-site/FILL-AND-HOST.md)
 ## Verification status (2026-11-17)
 
 > Everything below is either measured in this repository or explicitly marked
-> pending. Nothing here claims device/emulator validation or publication.
+> pending. Emulator evidence is included; no physical-device validation or
+> publication is claimed.
 
 | Item | State |
 |---|---|
-| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-17 — `dist/Sabeel-1.0-debug.apk`, 11,482,549 B, SHA-256 `6be50393…5fc41` |
-| Unit tests | **55 tests, 0 failures** (`testDebugUnitTest` exit 0): CsvCodec 12, StepMerge 7, StepMath 18, StepPipeline 13, StepCadence 5 |
-| Lint | `lintDebug` **exit 0** — 0 errors, 37 warnings, 1 hint (non-blocking; report in `app/build/reports/lint-results-debug.txt`) |
-| Release APK / AAB | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL — signed with the upload key, `apksigner verify` and `zipalign -c -P 16` OK; APK 1,529,962 B, AAB 3,332,738 B; hashes in `dist/SHA256SUMS.txt` |
+| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-17 22:31 — `dist/Sabeel-1.0-debug.apk`, 12,001,632 B, SHA-256 `dcd1f335…be615d` |
+| Unit tests | **79 tests, 0 failures** (`testDebugUnitTest` exit 0, 2026-11-17 22:26): CsvCodec 12, StepMerge 7, StepMath 24, StepPipeline 13, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5 |
+| Lint | `lintDebug` **exit 0** — 0 errors, 39 warnings, 1 hint (non-blocking; report in `app/build/reports/lint-results-debug.txt`) |
+| Release APK / AAB | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL 2026-11-17 22:35 — signed with the upload key (v2, upload cert `7b12ad6b…6152d`), `apksigner verify` and `zipalign -c -P 16` OK; APK 1,577,122 B, AAB 3,374,452 B; hashes in `dist/SHA256SUMS.txt` |
 | Release signing | Upload keystore generated; fingerprint in docs/release/KEYSTORE.md; Play App Signing registration pending (owner) |
-| Device / emulator run | **Emulator run completed** on the API 36 ATD image (1080x2400) with the signed release APK: onboarding EN, skip-permissions and grant paths, honest no-sensor status, Arabic RTL (in-app switch and `ar-IQ` device locale) for Home/History/Insights, walk foreground service with location denied, delete-all, relaunch; no crashes. Evidence: 17 UI-hierarchy dumps in [docs/review/2026-11-17/smoke/](docs/review/2026-11-17/smoke/). The ATD image returns blank `screencap` frames, so no PNGs are kept. Physical-device validation is still pending |
+| Device / emulator run | **Emulator runs completed** on the API 36 ATD image (1080x2400). The signed release APK pass covered onboarding EN, skip-permissions and grant paths, honest no-sensor status, Arabic RTL (in-app switch and `ar-IQ` device locale) for Home/History/Insights, walk foreground service with location denied, delete-all and relaunch (evidence: 16 UI-hierarchy dumps plus [SMOKE-EVIDENCE.md](docs/review/2026-11-17/smoke/SMOKE-EVIDENCE.md); the ATD image returns blank `screencap` frames, so no PNGs are kept). A second pass on the debug build exercised the diagnostics screen, the goal-advice suggestion and the rest-day streak pause in English and Arabic, and caught a rest-day streak bug that is now fixed and covered by tests (evidence: 9 UI-hierarchy dumps, [EVIDENCE.md](docs/review/2026-11-17/adoption-smoke/EVIDENCE.md)); the crash buffer was empty. Physical-device validation is still pending |
 | Play publication | **Not published.** Declarations and assets are owner actions |
 
 Do not copy a count or hash into a release note unless it was produced by the

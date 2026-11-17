@@ -40,6 +40,7 @@ import com.sabeel.steps.service.StepCounterService
 import com.sabeel.steps.ui.components.LoadingScreen
 import com.sabeel.steps.ui.i18n.AppLocale
 import com.sabeel.steps.ui.screens.AboutScreen
+import com.sabeel.steps.ui.screens.DiagnosticsScreen
 import com.sabeel.steps.ui.screens.HistoryScreen
 import com.sabeel.steps.ui.screens.HomeScreen
 import com.sabeel.steps.ui.screens.InsightsScreen
@@ -60,6 +61,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val PRIVACY = "privacy"
     const val ABOUT = "about"
+    const val DIAGNOSTICS = "diagnostics"
 }
 
 private data class TabItem(val route: String, val labelRes: Int, val icon: ImageVector)
@@ -152,7 +154,10 @@ fun SabeelRoot(container: AppContainer) {
                 )
             }
             composable(Routes.HOME) {
-                HomeScreen(onStartWalk = { navController.navigate(Routes.WALK) })
+                HomeScreen(
+                    onStartWalk = { navController.navigate(Routes.WALK) },
+                    onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) },
+                )
             }
             composable(Routes.HISTORY) { HistoryScreen() }
             composable(Routes.INSIGHTS) { InsightsScreen() }
@@ -166,6 +171,7 @@ fun SabeelRoot(container: AppContainer) {
                 SettingsScreen(
                     onOpenPrivacy = { navController.navigate(Routes.PRIVACY) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
+                    onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) },
                     onDeletedAll = {
                         navController.navigate(Routes.ONBOARDING) {
                             popUpTo(0) { inclusive = true }
@@ -184,6 +190,9 @@ fun SabeelRoot(container: AppContainer) {
                     onBack = { navController.popBackStack() },
                     onOpenPrivacy = { navController.navigate(Routes.PRIVACY) },
                 )
+            }
+            composable(Routes.DIAGNOSTICS) {
+                DiagnosticsScreen(onBack = { navController.popBackStack() })
             }
         }
     }

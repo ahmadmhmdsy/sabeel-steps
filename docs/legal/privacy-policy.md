@@ -60,7 +60,7 @@ Your data stays in the app's private storage until you delete it or uninstall th
 
 ### 6. Exporting your data
 
-You can export your history as a CSV file. The app uses Android's system file picker, and you choose where the file goes (for example Downloads or another folder). We do not receive a copy and we are not told where you saved it. If you later share that file with someone, their handling of it is governed by their own privacy practices.
+You can export your daily step totals as a CSV file; walks are not part of that file. The app uses Android's system file picker, and you choose where the file goes (for example Downloads or another folder). We do not receive a copy and we are not told where you saved it. If you later share that file with someone, their handling of it is governed by their own privacy practices.
 
 ### 7. Deleting your data
 
@@ -144,7 +144,7 @@ Questions about this policy or the app's privacy:
 
 ### ٦. تصدير بياناتك
 
-يمكنك تصدير سجلك في ملف CSV. يستخدم التطبيق منتقي الملفات في أندرويد، وأنت تختار مكان حفظ الملف (مثل مجلد التنزيلات أو أي مجلد آخر). لا نستلم نسخة منه ولا يُبلَّغ لنا بمكان حفظه. وإذا شاركت الملف لاحقًا مع شخص آخر، فإن تعامله معه يخضع لممارساته الخاصة في الخصوصية.
+يمكنك تصدير مجاميع خطواتك اليومية في ملف CSV؛ لا تكون المشيات جزءًا من هذا الملف. يستخدم التطبيق منتقي الملفات في أندرويد، وأنت تختار مكان حفظ الملف (مثل مجلد التنزيلات أو أي مجلد آخر). لا نستلم نسخة منه ولا يُبلَّغ لنا بمكان حفظه. وإذا شاركت الملف لاحقًا مع شخص آخر، فإن تعامله معه يخضع لممارساته الخاصة في الخصوصية.
 
 ### ٧. حذف بياناتك
 

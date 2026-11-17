@@ -96,6 +96,14 @@ fun dateTimeText(millis: Long): String {
     }
 }
 
+/** Time of day for an epoch timestamp (e.g. when the day's row was last written). */
+@Composable
+fun timeText(millis: Long): String {
+    val context = LocalContext.current
+    val formatter = remember(context) { android.text.format.DateFormat.getTimeFormat(context) }
+    return remember(millis, formatter) { formatter.format(Date(millis)) }
+}
+
 @Composable
 fun timeOfDayText(minutes: Int): String {
     val context = LocalContext.current

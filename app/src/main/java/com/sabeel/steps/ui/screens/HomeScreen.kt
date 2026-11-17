@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,6 +50,7 @@ import com.sabeel.steps.ui.format.caloriesText
 import com.sabeel.steps.ui.format.distanceText
 import com.sabeel.steps.ui.format.shortDayLabel
 import com.sabeel.steps.ui.format.stepsText
+import com.sabeel.steps.ui.format.timeText
 import com.sabeel.steps.ui.viewmodel.HomeUiState
 import com.sabeel.steps.ui.viewmodel.HomeViewModel
 
@@ -57,7 +59,7 @@ import com.sabeel.steps.ui.viewmodel.HomeViewModel
  * ViewModel and forwards its [HomeViewModel.startCounting] to the status card.
  */
 @Composable
-fun HomeScreen(onStartWalk: () -> Unit) {
+fun HomeScreen(onStartWalk: () -> Unit, onOpenDiagnostics: () -> Unit) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(app))
@@ -66,28 +68,39 @@ fun HomeScreen(onStartWalk: () -> Unit) {
         ui = ui,
         onStartWalk = onStartWalk,
         onStartCounting = { viewModel.startCounting() },
+        onOpenDiagnostics = onOpenDiagnostics,
     )
 }
 
 /** Stateful entry point that lets the caller supply the counting action (Lead wiring). */
 @Composable
-fun HomeScreen(onStartWalk: () -> Unit, onStartCounting: () -> Unit) {
+fun HomeScreen(
+    onStartWalk: () -> Unit,
+    onStartCounting: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
+) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(app))
     val ui by viewModel.state.collectAsStateWithLifecycle()
-    HomeScreen(ui = ui, onStartWalk = onStartWalk, onStartCounting = onStartCounting)
+    HomeScreen(
+        ui = ui,
+        onStartWalk = onStartWalk,
+        onStartCounting = onStartCounting,
+        onOpenDiagnostics = onOpenDiagnostics,
+    )
 }
 
 /**
- * Stateless home screen (frozen contract): the ViewModel state is passed in and the counting
- * action is supplied by the caller.
+ * Stateless home screen: the ViewModel state is passed in and the counting and diagnostics
+ * actions are supplied by the caller.
  */
 @Composable
 fun HomeScreen(
     ui: HomeUiState,
     onStartWalk: () -> Unit,
     onStartCounting: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
 ) {
     val context = LocalContext.current
     var permissionEpoch by remember { mutableIntStateOf(0) }
@@ -113,6 +126,7 @@ fun HomeScreen(
         },
         onStartWalk = onStartWalk,
         onStartCounting = onStartCounting,
+        onOpenDiagnostics = onOpenDiagnostics,
     )
 }
 
@@ -124,6 +138,7 @@ private fun HomeContent(
     onGrantPermission: () -> Unit,
     onStartWalk: () -> Unit,
     onStartCounting: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
 ) {
     val steps = ui.today?.steps ?: 0
     val goal = ui.settings.goalSteps.coerceAtLeast(1)
@@ -237,6 +252,28 @@ private fun HomeContent(
             textAlign = TextAlign.Center,
         )
 
+        // Honest data age: the stored row's own update time, not a claim that the sensor is alive.
+        val updatedAt = ui.today?.updatedAt ?: 0L
+        if (updatedAt > 0L) {
+            Text(
+                text = stringResource(R.string.home_updated_at, timeText(updatedAt)),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+        // A rest day is a deliberate pause, so it is named on Home rather than hidden in Settings.
+        if (ui.restDayToday) {
+            Text(
+                text = stringResource(R.string.home_rest_day_note),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+            )
+        }
+
         // Primary CTA before the stats and the 7-day chart, so it stays above the fold on 360x640.
         SabeelPrimaryButton(
             text = stringResource(R.string.home_start_walk),
@@ -297,6 +334,15 @@ private fun HomeContent(
             contentDescription = chartDescription,
             chartHeight = 120.dp,
         )
+        TextButton(
+            onClick = onOpenDiagnostics,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.home_diagnostics_link),
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
         Spacer(Modifier.height(8.dp))
     }
 }

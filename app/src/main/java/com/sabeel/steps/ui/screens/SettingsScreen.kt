@@ -53,7 +53,9 @@ import com.sabeel.steps.BuildConfig
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.AppLanguage
+import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.Gender
+import com.sabeel.steps.domain.GoalAdvisor
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
@@ -76,6 +78,7 @@ private val WeightStep = 1
 fun SettingsScreen(
     onOpenPrivacy: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
     onDeletedAll: () -> Unit,
     onMessage: (String) -> Unit,
 ) {
@@ -83,10 +86,14 @@ fun SettingsScreen(
     val app = context.applicationContext as SabeelApp
     val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(app))
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val restDays = viewModel.restDays.collectAsStateWithLifecycle().value
+    val goalAdvice = viewModel.goalAdvice.collectAsStateWithLifecycle().value
+    val restDayToday = DateKey.today() in restDays
     val fontScale = LocalConfiguration.current.fontScale
     val stackedRows = fontScale > 1.4f
 
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showGoalSuggestion by rememberSaveable { mutableStateOf(false) }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     // The chosen file survives rotation as a string; the confirm dialog then re-opens.
     var pendingImportUri by rememberSaveable { mutableStateOf<String?>(null) }
@@ -157,6 +164,60 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                GoalAdviceSection(
+                    advice = goalAdvice,
+                    onSuggest = { showGoalSuggestion = true },
+                )
+            }
+        }
+
+        SectionHeader(title = stringResource(R.string.settings_streak))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // The whole row is the switch target: one TalkBack node and a 48dp+ touch area.
+                        .toggleable(
+                            value = restDayToday,
+                            role = Role.Switch,
+                        ) { checked ->
+                            viewModel.setRestDayToday(checked)
+                        }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_rest_day_title),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_rest_day_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = restDayToday,
+                        onCheckedChange = null,
+                    )
+                }
+                if (restDayToday) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Text(
+                        text = stringResource(R.string.settings_rest_day_hint),
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 
@@ -327,6 +388,26 @@ fun SettingsScreen(
             )
         }
 
+        SectionHeader(title = stringResource(R.string.settings_counting))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_counting_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                SabeelSecondaryButton(
+                    text = stringResource(R.string.settings_diagnostics),
+                    onClick = onOpenDiagnostics,
+                )
+            }
+        }
+
         SectionHeader(title = stringResource(R.string.settings_data))
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -407,6 +488,48 @@ fun SettingsScreen(
         Spacer(Modifier.height(8.dp))
     }
 
+    val suggestion = goalAdvice.suggestion
+    if (showGoalSuggestion && suggestion != null) {
+        AlertDialog(
+            onDismissRequest = { showGoalSuggestion = false },
+            title = { Text(stringResource(R.string.settings_goal_dialog_title)) },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.settings_goal_dialog_body,
+                        stepsText(suggestion.medianSteps),
+                        stepsText(suggestion.proposedGoal),
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showGoalSuggestion = false
+                        viewModel.applySuggestedGoal(suggestion)
+                    },
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.settings_goal_dialog_apply,
+                            stepsText(suggestion.proposedGoal),
+                        ),
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGoalSuggestion = false }) {
+                    Text(
+                        text = stringResource(
+                            R.string.settings_goal_dialog_keep,
+                            stepsText(settings.goalSteps),
+                        ),
+                    )
+                }
+            },
+        )
+    }
+
     if (pendingImportUri != null) {
         AlertDialog(
             onDismissRequest = { pendingImportUri = null },
@@ -484,6 +607,49 @@ fun SettingsScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
             },
+        )
+    }
+}
+
+/**
+ * Goal guidance under the stepper. A suggestion is only offered (never applied) after about two
+ * weeks of recorded days; otherwise the section states what is missing or that the routine already
+ * matches the goal - both are honest outcomes, so neither pretends a suggestion exists.
+ */
+@Composable
+private fun GoalAdviceSection(
+    advice: GoalAdvisor.Advice,
+    onSuggest: () -> Unit,
+) {
+    Spacer(Modifier.height(8.dp))
+    val suggestion = advice.suggestion
+    when {
+        suggestion != null -> {
+            SabeelSecondaryButton(
+                text = stringResource(R.string.settings_goal_advice_button),
+                onClick = onSuggest,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.settings_goal_advice_hint, suggestion.recordedDays),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        advice.recordedDays < GoalAdvisor.MIN_RECORDED_DAYS -> Text(
+            text = stringResource(R.string.settings_goal_advice_waiting),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        else -> Text(
+            text = stringResource(
+                R.string.settings_goal_advice_close,
+                stepsText(advice.medianSteps ?: 0),
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

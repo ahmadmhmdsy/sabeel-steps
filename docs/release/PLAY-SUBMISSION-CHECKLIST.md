@@ -21,7 +21,7 @@ file records exactly what must be done and what evidence proves it.
 | Price | Free, no ads, no in-app purchases, no subscriptions |
 | Accounts / login | None. All functionality works without an account. |
 | Min / target SDK | 26 / 36 |
-| Permissions | ACTIVITY_RECOGNITION, POST_NOTIFICATIONS, FOREGROUND_SERVICE, FOREGROUND_SERVICE_HEALTH, FOREGROUND_SERVICE_LOCATION, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, RECEIVE_BOOT_COMPLETED. **No INTERNET.** |
+| Permissions | ACTIVITY_RECOGNITION, POST_NOTIFICATIONS, FOREGROUND_SERVICE, FOREGROUND_SERVICE_HEALTH, FOREGROUND_SERVICE_LOCATION, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, RECEIVE_BOOT_COMPLETED, plus the normal library-merged WAKE_LOCK and DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION (not prompted). **No INTERNET, no ACCESS_BACKGROUND_LOCATION.** |
 | Privacy policy URL | `https://<host>/privacy` — filled and hosted per [docs/privacy-site/FILL-AND-HOST.md](../privacy-site/FILL-AND-HOST.md) |
 | Support email | `<OWNER CONTACT EMAIL>` (must match the hosted policy) |
 

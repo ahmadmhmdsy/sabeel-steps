@@ -5,6 +5,14 @@ API 36 emulator. The app is **not yet shippable** only because of owner-only
 blockers (privacy-policy hosting, Play Console declarations/testing, store assets,
 trademark clearance — see §7). No known code or data-integrity defect remains open.
 
+> **Snapshot note (added later on 2026-11-17).** This report records the first
+> remediation pass. A later TrueStep-adoption pass changed the artifacts and the
+> test suite: final sizes/hashes, 79 JVM tests and lint counts are in README.md
+> and [release-signoff.md](../../legal/release-signoff.md), and the adoption
+> emulator evidence is in
+> [adoption-smoke/EVIDENCE.md](adoption-smoke/EVIDENCE.md). Figures below are the
+> state at the time of that pass, kept as history.
+
 Inputs: the independent council review of 2026-11-17 (verdict NOT SHIPPABLE) and
 the remediation plan in `docs/superpowers/plans/2026-11-17-production-readiness.md`.
 

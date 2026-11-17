@@ -400,3 +400,26 @@ Valuable:
 ---
 
 *Council report prepared 2026-11-17. Sources: the two cloned repositories (commits `6526c66` and `836c47e`), the GitHub REST API, and local build logs. No changes were made to Sabeel or to the prototypes during this review.*
+
+## Appendix D — Adoption record (2026-11-17)
+
+What was taken from this council into Sabeel, where it lives, and what was deliberately left out.
+Each item is a fresh implementation written against Sabeel's own architecture; no file, asset, string
+or code block from the reference repositories was copied, and their clones stay untracked under
+`.external/`. **Zero new permissions and zero new dependencies** were added for any item below.
+
+| Wave / item | What was adopted | Where it lives | How it is verified |
+|---|---|---|---|
+| Wave 1 — failure-state honesty | Home "Updated HH:mm" line and rest-day note; a Diagnostics screen with honest status, permission state, missing-sensor explanation, "what can pause counting", OEM battery guidance and app/battery-settings deep links | `ui/screens/DiagnosticsScreen.kt`, `HomeScreen.kt`, `platform/OemBatteryGuide.kt`, EN+AR strings | 5 `OemBatteryGuideTest` tests; 4 EN + 4 AR adoption UI dumps; crash-buffer transcript |
+| Wave 1 — gated adaptive goal | Settings "Suggest from my routine" button, explicit-confirm dialog (default keep), median of recorded days, needs ≥14 recorded days, moves ≤10 % and ≥200 steps, manual goal always wins | `domain/GoalAdvisor.kt`, `AppViewModels.kt`, `SettingsScreen.kt` | 9 `GoalAdvisorTest` tests; EN and AR dialogs show median 7,450 → proposal 7,500 and the keep path leaving 8,000 |
+| Wave 1 — EN/AR parity guard | JUnit test that parses both string XMLs: same keys, no blanks, equal placeholders, no untranslated prose outside a small allowlist | `app/src/test/java/com/sabeel/steps/i18n/LocalizationParityTest.kt` | 4 tests, no new dependencies; it caught wording drift during this pass |
+| Wave 2 — explicit rest day | Settings switch marking today as a rest day; streak pauses without adding a day; counted steps untouched; markers pruned after 365 days | `StepMath.kt`, `SettingsStore.kt`, `StepsRepository.kt`, `AppViewModels.kt`, `SettingsScreen.kt` | 6 rest-day `StepMathTest` tests; the emulator pass caught a real precedence bug (rest day that also hit the goal added a day), fixed and covered |
+| Claims discipline | Read-only claims audit of user-facing copy, then corrections to strings, README, policy and checklist | `docs/release/CLAIMS-AUDIT.md` including its §6 resolution addendum | Audit plus the resolution log; final numbers in README and `docs/legal/release-signoff.md` |
+| Wave 3 (suspended) — gamified layer | **Not adopted**: HUD, currencies/economy, streak-freeze shop, theme system, accelerometer fallback, hourly scrub, Health Connect, JSON export, rating prompt, social sharing | — | Council suspended Wave 3; prototype measurement claims were unsupported |
+
+**Final state of the adopting tree:** 79 JVM tests, 0 failures; `lintDebug` exit 0 (0 errors);
+signed debug and release artifacts rebuilt (hashes in `dist/SHA256SUMS.txt`); emulator evidence in
+`docs/review/2026-11-17/adoption-smoke/`. Physical-device validation is still pending, and the
+prototype-only gamified material stayed out because the council found its measurement claims
+unsupported.
+

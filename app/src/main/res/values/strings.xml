@@ -79,6 +79,9 @@
     <string name="home_last_7_days">Last 7 days</string>
     <string name="home_start_walk">Start a walk</string>
     <string name="home_cd_chart">Bar chart of steps for the last %1$s. Average %2$d steps per day.</string>
+    <string name="home_updated_at">Updated %1$s</string>
+    <string name="home_rest_day_note">Rest day. Your streak is paused.</string>
+    <string name="home_diagnostics_link">Why is my count low?</string>
 
     <!-- History -->
     <string name="history_title">History</string>
@@ -191,7 +194,7 @@
     <string name="onboarding_welcome_title">Welcome to Sabeel</string>
     <string name="onboarding_welcome_body">A calm place to count your steps and keep a simple walking record. No feed, no pressure.</string>
     <string name="onboarding_privacy_title">Your steps stay on your phone</string>
-    <string name="onboarding_privacy_body">No account. No internet. No ads, no trackers. Nothing is uploaded, ever.</string>
+    <string name="onboarding_privacy_body">No account. No internet. No ads, no trackers. Nothing leaves the phone on its own; only a CSV you export yourself can.</string>
     <string name="onboarding_language_title">Language</string>
     <string name="onboarding_goal_title">Choose a daily goal</string>
     <string name="onboarding_goal_body">A daily target gives the step ring something to fill.</string>
@@ -199,9 +202,9 @@
     <string name="onboarding_units_title">Units and body data</string>
     <string name="onboarding_units_body">Sabeel uses height and weight only to estimate distance, energy and stride. Every field is optional.</string>
     <string name="onboarding_body_hint">You can change this any time in Settings.</string>
-    <string name="onboarding_permissions_title">Two permissions, nothing else</string>
-    <string name="onboarding_permissions_body">Android asks for them separately. Sabeel opens without them, but counting steps needs activity recognition.</string>
-    <string name="onboarding_permissions_note">Sabeel does not request internet access, so nothing it records can leave your phone.</string>
+    <string name="onboarding_permissions_title">Two permissions to start</string>
+    <string name="onboarding_permissions_body">Android asks for them separately. Sabeel opens without them, but counting steps needs activity recognition. Location is optional and asked only when you track a walk.</string>
+    <string name="onboarding_permissions_note">Sabeel does not request internet access, so nothing it records can leave your phone on its own.</string>
     <string name="onboarding_finish">Start walking</string>
 
     <!-- Privacy -->
@@ -219,7 +222,7 @@
     <string name="privacy_permission_activity_body">Reads the phone’s step counter so Sabeel can count steps. Nothing else is read.</string>
     <string name="privacy_permission_notification_body">Shows your daily reminder and a goal notification. Both can be turned off in Settings.</string>
     <string name="privacy_permission_location_body">Used only while you are tracking a walk, to draw the route. It is not used in the background otherwise.</string>
-    <string name="privacy_permissions_note">That is the full list. Sabeel asks for nothing else.</string>
+    <string name="privacy_permissions_note">These are the only permissions Sabeel ever asks you for.</string>
     <string name="privacy_estimates_title">Estimates, not medical advice</string>
     <string name="privacy_estimates_body">Distance, energy and active minutes are rough estimates derived from steps, height and weight. They are not medical measurements and not a diagnosis. Talk to a health professional about health decisions.</string>
 
@@ -228,7 +231,64 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_mission">Sabeel is a small, offline step and walk journal. It stays quiet on purpose: no feed, no social pressure, no subscription.</string>
     <string name="about_licenses_title">Built with open source</string>
-    <string name="about_licenses_body">Kotlin, Jetpack Compose and AndroidX, under the Apache 2.0 license. Full license notices ship with the source of this app.</string>
+    <string name="about_licenses_body">Kotlin, Jetpack Compose and AndroidX, under the Apache 2.0 license. License notices are kept with the source of this app.</string>
     <string name="about_estimates">Sabeel is not a medical device and does not give health advice.</string>
     <string name="about_privacy_link">Read the privacy promise</string>
+    <!-- Goal advice -->
+    <string name="settings_goal_advice_button">Suggest from my routine</string>
+    <string name="settings_goal_advice_waiting">Sabeel needs about two weeks of recorded days before it can suggest a goal.</string>
+    <string name="settings_goal_advice_close">Your median recorded day is %1$s steps, close to this goal.</string>
+    <string name="settings_goal_advice_hint">Based on %1$d recorded days. A suggestion changes your goal by at most 10%%, and only if you tap it.</string>
+    <string name="settings_goal_dialog_title">Use a goal from your routine?</string>
+    <string name="settings_goal_dialog_body">Your median recorded day over the last four weeks was %1$s steps. A goal of %2$s steps stays close to that. You can change it any time.</string>
+    <string name="settings_goal_dialog_apply">Use %1$s</string>
+    <string name="settings_goal_dialog_keep">Keep %1$s</string>
+
+    <!-- Rest day -->
+    <string name="settings_streak">Streak</string>
+    <string name="settings_rest_day_title">Rest day today</string>
+    <string name="settings_rest_day_desc">Pauses your streak for today without breaking it. A rest day never adds a day.</string>
+    <string name="settings_rest_day_hint">Your streak stays where it is. Steps are still counted normally.</string>
+
+    <!-- Step counting health -->
+    <string name="settings_counting">Step counting</string>
+    <string name="settings_counting_desc">If the count looks low, this explains what to check.</string>
+    <string name="settings_diagnostics">Why is my count low?</string>
+
+    <!-- Diagnostics -->
+    <string name="diagnostics_title">Why is my count low?</string>
+    <string name="diagnostics_intro">Sabeel counts with the phone’s own step sensor. If the number looks low, one of these is usually the reason.</string>
+    <string name="diagnostics_now_title">Right now</string>
+    <string name="diagnostics_status_label">Counting</string>
+    <string name="diagnostics_status_counting">Counting on this phone</string>
+    <string name="diagnostics_status_stopped">Paused</string>
+    <string name="diagnostics_status_no_permission">No permission</string>
+    <string name="diagnostics_status_no_sensor">No step sensor</string>
+    <string name="diagnostics_today_label">Today</string>
+    <string name="diagnostics_today_value">%1$s steps</string>
+    <string name="diagnostics_last_update_label">Last update</string>
+    <string name="diagnostics_last_update_none">Not counted yet today</string>
+    <string name="diagnostics_permission_label">Activity recognition</string>
+    <string name="diagnostics_permission_granted">Allowed</string>
+    <string name="diagnostics_permission_missing">Not allowed</string>
+    <string name="diagnostics_permission_body">Without this permission Sabeel cannot read the step sensor at all. Allow it, then open Sabeel again.</string>
+    <string name="diagnostics_open_settings">Open app settings</string>
+    <string name="diagnostics_battery_button">Open battery settings</string>
+    <string name="diagnostics_oem_title">On this phone (%1$s)</string>
+    <string name="diagnostics_oem_intro">Some phone makers stop apps in the background to save battery. These settings are the ones that usually matter.</string>
+    <string name="diagnostics_oem_xiaomi">Open Settings › Apps › Manage apps › Sabeel. Turn on Autostart, then set Battery saver to No restrictions.</string>
+    <string name="diagnostics_oem_samsung">Open Settings › Battery and device care › Battery › Background usage limits and make sure Sabeel is not in Sleeping apps. Then open Settings › Apps › Sabeel › Battery and choose Unrestricted.</string>
+    <string name="diagnostics_oem_huawei">Open Settings › Battery › App launch, find Sabeel and turn off automatic management. Then allow it to run in the background.</string>
+    <string name="diagnostics_oem_oneplus">Open Settings › Battery › Battery optimization › All apps, find Sabeel and choose Don’t optimize. Also allow background activity in App info.</string>
+    <string name="diagnostics_oem_oppo">Open Settings › Battery › App battery management (or App optimization), find Sabeel and allow background activity. On some models it is in Settings › Apps › Sabeel › Battery.</string>
+    <string name="diagnostics_oem_vivo">Open Settings › Battery › Background power consumption management, find Sabeel and allow background power usage. Also allow auto-start in iManager.</string>
+    <string name="diagnostics_oem_generic">Open Settings › Apps › Sabeel › Battery and choose Unrestricted. If your phone has an autostart or startup manager, allow Sabeel there too.</string>
+    <string name="diagnostics_body_title">What can pause counting</string>
+    <string name="diagnostics_body_sensor">The step sensor only counts while the phone is with you and moving. Steps never leave the phone, so nothing can recover steps that were not counted.</string>
+    <string name="diagnostics_body_service">Sabeel keeps a small foreground service running. Android or the phone maker can still stop it. Sabeel reconnects when you open the app and after your phone restarts, and it never invents a total to fill a gap.</string>
+    <string name="diagnostics_body_battery">Battery saver, a forced stop, or a restart can interrupt counting until Sabeel runs again.</string>
+    <string name="diagnostics_body_rest">A rest day never changes the counted steps; only the streak pauses.</string>
+    <string name="diagnostics_no_sensor_note">This phone does not report a built-in step sensor, so no setting can turn counting on.</string>
+    <string name="diagnostics_footer">Wording and menus differ between phone models. These instructions are a guide, not a promise.</string>
+    <string name="diagnostics_error_no_settings">This phone did not open that settings screen. Open your phone’s Settings app instead.</string>
 </resources>

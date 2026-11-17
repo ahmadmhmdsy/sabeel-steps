@@ -38,13 +38,40 @@ object StepMath {
         return count
     }
 
-    fun goalHitRate(days: List<DailyStep>, goalSteps: Int): Double =
-        if (days.isEmpty()) 0.0 else days.count { it.steps >= goalSteps }.toDouble() / days.size
-
-    fun averageSteps(days: List<DailyStep>): Int =
-        if (days.isEmpty()) 0 else days.sumOf { it.steps } / days.size
-
     fun totalDistanceMeters(days: List<DailyStep>): Double = days.sumOf { it.distanceMeters }
+
+    // --- Windowed aggregates -------------------------------------------------------------
+    // Home, History and Insights all use these helpers so an "average" always means the same
+    // thing: the sum over the selected calendar window divided by the window length, with days
+    // that have no row counted as zero steps. A missing day is never silently dropped.
+
+    /** Oldest-first ISO dates ending at [today]; empty for a non-positive window. */
+    fun windowDates(today: String, days: Int): List<String> {
+        if (days <= 0) return emptyList()
+        return (days - 1 downTo 0).map { DateKey.minusDays(today, it) }
+    }
+
+    /** Maps stored rows onto [window], adding a zero-step day wherever no row exists. */
+    fun fillWindow(rows: List<DailyStep>, window: List<String>): List<DailyStep> {
+        val byDate = rows.associateBy { it.date }
+        return window.map { date -> byDate[date] ?: DailyStep(date = date, steps = 0) }
+    }
+
+    fun valuesForWindow(rows: List<DailyStep>, window: List<String>): List<Int> =
+        fillWindow(rows, window).map { it.steps }
+
+    fun averageOverWindow(rows: List<DailyStep>, window: List<String>): Int =
+        if (window.isEmpty()) 0 else valuesForWindow(rows, window).sum() / window.size
+
+    fun goalHitRateOverWindow(rows: List<DailyStep>, window: List<String>, goalSteps: Int): Double =
+        if (window.isEmpty()) 0.0
+        else valuesForWindow(rows, window).count { it >= goalSteps }.toDouble() / window.size
+
+    fun goalHitDaysOverWindow(rows: List<DailyStep>, window: List<String>, goalSteps: Int): Int =
+        valuesForWindow(rows, window).count { it >= goalSteps }
+
+    fun bestDayOverWindow(rows: List<DailyStep>, window: List<String>): DailyStep? =
+        fillWindow(rows, window).filter { it.steps > 0 }.maxByOrNull { it.steps }
 
     fun formatSteps(steps: Int): String =
         NumberFormat.getIntegerInstance(Locale.US).format(steps.coerceAtLeast(0))

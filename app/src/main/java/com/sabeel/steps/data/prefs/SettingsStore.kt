@@ -36,6 +36,7 @@ private object Keys {
     val baselineRaw = floatPreferencesKey("step_baseline_raw")
     val todaySteps = intPreferencesKey("step_today_steps")
     val baselineDate = stringPreferencesKey("step_baseline_date")
+    val initialized = booleanPreferencesKey("step_initialized")
 }
 
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
@@ -66,6 +67,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             baselineRaw = prefs[Keys.baselineRaw] ?: 0f,
             todaySteps = prefs[Keys.todaySteps] ?: 0,
             baselineDate = prefs[Keys.baselineDate] ?: today,
+            initialized = prefs[Keys.initialized] ?: false,
         )
     }.getOrElse { StepState.initial(today) }
 
@@ -74,6 +76,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             prefs[Keys.baselineRaw] = state.baselineRaw
             prefs[Keys.todaySteps] = state.todaySteps
             prefs[Keys.baselineDate] = state.baselineDate
+            prefs[Keys.initialized] = state.initialized
         }
     }
 

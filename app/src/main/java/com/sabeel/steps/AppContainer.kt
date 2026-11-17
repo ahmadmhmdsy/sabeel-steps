@@ -20,11 +20,12 @@ class AppContainer(context: Context) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val store: DataStore<Preferences> = appContext.SabeelDataStore
 
+    // Schema is exported under app/schemas by the Room compiler (see build.gradle.kts). No
+    // fallbackToDestructiveMigration: a missing migration must fail loudly in tests, not wipe data.
     val database: AppDatabase = Room.databaseBuilder(appContext, AppDatabase::class.java, "Sabeel.db")
-        .fallbackToDestructiveMigration()
         .build()
 
     val settings = SettingsRepository(store)
-    val steps = StepsRepository(database.dailyStepsDao(), settings)
+    val steps = StepsRepository(database, database.dailyStepsDao(), settings)
     val walks = WalkRepository(database.walkDao())
 }

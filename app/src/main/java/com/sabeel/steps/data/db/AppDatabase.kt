@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [DailyStepEntity::class, WalkEntity::class],
     version = 1,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyStepsDao(): DailyStepsDao

@@ -10,9 +10,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.DateKey
-import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.UserSettings
-import com.sabeel.steps.service.StepCounterService
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -45,7 +44,7 @@ object Reminders {
         WorkManager.getInstance(context).cancelUniqueWork(WORK_REMINDER)
     }
 
-    /** Periodic 15-minute reconcile: midnight rollover, goal catch-up, service keep-alive. */
+    /** Periodic 15-minute reconcile: midnight rollover and goal catch-up while the service is off. */
     fun ensureReconcile(context: Context) {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_RECONCILE,
@@ -56,7 +55,7 @@ object Reminders {
         )
     }
 
-    /** One-shot reconcile shortly after boot, in case the foreground service could not start. */
+    /** One-shot reconcile shortly after boot/app update, in case the foreground service could not start. */
     fun ensureBootReconcile(context: Context) {
         WorkManager.getInstance(context).enqueueUniqueWork(
             WORK_BOOT_RECONCILE,
@@ -82,7 +81,10 @@ object Reminders {
     }
 }
 
-/** One-shot reminder worker; posts the notification and re-arms tomorrow's occurrence. */
+/**
+ * One-shot reminder worker; posts the notification (permission-gated and localized inside
+ * [Notifications]) and re-arms tomorrow's occurrence.
+ */
 class ReminderWorker(
     context: Context,
     params: WorkerParameters,
@@ -95,7 +97,7 @@ class ReminderWorker(
         }.getOrNull() ?: return Result.retry()
 
         if (settings.reminderEnabled) {
-            Notifications.notifyReminder(context)
+            runCatching { Notifications.notifyReminder(context) }
         }
         // Re-arm the next occurrence; REPLACE supersedes the worker that is finishing now.
         runCatching { Reminders.reschedule(context, settings) }
@@ -104,10 +106,13 @@ class ReminderWorker(
 }
 
 /**
- * Periodic reconcile worker. Keeps today's row truthful after process death or midnight while
- * the step service is not running, catches up the goal notification, and tries (best effort) to
- * restart the foreground service. Android 12+ may refuse a background FGS start; that is caught
- * and never crashes the app.
+ * Periodic reconcile worker. Keeps today's row truthful after process death or midnight while the
+ * step service is not running and catches up the goal notification.
+ *
+ * It deliberately does NOT start [com.sabeel.steps.service.StepCounterService]: a WorkManager job
+ * runs in the background and Android 12+ forbids starting a foreground service from there
+ * (ForegroundServiceStartNotAllowedException). Re-arming counting is the job of the foreground entry
+ * points and of BootReceiver, which are allowed to do it.
  */
 class ReconcileWorker(
     context: Context,
@@ -123,17 +128,13 @@ class ReconcileWorker(
         // 1. Midnight rollover and process-death restore: never double count.
         runCatching { container.steps.reconcile() }
 
-        // 2. Goal catch-up (the flag guarantees at most one notification per local day).
+        // 2. Goal catch-up (the flag guarantees at most one notification per local day, and the
+        //    post itself is permission-gated).
         runCatching {
-            val todayRow = container.database.dailyStepsDao().getAll().firstOrNull { it.date == DateKey.today() }
-            if (todayRow != null) {
+            val todayRow = container.steps.todayFlow().first()
+            if (todayRow != null && todayRow.date == DateKey.today()) {
                 Notifications.notifyGoalReached(context, todayRow.steps, settings.goalSteps)
             }
-        }
-
-        // 3. Best effort: make sure counting is running (ignored when the OS forbids a background start).
-        if (settings.onboardingDone) {
-            runCatching { StepCounterService.start(context) }
         }
         return Result.success()
     }

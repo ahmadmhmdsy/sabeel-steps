@@ -18,6 +18,9 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE date >= :fromDate ORDER BY date ASC")
     suspend fun getSince(fromDate: String): List<DailyStepEntity>
 
+    @Query("SELECT * FROM daily_steps WHERE date = :date LIMIT 1")
+    suspend fun today(date: String): DailyStepEntity?
+
     @Upsert
     suspend fun upsert(row: DailyStepEntity)
 

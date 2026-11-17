@@ -68,23 +68,55 @@ class StepMathTest {
     }
 
     @Test
-    fun goalHitRateIsTheShareOfGoalDays() {
-        val days = listOf(
+    fun goalHitRateOverWindowUsesTheWindowAsDenominator() {
+        val window = listOf("2026-11-13", "2026-11-14", "2026-11-15", "2026-11-16")
+        val rows = listOf(
             DailyStep("2026-11-16", 9000),
             DailyStep("2026-11-15", 3000),
             DailyStep("2026-11-14", 8000),
-            DailyStep("2026-11-13", 100),
         )
-        assertEquals(0.5, StepMath.goalHitRate(days, goalSteps = 8000), 0.0001)
-        assertEquals(0.0, StepMath.goalHitRate(emptyList(), goalSteps = 8000), 0.0001)
+        // 2 goal days out of 4 window days, even though only 3 rows exist.
+        assertEquals(0.5, StepMath.goalHitRateOverWindow(rows, window, goalSteps = 8000), 0.0001)
+        assertEquals(2, StepMath.goalHitDaysOverWindow(rows, window, goalSteps = 8000))
+        assertEquals(0.0, StepMath.goalHitRateOverWindow(emptyList(), window, goalSteps = 8000), 0.0001)
+        assertEquals(0.0, StepMath.goalHitRateOverWindow(rows, emptyList(), goalSteps = 8000), 0.0001)
     }
 
     @Test
-    fun averagesAndTotals() {
+    fun averageOverWindowZeroFillsMissingDays() {
+        val window = listOf("2026-11-13", "2026-11-14", "2026-11-15", "2026-11-16")
+        val rows = listOf(DailyStep("2026-11-16", 9000), DailyStep("2026-11-15", 3000))
+        assertEquals(3000, StepMath.averageOverWindow(rows, window))
+        assertEquals(0, StepMath.averageOverWindow(emptyList(), window))
+        assertEquals(0, StepMath.averageOverWindow(rows, emptyList()))
+    }
+
+    @Test
+    fun fillWindowIsOldestFirstAndAddsZeroDays() {
+        val window = listOf("2026-11-14", "2026-11-15", "2026-11-16")
+        val rows = listOf(DailyStep("2026-11-16", 900, distanceMeters = 600.0))
+        val filled = StepMath.fillWindow(rows, window)
+        assertEquals(listOf("2026-11-14", "2026-11-15", "2026-11-16"), filled.map { it.date })
+        assertEquals(listOf(0, 0, 900), filled.map { it.steps })
+        assertEquals(listOf(0, 0, 900), StepMath.valuesForWindow(rows, window))
+        assertEquals(900, StepMath.bestDayOverWindow(rows, window)?.steps)
+        assertEquals(null, StepMath.bestDayOverWindow(emptyList(), window))
+    }
+
+    @Test
+    fun windowDatesEndsTodayAndHandlesEmptyWindows() {
+        assertEquals(
+            listOf("2026-11-14", "2026-11-15", "2026-11-16"),
+            StepMath.windowDates("2026-11-16", 3),
+        )
+        assertEquals(emptyList<String>(), StepMath.windowDates("2026-11-16", 0))
+        assertEquals(emptyList<String>(), StepMath.windowDates("2026-11-16", -2))
+    }
+
+    @Test
+    fun totalsAndDistance() {
         val days = listOf(DailyStep("2026-11-16", 9000, distanceMeters = 6000.0), DailyStep("2026-11-15", 3000, distanceMeters = 2000.0))
-        assertEquals(6000, StepMath.averageSteps(days))
         assertEquals(8000.0, StepMath.totalDistanceMeters(days), 0.001)
-        assertEquals(0, StepMath.averageSteps(emptyList()))
     }
 
     @Test

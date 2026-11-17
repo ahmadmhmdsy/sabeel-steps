@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 
-/** Single source of truth for runtime permissions used by the UI. */
+/** Single source of truth for runtime permissions and sensor features used by the platform layer. */
 object Permissions {
 
     fun activityRecognitionPermission(): String? =
@@ -27,6 +27,14 @@ object Permissions {
     fun hasLocation(context: Context): Boolean =
         granted(context, Manifest.permission.ACCESS_FINE_LOCATION) ||
             granted(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+
+    /**
+     * True when the device reports a hardware step counter. Used as the cheap pre-flight gate before
+     * starting the health foreground service: without this feature there is nothing to count, so the
+     * service must never be started (and Home shows the NO_SENSOR card instead).
+     */
+    fun hasStepSensor(context: Context): Boolean =
+        context.applicationContext.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_STEP_COUNTER)
 
     private fun granted(context: Context, permission: String): Boolean =
         ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED

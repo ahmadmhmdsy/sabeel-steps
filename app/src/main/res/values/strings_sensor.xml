@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Platform-layer strings: step service, walk service, notifications, reminders.
+         Kept in a separate file so the feature/UI string files stay independent. -->
+    <string name="sensor_notif_channel_steps">Step counting</string>
+    <string name="sensor_notif_channel_steps_desc">Keeps the step counter running quietly</string>
+    <string name="sensor_notif_channel_reminders">Reminders</string>
+    <string name="sensor_notif_channel_reminders_desc">Your daily walk reminder</string>
+    <string name="sensor_notif_channel_goal">Daily goal</string>
+    <string name="sensor_notif_channel_goal_desc">A quiet note when you reach your step goal</string>
+
+    <string name="sensor_notif_counting_title">Sabeel is counting your steps</string>
+    <string name="sensor_notif_counting_text">Your steps stay on this phone.</string>
+    <string name="sensor_notif_permission_title">Physical activity permission needed</string>
+    <string name="sensor_notif_permission_text">Allow physical activity access in Settings so Sabeel can read the step sensor.</string>
+    <string name="sensor_notif_no_sensor_title">Step sensor not available</string>
+    <string name="sensor_notif_no_sensor_text">This device does not report a step counter. Walks are still saved.</string>
+
+    <string name="sensor_notif_walk_title">Walk in progress</string>
+    <string name="sensor_notif_walk_preparing">Getting ready…</string>
+    <string name="sensor_notif_walk_progress">%1$s · %2$s</string>
+    <string name="sensor_notif_walk_step_only">Step-only walk (location is off)</string>
+    <string name="sensor_notif_walk_stop">Stop</string>
+
+    <string name="sensor_notif_goal_title">Daily goal reached</string>
+    <string name="sensor_notif_goal_text">%1$d of %2$d steps today</string>
+
+    <string name="sensor_reminder_title">Time for a walk</string>
+    <string name="sensor_reminder_text">A short walk keeps your streak alive.</string>
+
+    <string name="sensor_walk_save_failed">Could not save this walk</string>
+</resources>

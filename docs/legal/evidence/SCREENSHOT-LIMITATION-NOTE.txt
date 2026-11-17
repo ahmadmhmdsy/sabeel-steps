@@ -1,0 +1,25 @@
+SCREENSHOT / VISUAL-EVIDENCE LIMITATION NOTE - AVD runtime smoke
+folder: C:\dl\legal-evidence\final-20261117-000050\AVD
+captured at: 2026-11-17T00:34+03:00
+
+FINDING: all four screencap files (screenshot-01-first-launch.png,
+screenshot-02-after-grants.png, screenshot-03-fresh-install.png,
+screenshot-04-after-reboot.png) are byte-identical black frames:
+sha256=C35BACDB98B522206335AFA5B9BAFFD2E4E3352A40749BB747E469CD403AF514,
+15580 bytes, 1080x2400. The headless emulator (-no-window + swiftshader_indirect)
+did not render the app surface into the framebuffer that screencap reads.
+
+What this means:
+- Screenshots are NOT usable as visual proof for any row. Do not attach them as
+  evidence of UI content.
+- UI content evidence comes from uiautomator XML dumps instead, which did see
+  the real Sabeel onboarding screen (text nodes: "Sabeel", "Step 1 of 4",
+  "Welcome to Sabeel", "No account. No internet. No ads, no trackers.").
+- This is the same headless-rendering limitation that produced a 0-byte
+  fgs-demo.mp4, which is already recorded as OPEN / ESCALATION in AVD-EVIDENCE.txt.
+- For real visual evidence (screenshots + FGS demo video), a windowed emulator
+  with host-side capture or a google_apis;android-36;x86_64 image is required
+  (Lead decision; not attempted here).
+
+No project file was modified; APK under test remained
+sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E.

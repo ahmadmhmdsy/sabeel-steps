@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سبيل</string>
+
+    <!-- التنقل -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_history">السجل</string>
+    <string name="nav_insights">الرؤى</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <!-- إجراءات وعناوين شائعة -->
+    <string name="action_back">رجوع</string>
+    <string name="action_next">التالي</string>
+    <string name="action_done">تم</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_ok">حسنًا</string>
+    <string name="cd_back">رجوع</string>
+    <string name="cd_decrease">إنقاص</string>
+    <string name="cd_increase">زيادة</string>
+    <string name="value_none">—</string>
+    <string name="value_with_unit">%1$s %2$s</string>
+    <string name="percent_value">%1$d%%</string>
+    <string name="value_minutes">%1$d دقيقة</string>
+    <string name="value_cm">%1$d سم</string>
+    <string name="value_kg">%1$d كغم</string>
+    <string name="goal_value">%1$s خطوة</string>
+
+    <!-- الوحدات -->
+    <string name="unit_meter">م</string>
+    <string name="unit_kilometer">كم</string>
+    <string name="unit_mile">ميل</string>
+    <string name="unit_foot">قدم</string>
+    <string name="unit_kcal">سعرة</string>
+    <string name="pace_suffix_km">لكل كم</string>
+    <string name="pace_suffix_mile">لكل ميل</string>
+
+    <!-- الأيام -->
+    <string name="day_today">اليوم</string>
+    <string name="day_yesterday">أمس</string>
+
+    <!-- التتابع -->
+    <string name="streak_none">لا تتابع بعد</string>
+    <plurals name="streak_days">
+        <item quantity="zero">لا أيام متتابعة</item>
+        <item quantity="one">يوم واحد متتابع</item>
+        <item quantity="two">يومان متتابعان</item>
+        <item quantity="few">%d أيام متتابعة</item>
+        <item quantity="many">%d يومًا متتابعًا</item>
+        <item quantity="other">%d يوم متتابع</item>
+    </plurals>
+
+    <!-- الأذونات -->
+    <string name="permission_activity_title">التعرّف على النشاط</string>
+    <string name="permission_activity_body">يقرأ سبيل عدّاد الخطوات المدمج في الهاتف. يطلب أندرويد هذا الإذن لهذا المستشعر فقط.</string>
+    <string name="permission_location_title">الموقع</string>
+    <string name="permission_location_body">يُستخدم فقط أثناء تسجيل مشية لرسم المسار. بدونه يظل سبيل يحسب الخطوات ويقدّر المسافة.</string>
+    <string name="permission_notification_title">الإشعارات</string>
+    <string name="permission_notification_body">لتذكيرك اليومي وملاحظة هادئة عند بلوغ هدفك فقط.</string>
+    <string name="permission_grant">السماح</string>
+    <string name="permission_granted">مسموح على هذا الهاتف</string>
+
+    <!-- الرئيسية -->
+    <string name="home_title">اليوم</string>
+    <string name="home_ring_goal">من %1$s خطوة</string>
+    <string name="home_goal_label">الهدف %1$s</string>
+    <string name="home_cd_ring">تقدّم الخطوات: %1$d بالمئة. %2$s من %3$s خطوة.</string>
+    <string name="home_status_start">مشية قصيرة بداية طيبة.</string>
+    <string name="home_status_early">كل بضع دقائق من المشي تُحتسب.</string>
+    <string name="home_status_mid">تجاوزت المنتصف. حافظ على وتيرة هادئة.</string>
+    <string name="home_status_done">بلغت هدفك. استمتع ببقية يومك.</string>
+    <string name="home_distance">المسافة (تقدير)</string>
+    <string name="home_calories">الطاقة (تقدير)</string>
+    <string name="home_active_minutes">دقائق النشاط</string>
+    <string name="home_last_7_days">آخر 7 أيام</string>
+    <string name="home_start_walk">ابدأ مشية</string>
+    <string name="home_cd_chart">رسم أعمدة للخطوات في آخر %1$d أيام. المتوسط %2$d خطوة يوميًا.</string>
+
+    <!-- السجل -->
+    <string name="history_title">السجل</string>
+    <string name="history_range_7">7 أيام</string>
+    <string name="history_range_30">30 يومًا</string>
+    <string name="history_range_label">آخر %1$d أيام</string>
+    <string name="history_total">المجموع %1$s خطوة</string>
+    <string name="history_cd_chart">رسم أعمدة للخطوات خلال %1$d أيام مع خط الهدف. المتوسط %2$d خطوة يوميًا.</string>
+    <string name="history_empty_title">لا يوجد شيء بعد</string>
+    <string name="history_empty_body">ستظهر مجاميعك اليومية بعد أن يحسب سبيل يومًا من الخطوات.</string>
+
+    <!-- المشية -->
+    <string name="walk_title">مشية</string>
+    <string name="walk_live_title">جارٍ المشي</string>
+    <string name="walk_idle_title">سجّل مشية</string>
+    <string name="walk_idle_body">يرسم سبيل مسارك على لوحته الخاصة. بلا خرائط، بلا إنترنت، بلا حساب.</string>
+    <string name="walk_location_ready">الموقع مفعّل. سيسجّل سبيل مسار هذه المشية.</string>
+    <string name="walk_location_fallback">يمكنك المشي بدون الموقع أيضًا: يحسب سبيل الخطوات ويقدّر المسافة.</string>
+    <string name="walk_start">ابدأ المشية</string>
+    <string name="walk_live_time">الوقت</string>
+    <string name="walk_live_distance">المسافة</string>
+    <string name="walk_live_pace">الوتيرة</string>
+    <string name="walk_live_steps">الخطوات</string>
+    <string name="walk_gps_on">الـGPS يسجّل مسارك.</string>
+    <string name="walk_gps_off">الـGPS غير متاح. نحسب الخطوات فقط.</string>
+    <string name="walk_route_waiting">بانتظار أول نقاط الـGPS…</string>
+    <string name="walk_cd_route">رسم المسار مع %1$d نقطة مسجّلة.</string>
+    <string name="walk_save">احفظ المشية</string>
+    <string name="walk_discard">تجاهل المشية</string>
+    <string name="walk_saving">جارٍ حفظ مشيتك…</string>
+    <string name="walk_error_generic">تعذّر تسجيل المشية. حاول مرة أخرى.</string>
+    <string name="walk_discard_confirm_title">تتجاهل هذه المشية؟</string>
+    <string name="walk_discard_confirm_body">لن يُحفظ ما سُجّل من المشية حتى الآن.</string>
+    <string name="walk_summary_title">حُفظت المشية</string>
+    <string name="walk_summary_body">أحسنت. يبقى مسارك على هذا الهاتف.</string>
+
+    <!-- الرؤى -->
+    <string name="insights_title">الرؤى</string>
+    <string name="insights_average">متوسط 7 أيام</string>
+    <string name="insights_best_day">أفضل يوم</string>
+    <string name="insights_goal_rate">نسبة بلوغ الهدف</string>
+    <string name="insights_total_distance">إجمالي المسافة</string>
+    <string name="insights_sentence_title">هذا الأسبوع</string>
+    <string name="insights_sentence">كان متوسطك %1$s خطوة يوميًا، وبلغت هدفك في %2$d من %3$d أيام.</string>
+    <string name="insights_best_sentence">كان أفضل يوم لك %1$s بخطوات %2$s.</string>
+    <string name="insights_estimate_note">المسافة والطاقة تقديرات، وليست قياسات طبية.</string>
+    <string name="insights_empty_title">تحتاج الأنماط بضعة أيام</string>
+    <string name="insights_empty_body">امشِ بضعة أيام وستظهر هنا صورة أسبوعك.</string>
+
+    <!-- الإعدادات -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_goal">الهدف اليومي</string>
+    <string name="settings_goal_hint">ابدأ بهدوء. يمكنك تغييره في أي وقت.</string>
+    <string name="settings_units">الوحدات</string>
+    <string name="settings_units_metric">متري (كم، كغم)</string>
+    <string name="settings_units_imperial">إمبراطوري (ميل، رطل)</string>
+    <string name="settings_reminder">تذكير يومي</string>
+    <string name="settings_reminder_desc">تنبيه هادئ في وقت تختاره.</string>
+    <string name="settings_reminder_time">وقت التذكير</string>
+    <string name="settings_body_data">بيانات الجسم</string>
+    <string name="settings_height">الطول</string>
+    <string name="settings_weight">الوزن</string>
+    <string name="settings_gender">الجنس</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_ar">العربية</string>
+    <string name="settings_data">بياناتك</string>
+    <string name="settings_export_csv">تصدير CSV</string>
+    <string name="settings_export_desc">احفظ نسخة من مجاميعك اليومية في ملف تختاره. لا يُرفع شيء.</string>
+    <string name="settings_import_csv">استيراد CSV</string>
+    <string name="settings_import_desc">استعد مجاميعك اليومية من ملف CSV أنشأه سبيل.</string>
+    <string name="settings_export_file_name">sabeel-steps.csv</string>
+    <string name="settings_export_success">تم تصدير %1$d يومًا.</string>
+    <string name="settings_export_error">لم يكتمل التصدير. حاول مرة أخرى.</string>
+    <string name="settings_import_success">تم استيراد %1$d يومًا.</string>
+    <string name="settings_import_error">لم يكتمل الاستيراد. تحقّق من الملف وحاول مرة أخرى.</string>
+    <string name="settings_delete_all">حذف كل البيانات</string>
+    <string name="settings_delete_all_desc">امسح كل يوم ومشية وإعداد من هذا الهاتف.</string>
+    <string name="settings_delete_confirm_title">تحذف كل شيء؟</string>
+    <string name="settings_delete_confirm_body">لا يمكن التراجع عن هذا. ستُمسح خطواتك ومشياتك وتفضيلاتك من هذا الهاتف.</string>
+    <string name="settings_privacy">الخصوصية</string>
+    <string name="settings_about">حول التطبيق</string>
+    <string name="settings_estimate_note">المسافة والطاقة ودقائق النشاط تقديرات، وليست نصيحة طبية.</string>
+
+    <!-- الجنس -->
+    <string name="gender_unspecified">أفضّل عدم الذكر</string>
+    <string name="gender_male">ذكر</string>
+    <string name="gender_female">أنثى</string>
+
+    <!-- الترحيب -->
+    <string name="onboarding_step_indicator">الخطوة %1$d من %2$d</string>
+    <string name="onboarding_welcome_title">أهلًا بك في سبيل</string>
+    <string name="onboarding_welcome_body">مكان هادئ يعدّ خطواتك ويحفظ سجلًا بسيطًا لمشيك. بلا موجز، بلا ضغط.</string>
+    <string name="onboarding_privacy_title">خطواتك تبقى على هاتفك</string>
+    <string name="onboarding_privacy_body">بلا حساب، بلا إنترنت، بلا إعلانات أو متتبّعات. لا يُرفع أي شيء أبدًا.</string>
+    <string name="onboarding_language_title">اللغة</string>
+    <string name="onboarding_goal_title">اختر هدفًا يوميًا</string>
+    <string name="onboarding_goal_body">الهدف اليومي يمنح حلقة الخطوات ما تملؤه.</string>
+    <string name="onboarding_goal_hint">8,000 خطوة نقطة بداية شائعة. غيّرها لاحقًا من الإعدادات.</string>
+    <string name="onboarding_units_title">الوحدات وبيانات الجسم</string>
+    <string name="onboarding_units_body">يستخدم سبيل الطول والوزن لتقدير المسافة والطاقة وطول الخطوة فقط. كل الحقول اختيارية.</string>
+    <string name="onboarding_body_hint">يمكنك تغييرها أو مسحها في أي وقت من الإعدادات.</string>
+    <string name="onboarding_permissions_title">إذنان فقط، لا غير</string>
+    <string name="onboarding_permissions_body">يطلب أندرويد كليهما بشكل منفصل. يمكنك البدء من دونهما.</string>
+    <string name="onboarding_permissions_note">سبيل لا يطلب الوصول إلى الإنترنت، لذا لا يمكن لما يسجّله أن يغادر هاتفك.</string>
+    <string name="onboarding_finish">ابدأ المشي</string>
+
+    <!-- الخصوصية -->
+    <string name="privacy_title">الخصوصية</string>
+    <string name="privacy_intro">بُني سبيل ليُبقي بياناتك حيث تنتمي: على هذا الهاتف.</string>
+    <string name="privacy_offline_title">بلا إنترنت</string>
+    <string name="privacy_offline_body">التطبيق لا يطلب إذن الإنترنت إطلاقًا. لا يمكن رفع خطواتك ومشيك ومساراتك، لأنه لا يوجد ما يرفعها.</string>
+    <string name="privacy_ads_title">بلا إعلانات</string>
+    <string name="privacy_ads_body">لا مكتبة إعلانات ولا معرّف إعلاني ولا تحليلات استخدام ولا مُبلّغ أعطال في سبيل.</string>
+    <string name="privacy_account_title">بلا حساب</string>
+    <string name="privacy_account_body">لا تسجّل الدخول أبدًا. لا يوجد خادم لتسجّل الدخول إليه.</string>
+    <string name="privacy_control_title">أنت المتحكّم</string>
+    <string name="privacy_control_body">صدّر مجاميعك اليومية كملف CSV، أو احذف كل شيء من الإعدادات وقتما تشاء. يحدث كلاهما عند ضغطك فقط.</string>
+    <string name="privacy_permissions_title">الأذونات وسببها</string>
+    <string name="privacy_permission_activity_body">يقرأ عدّاد الخطوات في الهاتف ليحصي سبيل خطواتك. لا يُقرأ غيره.</string>
+    <string name="privacy_permission_notification_body">يظهر تذكيرك اليومي وإشعار بلوغ الهدف. يمكن إيقاف كليهما من الإعدادات.</string>
+    <string name="privacy_permission_location_body">يُستخدم فقط أثناء تسجيل مشية لرسم المسار، ولا يُستخدم في الخلفية في غير ذلك.</string>
+    <string name="privacy_permissions_note">هذه هي القائمة كاملة. سبيل لا يطلب غيرها.</string>
+    <string name="privacy_estimates_title">تقديرات، لا نصيحة طبية</string>
+    <string name="privacy_estimates_body">المسافة والطاقة ودقائق النشاط تقديرات تقريبية مبنية على الخطوات والطول والوزن. ليست قياسات طبية ولا تشخيصًا. استشر مختصًا صحيًا في قراراتك الصحية.</string>
+
+    <!-- حول التطبيق -->
+    <string name="about_title">حول التطبيق</string>
+    <string name="about_version">الإصدار %1$s</string>
+    <string name="about_mission">سبيل سجل خطوات ومشيات صغير يعمل دون اتصال. يبقى هادئًا عن قصد: بلا موجز، بلا ضغط اجتماعي، بلا اشتراك.</string>
+    <string name="about_licenses_title">مبني بمصادر مفتوحة</string>
+    <string name="about_licenses_body">Kotlin وJetpack Compose وAndroidX برخصة Apache 2.0. تأتي إشعارات التراخيص الكاملة مع مصدر التطبيق.</string>
+    <string name="about_estimates">سبيل ليس جهازًا طبيًا ولا يقدّم نصائح صحية.</string>
+    <string name="about_privacy_link">اقرأ وعد الخصوصية</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original Sabeel status-bar icon: two abstract footprints (white silhouette, 24dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Left / lower footprint: sole -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4.9,16.5a2.65,3.9 0 1,0 5.3,0a2.65,3.9 0 1,0 -5.3,0z" />
+    <!-- Left footprint: toes -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4.7,11.3a0.85,0.85 0 1,0 1.7,0a0.85,0.85 0 1,0 -1.7,0z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6.65,10.6a0.85,0.85 0 1,0 1.7,0a0.85,0.85 0 1,0 -1.7,0z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.6,11.3a0.85,0.85 0 1,0 1.7,0a0.85,0.85 0 1,0 -1.7,0z" />
+
+    <!-- Right / upper footprint: sole -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M14.05,8.6a2.4,3.5 0 1,0 4.8,0a2.4,3.5 0 1,0 -4.8,0z" />
+    <!-- Right footprint: toes -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M13.95,3.7a0.8,0.8 0 1,0 1.6,0a0.8,0.8 0 1,0 -1.6,0z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M15.7,3.1a0.8,0.8 0 1,0 1.6,0a0.8,0.8 0 1,0 -1.6,0z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17.45,3.7a0.8,0.8 0 1,0 1.6,0a0.8,0.8 0 1,0 -1.6,0z" />
+</vector>

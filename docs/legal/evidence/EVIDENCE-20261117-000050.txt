@@ -1,0 +1,225 @@
+[2026-11-17T00:00:50+03:00] 
+[2026-11-17T00:00:50+03:00] ===== BUILD IDENTITY =====
+[2026-11-17T00:00:50+03:00] project = E:\android_apps\steps_app
+[2026-11-17T00:00:50+03:00] collection timestamp (UTC+3, Baghdad) = 2026-11-17T00:00:50+03:00
+[2026-11-17T00:00:50+03:00] host = DESKTOP-TU09FBO
+[2026-11-17T00:00:50+03:00] JDK = openjdk version "21.0.13" 2026-10-20 LTS
+[2026-11-17T00:00:50+03:00] build-tools used = 36.0.0
+[2026-11-17T00:00:50+03:00] sdk platforms installed = android-35,android-36
+[2026-11-17T00:00:50+03:00] gradle wrapper present (gradlew.bat) = True
+[2026-11-17T00:00:50+03:00] gradle command for this evidence run (wrapper preferred) = E:\android_apps\steps_app\gradlew.bat
+[2026-11-17T00:00:51+03:00] gradle wrapper version = 8.11.1
+[2026-11-17T00:00:51+03:00] gradle wrapper command used = E:\android_apps\steps_app\gradlew.bat
+[2026-11-17T00:00:52+03:00] gradle installed = Gradle 8.11.1
+[2026-11-17T00:00:52+03:00] sha256 build.gradle.kts = 594607D2C8B2DB1EED93F6CA0B57E15311A3AB22EF618A728BC85A0595A1DAAA
+[2026-11-17T00:00:52+03:00] sha256 settings.gradle.kts = 3DA1D743C739A3B8E667A8DF560F36C5A18352DE8DE6E80F62F47EF1E19124CA
+[2026-11-17T00:00:52+03:00] sha256 gradle.properties = 2ACA81BA31DB3B70EDAAC7A70E10CF36FD0DC567743E0E079669303491CFDCE7
+[2026-11-17T00:00:52+03:00] sha256 app\build.gradle.kts = 0E141BAB12AECC5B6613D04A216EA9B354D59EDED3345D581C46BA3CEFDC8F08
+[2026-11-17T00:00:52+03:00] sha256 app\src\main\AndroidManifest.xml = 778F75560EAE9C0CF63AC9D7E0E4737ADD7305CD5CEAC1DA0067D6B1366CF0F1
+[2026-11-17T00:00:52+03:00] sha256 gradle\wrapper\gradle-wrapper.properties = D7010368A34C1C06DF2BAE1A85D8B24C39B2499C74AC892FC7E66D005DBD7B8A
+[2026-11-17T00:00:52+03:00] sha256 gradle\wrapper\gradle-wrapper.jar = 2DB75C40782F5E8BA1FC278A5574BAB070ADCCB2D21CA5A6E5ED840888448046
+[2026-11-17T00:00:52+03:00] sha256 gradlew = A3648413B47EF77AF21D5EBC36C687C7D103AAEF3E17F33DE7D4F080A6F300A3
+[2026-11-17T00:00:53+03:00] sha256 gradlew.bat = 57931B17DD228E5C24DAC90E815D0BF82477E831A4618DFAB4136F5446B42A9F
+[2026-11-17T00:00:53+03:00] sha256 app\src\main\res\values\themes.xml = F398CE44250D501D72F478DC688D9C4EE81F5E23145553F272ED9720C2BC72C1
+[2026-11-17T00:00:53+03:00] build identity aggregate sha256 = c51264f96e512c4f365527cb516ddf3d02e0af53ea2773fad5a00a3123a008a5
+[2026-11-17T00:00:53+03:00] git = no repository; build identity = build-file sha256 aggregate above + artifact sha256 below
+[2026-11-17T00:00:53+03:00] source tree sha256 (app/src/main .kt+.xml, 59 files) = 5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9
+[2026-11-17T00:00:53+03:00] 
+[2026-11-17T00:00:53+03:00] ===== ARTIFACTS =====
+[2026-11-17T00:00:53+03:00] newest non-build project input = app\src\test\java\com\sabeel\steps\domain\StepPipelineTest.kt | mtime=2026-11-16T23:55:20
+[2026-11-17T00:00:53+03:00] artifact app\build\outputs\apk\debug\app-debug.apk | bytes=11488512 | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E | mtime=2026-11-16T23:51:37
+[2026-11-17T00:00:53+03:00] WARNING: app\build\outputs\apk\debug\app-debug.apk predates newest project input - artifact may be STALE for this tree
+[2026-11-17T00:00:54+03:00] FINDING: no release APK/AAB present - C2/C4/C5/C9 are measured on the debug build only; release-artifact gate OPEN (owner/Lead to run bundleRelease or provide the release artifact)
+[2026-11-17T00:00:54+03:00] 
+[2026-11-17T00:00:54+03:00] ===== C2 badging - app\build\outputs\apk\debug\app-debug.apk =====
+[2026-11-17T00:00:54+03:00]   package: name='com.sabeel.steps' versionCode='1' versionName='1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+[2026-11-17T00:00:54+03:00]   minSdkVersion:'26'
+[2026-11-17T00:00:54+03:00]   targetSdkVersion:'36'
+[2026-11-17T00:00:54+03:00]   application-label:'Sabeel'
+[2026-11-17T00:00:54+03:00] PASS: package is com.sabeel.steps [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:54+03:00] PASS: targetSdkVersion 36 [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:54+03:00] PASS: minSdkVersion 26 [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:54+03:00] 
+[2026-11-17T00:00:54+03:00] ===== C4 permissions - app\build\outputs\apk\debug\app-debug.apk =====
+[2026-11-17T00:00:54+03:00]   package: com.sabeel.steps
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.ACTIVITY_RECOGNITION'
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.POST_NOTIFICATIONS'
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.FOREGROUND_SERVICE'
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.FOREGROUND_SERVICE_HEALTH'
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.FOREGROUND_SERVICE_LOCATION'
+[2026-11-17T00:00:54+03:00]   uses-permission: name='android.permission.ACCESS_FINE_LOCATION'
+[2026-11-17T00:00:55+03:00]   uses-permission: name='android.permission.ACCESS_COARSE_LOCATION'
+[2026-11-17T00:00:55+03:00]   uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'
+[2026-11-17T00:00:55+03:00]   uses-permission: name='android.permission.WAKE_LOCK'
+[2026-11-17T00:00:55+03:00]   permission: com.sabeel.steps.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+[2026-11-17T00:00:55+03:00]   uses-permission: name='com.sabeel.steps.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+[2026-11-17T00:00:55+03:00] PASS: ABSENT (required): android.permission.INTERNET [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: ABSENT (required): android.permission.ACCESS_NETWORK_STATE [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.ACTIVITY_RECOGNITION [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.ACCESS_FINE_LOCATION [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.POST_NOTIFICATIONS [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.FOREGROUND_SERVICE [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.FOREGROUND_SERVICE_HEALTH [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.FOREGROUND_SERVICE_LOCATION [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.WAKE_LOCK [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] PASS: PRESENT (expected): android.permission.RECEIVE_BOOT_COMPLETED [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:55+03:00] 
+[2026-11-17T00:00:55+03:00] ===== C5 manifest attrs - app\build\outputs\apk\debug\app-debug.apk =====
+[2026-11-17T00:00:55+03:00]   A: http://schemas.android.com/apk/res/android:debuggable(0x0101000f)=true
+[2026-11-17T00:00:55+03:00]   A: http://schemas.android.com/apk/res/android:allowBackup(0x01010280)=false
+[2026-11-17T00:00:55+03:00]   A: http://schemas.android.com/apk/res/android:foregroundServiceType(0x01010599)=0x00000100
+[2026-11-17T00:00:55+03:00]   A: http://schemas.android.com/apk/res/android:foregroundServiceType(0x01010599)=0x00000108
+[2026-11-17T00:00:56+03:00] PASS: allowBackup=false [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:56+03:00] PASS: foregroundServiceType present on FGS declarations [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:56+03:00]   FGS type raw: A: http://schemas.android.com/apk/res/android:foregroundServiceType(0x01010599)=0x00000100
+[2026-11-17T00:00:56+03:00]   FGS type raw: A: http://schemas.android.com/apk/res/android:foregroundServiceType(0x01010599)=0x00000108
+[2026-11-17T00:00:56+03:00] 
+[2026-11-17T00:00:56+03:00] ===== C9 zipalign -P 16 - app\build\outputs\apk\debug\app-debug.apk =====
+[2026-11-17T00:00:56+03:00]   Verification successful
+[2026-11-17T00:00:56+03:00] PASS: zipalign -c -P 16 verification successful [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:56+03:00]   extracted lib/arm64-v8a/libandroidx.graphics.path.so bytes=10096
+[2026-11-17T00:00:56+03:00]   extracted lib/arm64-v8a/libdatastore_shared_counter.so bytes=7112
+[2026-11-17T00:00:56+03:00]   extracted lib/armeabi-v7a/libandroidx.graphics.path.so bytes=7252
+[2026-11-17T00:00:56+03:00]   extracted lib/armeabi-v7a/libdatastore_shared_counter.so bytes=4416
+[2026-11-17T00:00:56+03:00]   extracted lib/x86/libandroidx.graphics.path.so bytes=9284
+[2026-11-17T00:00:56+03:00]   extracted lib/x86/libdatastore_shared_counter.so bytes=5148
+[2026-11-17T00:00:56+03:00]   extracted lib/x86_64/libandroidx.graphics.path.so bytes=10760
+[2026-11-17T00:00:57+03:00]   extracted lib/x86_64/libdatastore_shared_counter.so bytes=6224
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_arm64-v8a_libandroidx.graphics.path.so  ELF_CLASS=64  LOAD_ALIGNS=[16384,16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_arm64-v8a_libdatastore_shared_counter.so  ELF_CLASS=64  LOAD_ALIGNS=[16384,16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_armeabi-v7a_libandroidx.graphics.path.so  ELF_CLASS=32  LOAD_ALIGNS=[16384,16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_armeabi-v7a_libdatastore_shared_counter.so  ELF_CLASS=32  LOAD_ALIGNS=[16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_x86_64_libandroidx.graphics.path.so  ELF_CLASS=64  LOAD_ALIGNS=[16384,16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_x86_64_libdatastore_shared_counter.so  ELF_CLASS=64  LOAD_ALIGNS=[16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_x86_libandroidx.graphics.path.so  ELF_CLASS=32  LOAD_ALIGNS=[16384,16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   C:/dl/legal-evidence/final-20261117-000050/libs-app-debug/lib_x86_libdatastore_shared_counter.so  ELF_CLASS=32  LOAD_ALIGNS=[16384,16384]  16KB_OK=true
+[2026-11-17T00:00:57+03:00]   16KB_ELF_RESULT: ALL PASS
+[2026-11-17T00:00:57+03:00] PASS: ELF PT_LOAD p_align=16384 for all bundled .so files [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:00:57+03:00] 
+[2026-11-17T00:00:57+03:00] ===== C6 merged manifests =====
+[2026-11-17T00:00:57+03:00] C6 merged manifests: total=1 debug=1 release=0
+[2026-11-17T00:00:57+03:00] PASS: debug merged manifest present [measured on: app/build/intermediates/merged_manifest tree (debug=1 release=0)]
+[2026-11-17T00:00:57+03:00] C6: release merged manifest NOT present (release build not run yet) - release manifest gate OPEN
+[2026-11-17T00:00:57+03:00] --- merged manifest: app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml
+[2026-11-17T00:00:57+03:00]   android:minSdkVersion="26"
+[2026-11-17T00:00:57+03:00]   android:targetSdkVersion="36" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="android.permission.WAKE_LOCK" />
+[2026-11-17T00:00:57+03:00]   <uses-permission android:name="com.sabeel.steps.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+[2026-11-17T00:00:57+03:00]   android:allowBackup="false"
+[2026-11-17T00:00:57+03:00]   android:foregroundServiceType="health" />
+[2026-11-17T00:00:57+03:00]   android:foregroundServiceType="location|health" />
+[2026-11-17T00:00:57+03:00] PASS: allowBackup=false in app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml [measured on: app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml | sha256=D904BCE02B173EAC0968D4DAB0CA97FF7F261AC73D7D2E80847A593E6BB9D75A]
+[2026-11-17T00:00:57+03:00] PASS: no INTERNET permission in app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml [measured on: app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml | sha256=D904BCE02B173EAC0968D4DAB0CA97FF7F261AC73D7D2E80847A593E6BB9D75A]
+[2026-11-17T00:00:57+03:00] PASS: no ACCESS_NETWORK_STATE in app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml [measured on: app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml | sha256=D904BCE02B173EAC0968D4DAB0CA97FF7F261AC73D7D2E80847A593E6BB9D75A]
+[2026-11-17T00:00:57+03:00] PASS: targetSdkVersion 36 in app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml [measured on: app\build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml | sha256=D904BCE02B173EAC0968D4DAB0CA97FF7F261AC73D7D2E80847A593E6BB9D75A]
+[2026-11-17T00:00:57+03:00] 
+[2026-11-17T00:00:57+03:00] ===== C8 dependency audit (releaseRuntimeClasspath) =====
+[2026-11-17T00:00:58+03:00] command = E:\android_apps\steps_app\gradlew.bat --console=plain :app:dependencies --configuration releaseRuntimeClasspath
+[2026-11-17T00:01:02+03:00] dependency configuration resolved = True
+[2026-11-17T00:01:02+03:00] C8: no firebase/play-services/ads/analytics/crashlytics/amplitude/sentry/onesignal matches
+[2026-11-17T00:01:02+03:00] PASS: release dependency graph resolves [measured on: build-files sha256=c51264f96e512c4f365527cb516ddf3d02e0af53ea2773fad5a00a3123a008a5]
+[2026-11-17T00:01:02+03:00] PASS: no ad/analytics/crashlytics/firebase/play-services dependency in release runtime classpath [measured on: build-files sha256=c51264f96e512c4f365527cb516ddf3d02e0af53ea2773fad5a00a3123a008a5]
+[2026-11-17T00:01:02+03:00] 
+[2026-11-17T00:01:02+03:00] ===== C12 signing / AAB =====
+[2026-11-17T00:01:02+03:00] C12: NOT VERIFIED BY DESIGN - Lead decision: no agent creates, copies or reads a production keystore; this pass runs no apksigner and no keytool.
+[2026-11-17T00:01:02+03:00] C12: no signingConfig/storeFile/keyAlias in app/build.gradle.kts - release APK/AAB are UNSIGNED by design; this is NOT a compliance failure (owner signs at Play upload).
+[2026-11-17T00:01:03+03:00] C12: keystore material scan (name-only, read-only) = none present
+[2026-11-17T00:01:03+03:00] PASS: no keystore material (*.jks/*.keystore/*.p12/signing.properties) in repo (name-only scan) [measured on: repo tree (read-only name-only scan, build dirs excluded)]
+[2026-11-17T00:01:03+03:00] 
+[2026-11-17T00:01:03+03:00] ===== C10-S static (Data safety) =====
+[2026-11-17T00:01:03+03:00] C10-S sources: no NetworkType/setRequiredNetworkType/NetworkRequest/Constraints.Builder references
+[2026-11-17T00:01:03+03:00] PASS: no WorkManager network constraints / network-request usage in Kotlin sources [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] C10-S WorkManager inventory = 18 references
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\BootReceiver.kt:15: * may refuse FGS starts from boot) and the reminder/reconcile WorkManager chain.
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:4: import androidx.work.CoroutineWorker
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:7: import androidx.work.OneTimeWorkRequestBuilder
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:8: import androidx.work.PeriodicWorkRequestBuilder
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:9: import androidx.work.WorkManager
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:22: * WorkManager scheduling for the daily reminder and for the 15-minute reconcile pass.
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:23: * WorkManager is the only scheduler used: no exact alarms, no wakelocks.
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:33: val workManager = WorkManager.getInstance(context)
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:34: workManager.cancelUniqueWork(WORK_REMINDER)
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:37: val request = OneTimeWorkRequestBuilder<ReminderWorker>()
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:41: workManager.enqueueUniqueWork(WORK_REMINDER, ExistingWorkPolicy.REPLACE, request)
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:45: WorkManager.getInstance(context).cancelUniqueWork(WORK_REMINDER)
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:50: WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:53: PeriodicWorkRequestBuilder<ReconcileWorker>(15, TimeUnit.MINUTES)
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:61: WorkManager.getInstance(context).enqueueUniqueWork(
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:64: OneTimeWorkRequestBuilder<ReconcileWorker>()
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:89: ) : CoroutineWorker(context, params) {
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:115: ) : CoroutineWorker(context, params) {
+[2026-11-17T00:01:03+03:00] C10-S boot-reschedule references = 2
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\BootReceiver.kt:18: class BootReceiver : BroadcastReceiver() {
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\BootReceiver.kt:22: if (action != Intent.ACTION_BOOT_COMPLETED && action != ACTION_QUICKBOOT_POWERON) return
+[2026-11-17T00:01:03+03:00] C10-S reminder references = 2
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:37: val request = OneTimeWorkRequestBuilder<ReminderWorker>()
+[2026-11-17T00:01:03+03:00]   app\src\main\java\com\sabeel\steps\platform\Reminders.kt:86: class ReminderWorker(
+[2026-11-17T00:01:03+03:00] PASS: manifest declares RECEIVE_BOOT_COMPLETED [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] PASS: manifest registers a BOOT_COMPLETED receiver [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] PASS: manifest requests FOREGROUND_SERVICE_HEALTH [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] PASS: manifest requests FOREGROUND_SERVICE_LOCATION [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] PASS: manifest declares foregroundServiceType attribute [measured on: source tree sha256=5695a188c482aa9cf5899589d50db1615d8826793e20af26b2de096563d64dd9]
+[2026-11-17T00:01:03+03:00] PASS: APK permissions: no INTERNET [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:01:03+03:00] PASS: APK permissions: no ACCESS_NETWORK_STATE [measured on: app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E]
+[2026-11-17T00:01:03+03:00] C10-R RUNTIME: NOT VERIFIED at static-pass time. A separate Lead-approved API 36 emulator attempt may follow; any runtime observation there is labelled NOT VERIFIED - EMULATOR-ATTEMPTED (never PASS) per Legal section 10.1.
+[2026-11-17T00:01:03+03:00] 
+[2026-11-17T00:01:03+03:00] ===== DONE =====
+[2026-11-17T00:01:04+03:00] evidence directory = C:\dl\legal-evidence\final-20261117-000050
+[2026-11-17T00:01:04+03:00] artifacts checked = 1 | apk=1 | aab=0
+[2026-11-17T00:01:04+03:00] static batch summary = PASS=33 FAIL=0 FINDING=1
+[2026-11-17T00:01:04+03:00] OPEN items (FAIL+FINDING for owner/legal triage) = 1
+[2026-11-17T00:01:04+03:00] stale files present: none
+[2026-11-17T00:01:26+03:00] 
+[2026-11-17T00:01:26+03:00] ===== AVD RUNTIME SMOKE TEST (Lead-approved; API 36 only; every runtime row is NOT VERIFIED - EMULATOR-ATTEMPTED) =====
+[2026-11-17T00:01:26+03:00] time box = 15 min | image = system-images;android-36;aosp_atd;x86_64 | avd = api36 | device = pixel_7
+[2026-11-17T00:01:26+03:00] SETUP AVD-CONFIG = INFO | timebox=15min image=system-images;android-36;aosp_atd;x86_64 avd=api36 device=pixel_7
+[2026-11-17T00:01:26+03:00] AVD: aborted at time box already expired, static evidence stands
+[2026-11-17T00:03:27+03:00] 
+[2026-11-17T00:03:27+03:00] ===== AVD RUNTIME SMOKE TEST (Lead-approved; API 36 only; every runtime row is NOT VERIFIED - EMULATOR-ATTEMPTED) =====
+[2026-11-17T00:03:27+03:00] time box = 15 min | image = system-images;android-36;aosp_atd;x86_64 | avd = api36 | device = pixel_7
+[2026-11-17T00:03:27+03:00] SETUP AVD-CONFIG = INFO | timebox=15min image=system-images;android-36;aosp_atd;x86_64 avd=api36 device=pixel_7
+[2026-11-17T00:03:27+03:00] AVD: aborted at time box already expired, static evidence stands
+[2026-11-17T00:03:58+03:00] 
+[2026-11-17T00:03:58+03:00] ===== AVD RUNTIME SMOKE TEST (Lead-approved; API 36 only; every runtime row is NOT VERIFIED - EMULATOR-ATTEMPTED) =====
+[2026-11-17T00:03:58+03:00] time box = 15 min | image = system-images;android-36;aosp_atd;x86_64 | avd = api36 | device = pixel_7
+[2026-11-17T00:03:58+03:00] SETUP AVD-CONFIG = INFO | timebox=15min image=system-images;android-36;aosp_atd;x86_64 avd=api36 device=pixel_7
+[2026-11-17T00:03:59+03:00] DEBUG time left seconds = 900 | deadline=2026-11-17T00:18:58.5895299+03:00 | now=2026-11-17T00:03:59.0143187+03:00
+[2026-11-17T00:03:59+03:00] SETUP ACCEL = PASS | accel: | 0 | WHPX(10.0.26200) is installed and usable. | accel
+[2026-11-17T00:03:59+03:00] APK under test = app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E | bytes=11488512 | mtime=2026-11-16T23:51:37
+[2026-11-17T00:04:02+03:00] avdmanager: Loading local repository...                                                     
+[2026-11-17T00:04:03+03:00] avdmanager: Warning: This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+[2026-11-17T00:04:03+03:00] avdmanager: [=========                              ] 25% Loading local repository...       
+[2026-11-17T00:04:03+03:00] avdmanager: [=========                              ] 25% Fetch remote repository...        
+[2026-11-17T00:04:03+03:00] avdmanager: [=======================================] 100% Fetch remote repository...       
+[2026-11-17T00:04:03+03:00] avdmanager: 
+[2026-11-17T00:04:03+03:00] avdmanager: Auto-selecting single ABI x86_64
+[2026-11-17T00:04:04+03:00] SETUP AVD-CREATE = PASS | exit=0
+[2026-11-17T00:04:04+03:00] emulator started pid=15312 (headless)
+[2026-11-17T00:07:07+03:00] 
+[2026-11-17T00:07:07+03:00] ===== AVD RUNTIME SMOKE TEST (Lead-approved; API 36 only; every runtime row is NOT VERIFIED - EMULATOR-ATTEMPTED) =====
+[2026-11-17T00:07:07+03:00] time box = 15 min | image = system-images;android-36;aosp_atd;x86_64 | avd = api36 | device = pixel_7
+[2026-11-17T00:07:07+03:00] SETUP AVD-CONFIG = INFO | timebox=15min image=system-images;android-36;aosp_atd;x86_64 avd=api36 device=pixel_7
+[2026-11-17T00:07:07+03:00] time box armed: seconds left at start = 900
+[2026-11-17T00:07:08+03:00] SETUP ACCEL = PASS | accel: | 0 | WHPX(10.0.26200) is installed and usable. | accel
+[2026-11-17T00:07:08+03:00] APK under test = app\build\outputs\apk\debug\app-debug.apk | sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E | bytes=11488512 | mtime=2026-11-16T23:51:37
+[2026-11-17T00:07:12+03:00] avdmanager: Loading local repository...                                                     
+[2026-11-17T00:07:13+03:00] avdmanager: Warning: This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+[2026-11-17T00:07:13+03:00] avdmanager: [=========                              ] 25% Loading local repository...       
+[2026-11-17T00:07:13+03:00] avdmanager: [=========                              ] 25% Fetch remote repository...        
+[2026-11-17T00:07:14+03:00] avdmanager: [=======================================] 100% Fetch remote repository...       
+[2026-11-17T00:07:14+03:00] avdmanager: 
+[2026-11-17T00:07:14+03:00] avdmanager: Auto-selecting single ABI x86_64
+[2026-11-17T00:07:14+03:00] SETUP AVD-CREATE = PASS | exit=0
+[2026-11-17T00:07:14+03:00] emulator started pid=7488 (headless)
+[2026-11-17T00:12:16+03:00] SETUP BOOT = FAIL | serial= emulator_exited=False
+[2026-11-17T00:12:16+03:00] AVD: aborted at emulator boot did not complete within window, static evidence stands
+[2026-11-17T00:15:28+03:00] AVD RETRY: focused boot retry; all new AVD artifacts are in .\AVD\ (AVD-EVIDENCE.txt, AVD-SMOKE.md, emulator logs, screenshots); earlier AVD attempt lines above are superseded attempt history, not part of this run.
+[2026-11-17T00:20:49+03:00] AVD RETRY: focused boot retry; all new AVD artifacts are in .\AVD\ (AVD-EVIDENCE.txt, AVD-SMOKE.md, emulator logs, screenshots); earlier AVD attempt lines above are superseded attempt history, not part of this run.

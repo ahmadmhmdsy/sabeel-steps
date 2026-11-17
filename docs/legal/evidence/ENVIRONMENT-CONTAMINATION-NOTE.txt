@@ -1,0 +1,40 @@
+ENVIRONMENT CONTAMINATION NOTE - AVD runtime smoke
+final folder: C:\dl\legal-evidence\final-20261117-000050
+captured at: 2026-11-17T00:32+03:00
+
+FINDING: while the AVD smoke test ran, a foreign app (com.sigha.converter,
+"Sigha - Convert offline. Nothing leaves your phone.") was installed and
+brought to the foreground on the same emulator by a concurrent process outside
+this task. This contaminated uiautomator screen captures for part of the run.
+
+Evidence (all inside this AVD\ folder, do not edit):
+- ui-now.xml line 1: <node ... package="com.sigha.converter" ...> and text
+  "Your files, converted on this phone ... Choose files ... Sigha ... Convert offline."
+- C10R-logcat-after-boot.txt:
+  - W/PackageSettings: Missing permission state for package com.sigha.converter on user 0
+  - I/ActivityManager: Force stopping com.sigha.converter appid=10101 user=0
+  - I/AppsFilter: PackageSetting{... com.sabeel.steps/10100} -> PackageSetting{... com.sigha.converter/10101} BLOCKED
+  - I/AppWidgetServiceImpl: Updating package stopped masked state for uid 10101 package com.sigha.converter isStopped true
+- Rows whose reachable_screen shows the Sigha screen (screen context contaminated):
+  C7-ACTIVITY-DENIED (00:24:33), C10-R-REMINDER-CREATION (00:25:01),
+  C10-R-LOGCAT (00:27:31), SENSOR-TYPE_STEP_COUNTER / STEP-ACCURACY /
+  LOCATION-ACCURACY (00:27:35-40). Their observed= values were captured from
+  adb dumpsys/logcat and stand on their own; the reachable_screen field must
+  not be read as Sabeel UI for those rows.
+
+Rows whose observations are NOT affected by the foreign app (Sabeel evidence
+explicit in text/screenshots):
+  BOOT PASS (t+132s), INSTALL PASS, LAUNCH PASS (COLD, TotalTime 2889ms),
+  C11-FIRST-RUN-DISCLOSURE (Sabeel onboarding step 1/4, no ads/no internet
+  text visible), GRANT x4 PASS, C11-FRESH-INSTALL (same onboarding screen after
+  pm clear), REBOOT PASS (52s), C10-R-AFTER-REBOOT raw dumps, and the
+  BootReceiver/ReconcileWorker lines in C10R-logcat-after-boot.txt
+  ("Start proc ... for broadcast {com.sabeel.steps/...BootReceiver}",
+  "Starting work for com.sabeel.steps.platform.ReconcileWorker",
+  "WM-RescheduleReceiver: Received intent ... BOOT_COMPLETED").
+
+Conclusion: boot/install/launch/onboarding/reboot evidence stands. FGS,
+notification, reminder and demo-video rows cannot be attributed to Sabeel
+because the flow was never advanced past onboarding and a foreign app shared
+the emulator; keep them EMULATOR-ATTEMPTED / OPEN, never PASS. No project file
+was modified; APK under test remained sha256=324690190282F9E63A01F8437BBFA259C8BF69C0BD57072F3FC9498B12C89B9E.

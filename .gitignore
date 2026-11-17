@@ -1,0 +1,27 @@
+# Gradle / Android build outputs
+.gradle/
+build/
+app/build/
+.kotlin/
+captures/
+*.hprof
+
+# Local machine configuration
+local.properties
+keystore/
+keystore.properties
+*.jks
+*.keystore
+
+# Agent workspace state / transcripts
+.dsh/
+
+# IDE / OS noise
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Release binaries are rebuilt from source; their hashes are tracked in dist/SHA256SUMS.txt
+dist/*.apk
+dist/*.aab

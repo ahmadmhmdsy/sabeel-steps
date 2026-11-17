@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ملف نصوص طبقة النظام (الخدمات والإشعارات) بالعربية. -->
+    <string name="sensor_notif_channel_steps">عدّ الخطوات</string>
+    <string name="sensor_notif_channel_steps_desc">يبقي عدّاد الخطوات يعمل بهدوء</string>
+    <string name="sensor_notif_channel_reminders">التذكيرات</string>
+    <string name="sensor_notif_channel_reminders_desc">تذكيرك اليومي بالمشي</string>
+    <string name="sensor_notif_channel_goal">الهدف اليومي</string>
+    <string name="sensor_notif_channel_goal_desc">تنبيه هادئ عند بلوغ هدف خطواتك</string>
+
+    <string name="sensor_notif_counting_title">سبيل يعدّ خطواتك</string>
+    <string name="sensor_notif_counting_text">خطواتك تبقى على هذا الهاتف.</string>
+    <string name="sensor_notif_permission_title">إذن النشاط البدني مطلوب</string>
+    <string name="sensor_notif_permission_text">اسمح بالوصول إلى النشاط البدني من الإعدادات ليتمكن سبيل من قراءة مستشعر الخطوات.</string>
+    <string name="sensor_notif_no_sensor_title">مستشعر الخطوات غير متاح</string>
+    <string name="sensor_notif_no_sensor_text">هذا الجهاز لا يوفّر عدّاد خطوات. تبقى الجولات محفوظة.</string>
+
+    <string name="sensor_notif_walk_title">جولة قيد التتبع</string>
+    <string name="sensor_notif_walk_preparing">جارٍ التحضير…</string>
+    <string name="sensor_notif_walk_progress">%1$s · %2$s</string>
+    <string name="sensor_notif_walk_step_only">تتبع بالخطوات فقط (الموقع مغلق)</string>
+    <string name="sensor_notif_walk_stop">إيقاف</string>
+
+    <string name="sensor_notif_goal_title">أكملت هدفك اليومي</string>
+    <string name="sensor_notif_goal_text">%1$d من %2$d خطوة اليوم</string>
+
+    <string name="sensor_reminder_title">حان وقت المشي</string>
+    <string name="sensor_reminder_text">مشي قصير يحافظ على سلسلتك.</string>
+
+    <string name="sensor_walk_save_failed">تعذّر حفظ هذه الجولة</string>
+</resources>

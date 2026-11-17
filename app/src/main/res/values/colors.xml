@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background matches the Compose "Desert Dawn" background so there is no flash. -->
+    <color name="sabeel_window_background">#FAF7F2</color>
+    <!-- Adaptive launcher icon background: warm sand, teal stride mark on top. -->
+    <color name="ic_launcher_background">#E9D8B8</color>
+</resources>

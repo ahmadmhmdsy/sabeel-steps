@@ -18,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -57,7 +56,6 @@ fun InsightsScreen() {
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             StreakChip(days = ui.streak)
         }
-        val rangeLabel = pluralStringResource(R.plurals.history_range_days, ui.days.size, ui.days.size)
         if (stackedCards) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatCard(
@@ -125,7 +123,7 @@ fun InsightsScreen() {
                         R.string.insights_sentence,
                         stepsText(ui.averageSteps),
                         ui.goalHitDays,
-                        rangeLabel,
+                        ui.days.size,
                     ),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

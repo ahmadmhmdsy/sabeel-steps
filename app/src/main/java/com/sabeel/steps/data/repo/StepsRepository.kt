@@ -76,6 +76,9 @@ class StepsRepository(
             dao.observeSince(from).map { rows -> rows.map { it.toDomain() } }
         }
 
+    /** Every stored day, for lifetime totals (not windowed aggregates). */
+    fun allDaysFlow(): Flow<List<DailyStep>> = dao.observeAll().map { rows -> rows.map { it.toDomain() } }
+
     fun streakFlow(): Flow<Int> = combine(
         settings.settingsFlow,
         lastDaysFlow(365),

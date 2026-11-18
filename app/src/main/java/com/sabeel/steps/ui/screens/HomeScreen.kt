@@ -244,6 +244,20 @@ private fun HomeContent(
             }
         }
 
+        // Active minutes live under the ring rather than in the metric row: a third card cannot fit
+        // at 360dp without ellipsising its value at larger font scales.
+        Text(
+            text = pluralStringResource(
+                R.plurals.active_minutes_phrase,
+                ui.today?.activeMinutes ?: 0,
+                ui.today?.activeMinutes ?: 0,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+
         Text(
             text = statusLine(steps = steps, goal = goal),
             modifier = Modifier.fillMaxWidth(),
@@ -293,15 +307,6 @@ private fun HomeContent(
                     label = stringResource(R.string.home_calories),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                StatCard(
-                    value = pluralStringResource(
-                        R.plurals.minutes_value,
-                        ui.today?.activeMinutes ?: 0,
-                        ui.today?.activeMinutes ?: 0,
-                    ),
-                    label = stringResource(R.string.home_active_minutes),
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -313,15 +318,6 @@ private fun HomeContent(
                 StatCard(
                     value = caloriesText(ui.today?.calories ?: 0.0),
                     label = stringResource(R.string.home_calories),
-                    modifier = Modifier.weight(1f),
-                )
-                StatCard(
-                    value = pluralStringResource(
-                        R.plurals.minutes_value,
-                        ui.today?.activeMinutes ?: 0,
-                        ui.today?.activeMinutes ?: 0,
-                    ),
-                    label = stringResource(R.string.home_active_minutes),
                     modifier = Modifier.weight(1f),
                 )
             }

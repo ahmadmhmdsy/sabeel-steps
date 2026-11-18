@@ -84,6 +84,14 @@
     <string name="home_distance">المسافة (تقدير)</string>
     <string name="home_calories">الطاقة (تقدير)</string>
     <string name="home_active_minutes">دقائق النشاط</string>
+    <plurals name="active_minutes_phrase">
+        <item quantity="zero">لا دقائق نشاط</item>
+        <item quantity="one">دقيقة نشاط واحدة</item>
+        <item quantity="two">دقيقتا نشاط</item>
+        <item quantity="few">%d دقائق نشاط</item>
+        <item quantity="many">%d دقيقة نشاط</item>
+        <item quantity="other">%d دقيقة نشاط</item>
+    </plurals>
     <string name="home_last_7_days">آخر 7 أيام</string>
     <string name="home_start_walk">ابدأ مشية</string>
     <string name="home_cd_chart">رسم أعمدة للخطوات في آخر %1$s. المتوسط %2$d خطوة يوميًا.</string>
@@ -145,16 +153,16 @@
 
     <!-- الرؤى -->
     <string name="insights_title">الرؤى</string>
-    <string name="insights_average">متوسط 7 أيام</string>
+    <string name="insights_average">متوسط 30 يومًا</string>
     <string name="insights_best_day">أفضل يوم</string>
     <string name="insights_goal_rate">نسبة بلوغ الهدف</string>
-    <string name="insights_total_distance">إجمالي المسافة</string>
-    <string name="insights_sentence_title">هذا الأسبوع</string>
-    <string name="insights_sentence">كان متوسطك %1$s خطوة يوميًا، وبلغت هدفك في %2$d من %3$s.</string>
+    <string name="insights_total_distance">المسافة الكلية</string>
+    <string name="insights_sentence_title">آخر 30 يومًا</string>
+    <string name="insights_sentence">كان متوسطك %1$s خطوة يوميًا، وبلغت هدفك في %2$d من %3$d يومًا.</string>
     <string name="insights_best_sentence">كان أفضل يوم لك %1$s بخطوات %2$s.</string>
     <string name="insights_estimate_note">المسافة والطاقة تقديرات، وليست قياسات طبية.</string>
     <string name="insights_empty_title">تحتاج الأنماط إلى بضعة أيام</string>
-    <string name="insights_empty_body">امشِ بضعة أيام وستظهر هنا صورة أسبوعك.</string>
+    <string name="insights_empty_body">امشِ بضعة أيام وستظهر هنا صورة آخر 30 يومًا.</string>
 
     <!-- الإعدادات -->
     <string name="settings_title">الإعدادات</string>

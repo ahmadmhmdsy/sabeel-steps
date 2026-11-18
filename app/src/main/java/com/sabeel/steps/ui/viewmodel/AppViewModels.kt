@@ -224,7 +224,8 @@ class InsightsViewModel(container: AppContainer) : ViewModel() {
         container.settings.settingsFlow,
         container.steps.lastDaysFlow(30),
         container.steps.streakFlow(),
-    ) { settings, rows, streak ->
+        container.steps.allDaysFlow(),
+    ) { settings, rows, streak, allRows ->
         val window = StepMath.windowDates(DateKey.today(), 30)
         InsightsUiState(
             settings = settings,
@@ -233,7 +234,8 @@ class InsightsViewModel(container: AppContainer) : ViewModel() {
             averageSteps = StepMath.averageOverWindow(rows, window),
             bestDay = StepMath.bestDayOverWindow(rows, window),
             goalHitRate = StepMath.goalHitRateOverWindow(rows, window, settings.goalSteps),
-            totalDistanceMeters = StepMath.totalDistanceMeters(rows),
+            // Lifetime distance, deliberately different from the 30-day window above.
+            totalDistanceMeters = StepMath.totalDistanceMeters(allRows),
             goalHitDays = StepMath.goalHitDaysOverWindow(rows, window, settings.goalSteps),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsUiState())

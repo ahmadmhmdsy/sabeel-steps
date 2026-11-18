@@ -76,6 +76,10 @@
     <string name="home_distance">Distance (estimate)</string>
     <string name="home_calories">Energy (estimate)</string>
     <string name="home_active_minutes">Active minutes</string>
+    <plurals name="active_minutes_phrase">
+        <item quantity="one">%d active minute</item>
+        <item quantity="other">%d active minutes</item>
+    </plurals>
     <string name="home_last_7_days">Last 7 days</string>
     <string name="home_start_walk">Start a walk</string>
     <string name="home_cd_chart">Bar chart of steps for the last %1$s. Average %2$d steps per day.</string>
@@ -133,16 +137,16 @@
 
     <!-- Insights -->
     <string name="insights_title">Insights</string>
-    <string name="insights_average">7-day average</string>
+    <string name="insights_average">30-day average</string>
     <string name="insights_best_day">Best day</string>
     <string name="insights_goal_rate">Goal hit rate</string>
-    <string name="insights_total_distance">Total distance</string>
-    <string name="insights_sentence_title">This week</string>
-    <string name="insights_sentence">You averaged %1$s steps a day and reached your goal on %2$d of %3$s days.</string>
+    <string name="insights_total_distance">All-time distance</string>
+    <string name="insights_sentence_title">Last 30 days</string>
+    <string name="insights_sentence">You averaged %1$s steps a day and reached your goal on %2$d of %3$d days.</string>
     <string name="insights_best_sentence">Your best day was %1$s with %2$s steps.</string>
     <string name="insights_estimate_note">Distance and energy are estimates, not medical measurements.</string>
     <string name="insights_empty_title">Patterns need a few days</string>
-    <string name="insights_empty_body">Walk for a few days and your weekly picture will appear here.</string>
+    <string name="insights_empty_body">Walk for a few days and your 30-day picture will appear here.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

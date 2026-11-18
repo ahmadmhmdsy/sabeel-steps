@@ -15,6 +15,9 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE date >= :fromDate ORDER BY date ASC")
     fun observeSince(fromDate: String): Flow<List<DailyStepEntity>>
 
+    @Query("SELECT * FROM daily_steps ORDER BY date ASC")
+    fun observeAll(): Flow<List<DailyStepEntity>>
+
     @Query("SELECT * FROM daily_steps WHERE date >= :fromDate ORDER BY date ASC")
     suspend fun getSince(fromDate: String): List<DailyStepEntity>
 

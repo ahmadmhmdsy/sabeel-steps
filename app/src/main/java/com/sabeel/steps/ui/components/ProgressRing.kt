@@ -47,6 +47,7 @@ fun ProgressRing(
     val trackColor = MaterialTheme.colorScheme.outline
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val gradient = ringGradientColors(dark)
+    val completeColor = MaterialTheme.colorScheme.primary
     // One TalkBack node: the percentage description replaces the three nodes (canvas + two texts)
     // that were announced one after another before.
     Box(
@@ -69,15 +70,29 @@ fun ProgressRing(
                 style = Stroke(width = stroke, cap = StrokeCap.Round),
             )
             if (animated > 0.001f) {
-                drawArc(
-                    brush = Brush.sweepGradient(gradient),
-                    startAngle = -90f,
-                    sweepAngle = 360f * animated,
-                    useCenter = false,
-                    topLeft = Offset(inset, inset),
-                    size = arcSize,
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
-                )
+                // At 100% a closing sweep gradient leaves a seam (and a lighter wedge) where its
+                // start and end colours meet at 12 o'clock. A full circle is one solid colour.
+                if (animated >= 0.999f) {
+                    drawArc(
+                        color = completeColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        topLeft = Offset(inset, inset),
+                        size = arcSize,
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                } else {
+                    drawArc(
+                        brush = Brush.sweepGradient(gradient),
+                        startAngle = -90f,
+                        sweepAngle = 360f * animated,
+                        useCenter = false,
+                        topLeft = Offset(inset, inset),
+                        size = arcSize,
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                }
             }
         }
         content()

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sabeel — UI prototypes for decision</title>
+<style>
+@font-face { font-family:'Roboto'; src:url('fonts/Roboto-400.woff2') format('woff2'); font-weight:100 900; font-display:block; }
+@font-face { font-family:'Fraunces'; src:url('fonts/Fraunces-500.woff2') format('woff2'); font-weight:100 900; font-display:block; }
+:root{--bg:#FAF7F2;--ink:#1A1C1B;--sub:#494640;--line:#E0DAD0;--card:#FFFFFF;--primary:#0F6B5C;--clay:#B4653A;--sand:#8C6212;--teal:#D4EDE7;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:'Roboto','Segoe UI',sans-serif;font-size:15px;line-height:1.6;padding:56px 32px 80px;}
+.wrap{max-width:1180px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--sand);font-weight:600;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:44px;line-height:1.15;margin:12px 0 14px;letter-spacing:-.5px;}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:28px;margin:64px 0 6px;letter-spacing:-.2px;}
+h3{font-size:15px;font-weight:600;margin:0 0 10px;}
+.lede{color:var(--sub);max-width:820px;font-size:16px;}
+.rule{height:1px;background:var(--line);margin:26px 0;}
+.meta{display:flex;gap:22px;flex-wrap:wrap;color:var(--sub);font-size:13px;margin-bottom:8px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:26px;align-items:start;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;}
+.card .tag{display:inline-block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;font-weight:600;color:var(--primary);background:var(--teal);border-radius:999px;padding:4px 10px;margin-bottom:12px;}
+.card .tag.clay{color:#5A2A14;background:#FBE0D1;}
+.card .tag.sand{color:#4A3306;background:#FBEBCB;}
+.shot{width:100%;display:block;border-radius:16px;border:1px solid var(--line);}
+.cap{font-size:13px;color:var(--sub);margin-top:12px;line-height:1.55;}
+.cap b{color:var(--ink);}
+.rowpair{display:flex;flex-direction:column;gap:14px;margin-top:4px;}
+table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--sub);font-weight:600;}
+td b{font-weight:600;}
+.order{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.phase{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;}
+.phase .n{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--sand);font-weight:600;}
+.phase h4{font-size:16px;margin:6px 0 6px;font-weight:600;}
+.phase p{font-size:13.5px;color:var(--sub);}
+.note{background:#F7F3EC;border:1px solid var(--line);border-radius:18px;padding:18px 20px;color:var(--sub);font-size:13.5px;margin-top:22px;}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.links a{display:inline-block;font-size:13px;color:var(--primary);text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;}
+.links a:hover{border-color:var(--primary);}
+.kicker{font-size:13px;color:var(--sub);margin-top:4px;}
+ul{margin:10px 0 0 20px;color:var(--sub);font-size:14px;}
+li{margin:5px 0;}
+@media (max-width:980px){.grid,.order{grid-template-columns:1fr 1fr;}}
+@media (max-width:680px){body{padding:32px 18px 60px;}.grid,.order{grid-template-columns:1fr;}h1{font-size:34px;}}
+</style></head><body><div class="wrap">
+<div class="eyebrow">Sabeel · design prototypes · 18 November 2026</div>
+<h1>Three directions, drawn at phone size, so the decision is visual.</h1>
+<p class="lede">These are static mockups of the options that came out of the Impeccable review and the Qiyas Council. They exist to answer three questions: what to fix first, how far the design language should go, and in what order to ship. Everything is drawn at 360 × 800 dp and rendered at 3× — the same frame as the device screenshots in the review.</p>
+<div class="meta"><span>Method: design review prototype (no detector, native platform)</span><span>Source: <code>docs/review/2026-11-17/design-review</code></span><span>Copy and values from build <code>0e2088a</code></span></div>
+<div class="rule"></div>
+
+<h2>Question 1 — which direction should get the next iteration?</h2>
+<p class="lede">Three answers. A and B are quiet — they keep the shipped visual system and repair trust and structure. C changes the design language itself. Each option shows only the screens it changes.</p>
+
+<div class="grid">
+  <div class="card">
+    <span class="tag">1 · A</span>
+    <h3>Truth fix — “say only what you measured”</h3>
+    <div class="rowpair">
+      <div><img class="shot" src="p1-home.png" alt="Home screen with fixed layout"><div class="cap"><b>Home:</b> the ring is solid, the 8,400 / of 8,000 steps pair is intact, and three metrics fit as two honest cards — <b>6.3 km / 336 kcal</b>. The warning card is an emulator artifact and is not part of the design.</div></div>
+      <div><img class="shot" src="p1-insights.png" alt="Insights with one 30-day window"><div class="cap"><b>Insights:</b> one window, named once. “Last 30 days”, 30-day average, “5 of 30 days” (no “days days”), all-time distance labelled as all-time.</div></div>
+    </div>
+    <div class="links"><a href="p1-home.html">Open Home mockup</a><a href="p1-insights.html">Open Insights mockup</a></div>
+  </div>
+
+  <div class="card">
+    <span class="tag clay">1 · B</span>
+    <h3>Structure fix — Settings, deletion, one row pattern</h3>
+    <div class="rowpair">
+      <div><img class="shot" src="p2-settings-top.png" alt="Settings with grouped sections and unified rows"><div class="cap"><b>Top:</b> four named groups — Daily goal, Tracking, Units &amp; language, Body data. Every row is one pattern: title + optional sub-line + one control (stepper, switch, value + chevron).</div></div>
+      <div><img class="shot" src="p2-settings-bottom.png" alt="Settings bottom with danger zone"><div class="cap"><b>Bottom:</b> Your data and App are plain rows; deletion moves out of the primary button slot into an error-container <b>“Delete all data”</b> entry whose copy names what is removed and that it cannot be undone.</div></div>
+    </div>
+    <div class="links"><a href="p2-settings-top.html">Open Settings top</a><a href="p2-settings-bottom.html">Open Settings bottom</a></div>
+  </div>
+
+  <div class="card">
+    <span class="tag sand">1 · C</span>
+    <h3>Brand specificity — from accents to a full identity</h3>
+    <div class="rowpair">
+      <div><img class="shot" src="p3a-home.png" alt="Home with authored accents"><div class="cap"><b>C-lite / Q2-b:</b> stock layout, authored details — Fraunces for the big numbers and title, custom line icons, clay completion badge, teal-tinted selected tab, a low dawn halo behind the ring.</div></div>
+      <div><img class="shot" src="p3b-home.png" alt="Home with full Desert Dawn identity"><div class="cap"><b>C-full / Q2-c:</b> the identity moves the frame — wordmark + date line, larger ring, serif status voice, tri-panel metrics with letterspaced labels, overline section headers, clay underline on the selected tab, warm paper gradient.</div></div>
+    </div>
+    <div class="links"><a href="p3a-home.html">Open C-lite</a><a href="p3b-home.html">Open C-full</a></div>
+  </div>
+</div>
+
+<h2>Question 2 — which design intent for the finish?</h2>
+<p class="lede">The same Home screen, three intensities. The question is not “pretty or plain”; it is how much of the system you are willing to maintain, translate and test.</p>
+<div class="grid">
+  <div class="card"><span class="tag">2 · A</span><h3>Quiet finish</h3><img class="shot" src="p1-home.png" alt="Quiet finish"><div class="cap"><b>No new type, no new icons.</b> Keep Roboto and Material components; fix layout, copy and contrast only. Cheapest to ship, no font licensing or Arabic pairing work. Reads as a well-built stock app, not a brand.</div></div>
+  <div class="card"><span class="tag clay">2 · B</span><h3>Authored accents</h3><img class="shot" src="p3a-home.png" alt="Authored accents"><div class="cap"><b>One serif, a few custom icons, one accent color used with intent.</b> Changes the feel of the numbers and the navigation without rebuilding layout. Needs a bundled font (~130 KB), an Arabic serif pairing decision, and icon files — but no screen-level redesign.</div></div>
+  <div class="card"><span class="tag sand">2 · C</span><h3>Full “Desert Dawn”</h3><img class="shot" src="p3b-home.png" alt="Full Desert Dawn identity"><div class="cap"><b>Every surface carries the identity</b> — header, ring, status voice, metrics, section labels, tab treatment, paper background. Highest distinctiveness and highest maintenance: all screens, both languages, dark mode, large text, and every new component must follow the new rules.</div></div>
+</div>
+
+<h2>Question 3 — recommended order</h2>
+<div class="order">
+  <div class="phase"><div class="n">Phase 1 · ship-blocking</div><h4>A — truth fixes</h4><p>Home truncation, the 3-up row, the ring seam at 100%, and the Insights window contradiction (including the EN “days days” typo). Small, testable, and it removes the defects a reviewer would call broken. Target: re-critique ≥ 34/40, zero truncation at 1.0/1.3/1.5 font scale, no ring seam.</p></div>
+  <div class="phase"><div class="n">Phase 2 · next pass</div><h4>B — structure and deletion</h4><p>Unify Settings into named groups and one row pattern, move deletion into a danger zone with explicit copy, and give the 30-day chart x-axis labels. No new dependencies. Do it after A so the trust fixes are not held hostage to a Settings refactor.</p></div>
+  <div class="phase"><div class="n">Phase 3 · earned</div><h4>C — brand, starting at B</h4><p>Only after Phase 1 metrics hold for three working days. Take the authored-accent step (Q2-b) first: it is contained and reversible. Go full Desert Dawn (Q2-c) only if the brand-specificity test shows users can describe the app without prompting — otherwise the cost buys decoration, not recognition.</p></div>
+</div>
+
+<div class="note"><b>Why this order and not the reverse.</b> The three P1 defects are trust defects: they make the app look like it is hiding what it measures. Brand work on top of a screen that says “84 min…” truncated, “5 of 30 days days”, and a seam in the ring spends design effort on a surface that still reads as unfinished. The council reached the same conclusion: trust fixes survive, Settings is downgraded to a structural pass, and brand work is suspended on a test rather than on taste.</div>
+
+<h2>How these were made</h2>
+<ul>
+  <li>Static HTML/CSS at 360 × 800 CSS px in <code>docs/design/prototypes/</code>, rendered with headless Edge at <code>--force-device-scale-factor=3</code> to 1080 × 2400 PNGs. The generator is <code>build.mjs</code>; shared tokens and components are in <code>proto.css</code>.</li>
+  <li>Colors are the shipped tokens (<code>ui/theme/Color.kt</code>): paper <code>#FAF7F2</code>, teal <code>#0F6B5C</code>, clay <code>#B4653A</code>, sand <code>#8C6212</code>, error <code>#B3261E</code>.</li>
+  <li>Roboto is the shipped typeface. Fraunces appears only in the C prototypes as a stand-in serif; it is not in the app today. Bundling it (or any serif) is a real decision with an Arabic pairing consequence — the mockups are Latin-only.</li>
+  <li>Copy marked as new (e.g. “Change it any time.”, “A quiet nudge around a time you choose.”) is proposal text, not strings.xml. Before shipping, every new string needs EN + AR parity, the existing 242 strings + 3 plurals check, and a claims audit for the estimate wording.</li>
+  <li>These mockups do not add permissions, dependencies, or code to the app. They are decision artifacts, not implementation.</li>
+</ul>
+<div class="links" style="margin-top:20px"><a href="README.md">README</a><a href="p1-home.html">p1-home</a><a href="p1-insights.html">p1-insights</a><a href="p2-settings-top.html">p2-settings-top</a><a href="p2-settings-bottom.html">p2-settings-bottom</a><a href="p3a-home.html">p3a-home</a><a href="p3b-home.html">p3b-home</a></div>
+<p class="kicker" style="margin-top:26px">Static mockups · values from the seeded review build (8,400 steps, 8,000 goal, 84 active minutes, 6.3 km, 336 kcal, 5-day streak) · no runtime behavior</p>
+</div></body></html>

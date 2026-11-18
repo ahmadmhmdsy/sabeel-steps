@@ -4,15 +4,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -22,8 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,13 +60,14 @@ object Routes {
     const val DIAGNOSTICS = "diagnostics"
 }
 
-private data class TabItem(val route: String, val labelRes: Int, val icon: ImageVector)
+private data class TabItem(val route: String, val labelRes: Int, val iconRes: Int)
 
+/** Authored line icons: dome, journal, sun, sliders (see the Q2-b prototypes). */
 private val tabs = listOf(
-    TabItem(Routes.HOME, R.string.nav_home, Icons.Filled.Home),
-    TabItem(Routes.HISTORY, R.string.nav_history, Icons.Filled.DateRange),
-    TabItem(Routes.INSIGHTS, R.string.nav_insights, Icons.Filled.Star),
-    TabItem(Routes.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
+    TabItem(Routes.HOME, R.string.nav_home, R.drawable.ic_nav_home),
+    TabItem(Routes.HISTORY, R.string.nav_history, R.drawable.ic_nav_history),
+    TabItem(Routes.INSIGHTS, R.string.nav_insights, R.drawable.ic_nav_insights),
+    TabItem(Routes.SETTINGS, R.string.nav_settings, R.drawable.ic_nav_settings),
 )
 
 /**
@@ -128,11 +125,18 @@ fun SabeelRoot(container: AppContainer) {
                             },
                             icon = {
                                 Icon(
-                                    imageVector = tab.icon,
+                                    painter = painterResource(tab.iconRes),
                                     contentDescription = null,
                                 )
                             },
                             label = { Text(stringResource(tab.labelRes)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
                         )
                     }
                 }

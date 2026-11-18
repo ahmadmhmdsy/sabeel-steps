@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -225,6 +223,7 @@ private fun HomeContent(
                 progress = progress,
                 contentDescription = ringDescription,
                 ringSize = ringSize,
+                showCompleteBadge = progress >= 1f,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
@@ -292,7 +291,7 @@ private fun HomeContent(
         SabeelPrimaryButton(
             text = stringResource(R.string.home_start_walk),
             onClick = onStartWalk,
-            icon = Icons.Filled.PlayArrow,
+            iconRes = R.drawable.ic_walk,
         )
 
         if (stackedCards) {

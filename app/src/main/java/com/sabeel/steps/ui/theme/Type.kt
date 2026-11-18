@@ -1,21 +1,43 @@
 package com.sabeel.steps.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.sabeel.steps.R
 
 /**
- * Material3 type scale on the system sans (Roboto / system Arabic font). No downloaded fonts in v1,
- * so Arabic automatically picks the platform font and stays legible at large font scales.
+ * Design intent "authored accents": one bundled serif for display, headlines and the screen
+ * title, while body copy and controls stay on the system sans. Fraunces carries Latin only, so
+ * Arabic headlines fall back to the platform Naskh face rather than shipping a second font in v1.
  */
+private val Fraunces = FontFamily(
+    Font(R.font.fraunces_semibold, weight = FontWeight.SemiBold),
+)
+
 private val Base = Typography()
 
 val SabeelTypography: Typography = Typography(
-    displaySmall = Base.displaySmall.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.5).sp),
-    headlineLarge = Base.headlineLarge.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.25).sp),
-    headlineMedium = Base.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-    headlineSmall = Base.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-    titleLarge = Base.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+    displaySmall = Base.displaySmall.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.5).sp,
+    ),
+    headlineLarge = Base.headlineLarge.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.25).sp,
+    ),
+    headlineMedium = Base.headlineMedium.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.SemiBold,
+    ),
+    headlineSmall = Base.headlineSmall.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.SemiBold,
+    ),
+    titleLarge = Base.titleLarge.copy(fontFamily = Fraunces, fontWeight = FontWeight.SemiBold),
     titleMedium = Base.titleMedium.copy(fontWeight = FontWeight.Medium),
     labelLarge = Base.labelLarge.copy(fontWeight = FontWeight.SemiBold),
 )

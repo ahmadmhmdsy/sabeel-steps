@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -286,13 +287,14 @@ fun Stepper(
                 .size(48.dp)
                 .semantics { contentDescription = decreaseLabel },
         ) {
-            Text(text = "\u2212", style = MaterialTheme.typography.headlineSmall)
+            Icon(painter = painterResource(R.drawable.ic_minus), contentDescription = null)
         }
         Text(
             text = valueText,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
+            maxLines = 1,
             modifier = Modifier.weight(1f),
         )
         IconButton(
@@ -315,6 +317,7 @@ fun SabeelPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     icon: ImageVector? = null,
+    iconRes: Int? = null,
 ) {
     Button(
         onClick = onClick,
@@ -327,6 +330,13 @@ fun SabeelPrimaryButton(
     ) {
         if (icon != null) {
             Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
+        } else if (iconRes != null) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
             Spacer(Modifier.width(8.dp))
         }
         Text(text = text, style = MaterialTheme.typography.labelLarge)

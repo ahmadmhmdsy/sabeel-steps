@@ -2,7 +2,9 @@
 
 Static, phone-sized mockups of the three directions that came out of the Impeccable
 native-platform review (30/40, three P1 defects) and the Qiyas Council mode C review.
-They are decision artifacts, not shipped code.
+They are decision artifacts; the directions chosen for shipping were implemented
+afterwards (see **Implementation status** below). The unshipped directions remain
+proposals.
 
 ## What is here
 
@@ -44,6 +46,31 @@ node docs/design/prototypes/build.mjs
 - **Q3 (order).** Phase 1 = Q1-a (ship-blocking), Phase 2 = Q1-b, Phase 3 = Q2-b,
   with full Desert Dawn only after a brand-recognition test.
 
+## Implementation status (2026-11-19)
+
+The approved order (Phase 1 → Phase 2 → Phase 3) is implemented in the app:
+
+| Phase | Direction | Commit | What shipped |
+| --- | --- | --- | --- |
+| 1 | Q1-a | `99bc109` | Truth-first Home and Insights: solid completed ring, honest metric cards, named 30-day window, "5 of 30 days", all-time distance label |
+| 2 | Q1-b | `6fbc4d7` | Settings grouped into Daily goal / Tracking / Units & language / Body data / Your data / App; deletion moved to an error-container danger zone; titled choosers; one-line goal stepper |
+| 3 | Q2-b | `0693e4f` | Authored accents: bundled Fraunces 600 for display text, original nav/action icons, dawn halo, clay completion badge, teal-tinted selected tab, seam-free ring gradient |
+
+Divergences from the mockups, decided during implementation:
+
+- Phase 2/3 were checked live in dark mode, Arabic RTL and font scale 1.5; the
+  mockups are single light-mode English frames.
+- The Home ring keeps its calm status line rather than the P3a/P3b wordmark and
+  date line, and the tabs use a tinted pill rather than the clay underline (both
+  are Q2-c / P3b elements).
+- Arabic display headlines still use the platform Naskh face; bundling an Arabic
+  serif is a separate, unapproved decision.
+- Q2-c / P3b (full Desert Dawn) is **not** implemented; it stays suspended until
+  the brand-recognition test.
+
+The mockups were not redrawn to match the shipped build: they record the decision,
+they are not a screenshot set.
+
 ## What is faithful to the build, and what is not
 
 - Colors are the shipped tokens from `ui/theme/Color.kt` (paper `#FAF7F2`, teal
@@ -57,10 +84,11 @@ node docs/design/prototypes/build.mjs
   render real status icons. The Home warning card in the review screenshots is an
   emulator sensor artifact and is deliberately absent from the healthy-state
   mockups.
-- Roboto is the shipped typeface. Fraunces is a stand-in serif used only in the C
-  prototypes; the app does not bundle it. Bundling a serif is a real decision with
-  an Arabic pairing consequence — these mockups are Latin-only and cannot prove
-  Arabic/RTL parity.
+- Roboto is the shipped body typeface. Fraunces 600 is now bundled in the app for
+  display text (Phase 3, matching P3a/P3b), so the C mockups' Latin lettering is
+  the shipped lettering. Arabic display text still falls back to the platform
+  Naskh face — no Arabic serif is bundled — so these Latin-only mockups still
+  cannot prove Arabic/RTL parity.
 - No new permissions, dependencies or product behavior are implied. Nothing here
   is wired into the app.
 
@@ -72,5 +100,6 @@ node docs/design/prototypes/build.mjs
   but is not in a screenshot; it uses the same row pattern as Units & language.
 - The scroll states are single frames, not scrollable pages; each page is one
   screen at 360 × 800.
-- Dark mode is not mocked for the C prototypes; the tokens exist, the identity
-  treatment in dark is an open design task.
+- Dark mode is not mocked. The shipped Phase 3 treatment was built and checked in
+  dark mode on device (mint ring, clay badge, dark surfaces); the mockups
+  themselves remain light-only.

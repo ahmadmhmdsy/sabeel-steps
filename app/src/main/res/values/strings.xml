@@ -155,7 +155,6 @@
     <string name="settings_section_tracking">Tracking</string>
     <string name="settings_section_units_language">Units &amp; language</string>
     <string name="settings_section_app">App</string>
-    <string name="settings_goal_hint">Start gently. You can change this any time.</string>
     <string name="settings_units">Units</string>
     <string name="settings_units_metric">Metric (km, kg)</string>
     <string name="settings_units_imperial">Imperial (miles)</string>
@@ -192,7 +191,6 @@
     <string name="settings_privacy">Privacy</string>
     <string name="settings_privacy_desc">Steps stay on this phone.</string>
     <string name="settings_privacy_web">Privacy policy on the web</string>
-    <string name="settings_about">About</string>
     <string name="settings_about_title">About Sabeel</string>
     <string name="settings_estimate_note">Distance, energy and active minutes are estimates, not medical advice.</string>
 
@@ -257,13 +255,11 @@
     <string name="settings_goal_dialog_keep">Keep %1$s</string>
 
     <!-- Rest day -->
-    <string name="settings_streak">Streak</string>
     <string name="settings_rest_day_title">Rest day today</string>
     <string name="settings_rest_day_desc">Pauses your streak for today without breaking it. A rest day never adds a day.</string>
     <string name="settings_rest_day_hint">Your streak stays where it is. Steps are still counted normally.</string>
 
     <!-- Step counting health -->
-    <string name="settings_counting">Step counting</string>
     <string name="settings_counting_desc">If the count looks low, this explains what to check.</string>
     <string name="settings_diagnostics">Why is my count low?</string>
 

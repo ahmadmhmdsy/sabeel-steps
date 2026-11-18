@@ -171,7 +171,6 @@
     <string name="settings_section_tracking">التتبع</string>
     <string name="settings_section_units_language">الوحدات واللغة</string>
     <string name="settings_section_app">التطبيق</string>
-    <string name="settings_goal_hint">ابدأ بهدوء. يمكنك تغييره في أي وقت.</string>
     <string name="settings_units">الوحدات</string>
     <string name="settings_units_metric">متري (كم، كغم)</string>
     <string name="settings_units_imperial">إمبراطوري (ميل)</string>
@@ -208,7 +207,6 @@
     <string name="settings_privacy">الخصوصية</string>
     <string name="settings_privacy_desc">تبقى خطواتك على هذا الهاتف.</string>
     <string name="settings_privacy_web">سياسة الخصوصية على الويب</string>
-    <string name="settings_about">حول التطبيق</string>
     <string name="settings_about_title">عن سبيل</string>
     <string name="settings_estimate_note">المسافة والطاقة ودقائق النشاط تقديرات، وليست نصيحة طبية.</string>
 
@@ -273,13 +271,11 @@
     <string name="settings_goal_dialog_keep">أبقِ %1$s</string>
 
     <!-- يوم الراحة -->
-    <string name="settings_streak">السلسلة</string>
     <string name="settings_rest_day_title">يوم راحة اليوم</string>
     <string name="settings_rest_day_desc">يوقف سلسلتك اليوم دون كسرها. لا يضيف يوم الراحة يومًا أبدًا.</string>
     <string name="settings_rest_day_hint">تبقى سلسلتك كما هي. وتظل الخطوات تُحسب عادةً.</string>
 
     <!-- سلامة العدّ -->
-    <string name="settings_counting">عدّ الخطوات</string>
     <string name="settings_counting_desc">إن بدا العدد منخفضًا، فهذا يشرح ما يجب فحصه.</string>
     <string name="settings_diagnostics">لماذا عدّادي منخفض؟</string>
 

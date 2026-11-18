@@ -167,10 +167,15 @@
     <!-- الإعدادات -->
     <string name="settings_title">الإعدادات</string>
     <string name="settings_goal">الهدف اليومي</string>
+    <string name="settings_goal_steps_per_day">الخطوات اليومية</string>
+    <string name="settings_section_tracking">التتبع</string>
+    <string name="settings_section_units_language">الوحدات واللغة</string>
+    <string name="settings_section_app">التطبيق</string>
     <string name="settings_goal_hint">ابدأ بهدوء. يمكنك تغييره في أي وقت.</string>
     <string name="settings_units">الوحدات</string>
     <string name="settings_units_metric">متري (كم، كغم)</string>
     <string name="settings_units_imperial">إمبراطوري (ميل)</string>
+    <string name="settings_units_choose_title">اختر الوحدات</string>
     <string name="settings_units_body_note">يُدخل الطول والوزن دائمًا بالسنتيمتر والكيلوغرام.</string>
     <string name="settings_reminder">تذكير يومي</string>
     <string name="settings_reminder_desc">تنبيه هادئ في وقت قريب من الوقت الذي تختاره.</string>
@@ -182,6 +187,7 @@
     <string name="settings_language">اللغة</string>
     <string name="settings_language_en">English</string>
     <string name="settings_language_ar">العربية</string>
+    <string name="settings_language_choose_title">اختر اللغة</string>
     <string name="settings_data">بياناتك</string>
     <string name="settings_export_csv">تصدير CSV</string>
     <string name="settings_export_desc">احفظ نسخة من مجاميعك اليومية في ملف تختاره. لا يُرفع شيء.</string>
@@ -200,8 +206,10 @@
     <string name="settings_delete_confirm_title">تحذف كل شيء؟</string>
     <string name="settings_delete_confirm_body">لا يمكن التراجع عن هذا. ستُمسح خطواتك ومشياتك وتفضيلاتك من هذا الهاتف.</string>
     <string name="settings_privacy">الخصوصية</string>
+    <string name="settings_privacy_desc">تبقى خطواتك على هذا الهاتف.</string>
     <string name="settings_privacy_web">سياسة الخصوصية على الويب</string>
     <string name="settings_about">حول التطبيق</string>
+    <string name="settings_about_title">عن سبيل</string>
     <string name="settings_estimate_note">المسافة والطاقة ودقائق النشاط تقديرات، وليست نصيحة طبية.</string>
 
     <!-- الجنس -->

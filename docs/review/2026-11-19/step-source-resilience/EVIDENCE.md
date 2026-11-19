@@ -1,9 +1,11 @@
 # Step-source resilience — emulator evidence (2026-11-19)
 
-**Build under test:** debug APK built 2026-11-19 18:22 +03:00 from commit `8246615` plus the
-post-commit diagnostics-copy update (strings only; code identical to `8246615`).
-APK: 12,014,371 B, SHA-256 `830B7AAC30E0CC8E02DBC3844D1C77E42D3624B32F355850531882300E017795`.
+**Build under test:** debug APK built 2026-11-19 18:44 +03:00 from commits `8246615` and
+`90801b8` plus the walk-estimate-label change recorded with this evidence. APK: 12,015,507 B,
+SHA-256 `595CF33F6DDDECEB48AB482BEF4F29E769E96F18BD1D55A0DED8D99B96E22FAB`.
 Package `com.sabeel.steps` 1.0.0 (versionCode 1, targetSdk 36, minSdk 26).
+Captures qa-01…qa-16 were taken at 18:22 from the same code without the walk-only label
+(APK 12,014,371 B, SHA-256 `830B7AAC…E017795`); captures qa-17/18 are from the final build.
 
 **Emulator:** `emulator-5556`, AVD `api36`, image `sdk_slim_x86_64-userdebug` (Android 16 / API 36),
 1080x2400, 420 dpi, headless. This image has **no step counter and no step detector** and does have the
@@ -41,6 +43,9 @@ Goldfish 3-axis accelerometer, so it exercises only the **estimate** tier. See
 | Arabic Diagnostics names the source and copy | Pass | "يتم العدّ (تقديري)"، "حركة الهاتف (تقديري)"، "التحويلات اليوم: لا يوجد" — [qa-08](qa-08-diagnostics-estimated-ar.xml) |
 | Service is the only sensor client and reads the accelerometer at UI rate | Pass | samplingPeriod 66667 µs, batchingPeriod 500000 µs, package `StepCounterService` — [qa-11-sensorservice.txt](qa-11-sensorservice.txt) |
 | Switch/fallback count is 0 because the estimate is the initial source | Pass | [qa-06](qa-06-status-estimate-en.xml), [qa-10](qa-10-status-estimate-ar.xml) |
+| Walk screen labels its step count when the phone has no step sensor | Pass | Walk live, Arabic: "≈ 0" steps plus "لا يحتوي هاتفك على مستشعر للخطوات، لذا تُقدَّر خطوات هذه النزهة من حركة الهاتف." — [qa-17](qa-17-walk-estimated-live-ar.xml) |
+| Walk summary keeps the estimate label after saving | Pass | Summary: "≈ 0" steps plus the same note — [qa-18](qa-18-walk-summary-estimated-ar.xml) |
+| Creating, running and saving a walk does not crash | Pass | app-filtered crash buffer and logcat are empty — [qa-20](qa-20-crash-buffer-walk.txt), [qa-21](qa-21-logcat-errors-walk.txt) |
 
 ## Capture limitation
 
@@ -64,6 +69,12 @@ this folder that shows the rendered UI.
   notification already exists does not rebuild that notification until its next update; the Arabic
   capture shows the English notification text. Home and Diagnostics are Arabic. This is an existing
   locale-refresh limitation, not specific to the estimate tier.
+- **Walk estimate numbers were not exercised on the emulator.** The walk screen and summary were
+  verified with the estimate labels ("≈ 0" and the note), but the injected motion produced 0 walk
+  steps: after the emulator reboot the console injection stopped reaching the accelerometer
+  (`sensorservice` showed both services registered at 66.7 ms while the event stream stayed at
+  9.81 m/s²). The same detector produced ≈ 97 steps in the main service earlier (qa-03), and the walk
+  path is unit-tested, so treat walk estimate accuracy as hardware-pending, not as verified here.
 - **The emulator's status bar clock and locale were not controlled**; timestamps in the dumps are the
   device's local time.
 
@@ -86,3 +97,7 @@ this folder that shows the rendered UI.
 - `qa-13-sensor-absence.txt` — image identity, no step_counter/step_detector, accelerometer present
 - `qa-14-crash-buffer.txt` — empty crash buffer
 - `qa-16-logcat-errors.txt` — filtered scan of `adb logcat -d` for FATAL/AndroidRuntime errors (0 matches; the 8.2 MB full dump is not committed)
+- `qa-17-walk-estimated-live-ar.xml` — walk screen with estimated steps label (Arabic)
+- `qa-18-walk-summary-estimated-ar.xml` — saved-walk summary with the label (Arabic)
+- `qa-20-crash-buffer-walk.txt` — app-filtered crash buffer after the walk (empty)
+- `qa-21-logcat-errors-walk.txt` — app-filtered FATAL scan after the walk (empty)

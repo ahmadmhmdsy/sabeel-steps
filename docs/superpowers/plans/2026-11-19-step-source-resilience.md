@@ -248,8 +248,8 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
       \`diagnostics_source_note\`.
 
 ### A7. Verify + commit Phase A
-- [ ] \`testDebugUnitTest assembleDebug lintDebug\`; fix all failures.
-- [ ] Commit: \`feat(steps): measured step-source ladder with rebase, clamp and honest source status\`.
+- [x] \`testDebugUnitTest assembleDebug lintDebug\`; fix all failures (final run: 108 tests, 0 failures; lint 0 errors; see Phase C).
+- [x] Commit: \`feat(steps): measured-first source ladder with rebase, clamp and honest source status\` (\`8246615\`, with B1/B2).
 
 ---
 
@@ -275,12 +275,12 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
       existing delta logic; detector increments per event; estimate feeds \`MotionStepDetector\` from the accelerometer.
       Route/location behaviour unchanged; no new permission.
 - [x] Walk with no step hardware but an accelerometer counts estimated steps and the saved walk is marked? The saved
-      walk schema already stores steps; do not add a field (keep DB unchanged) - the notification says estimate.
+      walk schema already stores steps; no field added (DB unchanged). Live walk, saved summary and notification say the
+      count is estimated.
 - [x] Keep the walk checkpoint format compatible (new fields optional).
 
 ### B3. Verify + commit Phase B
-- [ ] \`testDebugUnitTest assembleDebug lintDebug\`; commit:
-      \`feat(steps): labelled motion estimate as last-resort source; walks use the same ladder\`.
+- [x] \`testDebugUnitTest assembleDebug lintDebug\` green; shipped with A7 in \`8246615\`.
 
 ---
 

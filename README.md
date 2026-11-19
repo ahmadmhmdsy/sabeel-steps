@@ -33,7 +33,8 @@ still pending (see *Known limitations*).
 - **History:** 7/30-day bars with goal line, per-day list and saved walks.
 - **Walk:** GPS walk in a location foreground service with a Canvas route (no
   map tiles, no API key, no network); sensor-only fallback when location is not
-  granted; checkpoint/resume after process death.
+  granted; checkpoint/resume after process death. Walk steps use the same source
+  ladder and show "≈" plus a note when the phone has no measured step sensor.
 - **Insights:** window averages, best day, goal-hit rate, total distance.
 - **Reminders & goal notification:** WorkManager reminder plus a goal-reached
   notification (POST_NOTIFICATIONS aware).
@@ -125,7 +126,7 @@ action: [docs/privacy-site/FILL-AND-HOST.md](docs/privacy-site/FILL-AND-HOST.md)
 
 | Item | State |
 |---|---|
-| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-19 18:30 — `app/build/outputs/apk/debug/app-debug.apk`, 12,014,371 B, SHA-256 `830b7aac…017795` |
+| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-19 18:44 — `app/build/outputs/apk/debug/app-debug.apk`, 12,015,507 B, SHA-256 `595cf33f…e22fab` |
 | Unit tests | **108 tests, 0 failures** (`testDebugUnitTest` exit 0, 2026-11-19 18:30; 11 suites): CsvCodec 12, StepMerge 7, StepMath 24, StepPipeline 19, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5, MotionStepDetector 8, StepSourceHealth 9, StepSourcePolicy 6 |
 | Lint | `lintDebug` **exit 0** — 0 errors, 44 warnings, 1 hint (non-blocking; report in `app/build/reports/lint-results-debug.txt`) |
 | Release APK / AAB | Signed artifacts from 2026-11-17 22:35 in `dist/` (APK 1,577,122 B, AAB 3,374,452 B, hashes in `dist/SHA256SUMS.txt`); they predate the source-ladder change and must be rebuilt before release |

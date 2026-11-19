@@ -6,6 +6,8 @@ SHA-256 `595CF33F6DDDECEB48AB482BEF4F29E769E96F18BD1D55A0DED8D99B96E22FAB`.
 Package `com.sabeel.steps` 1.0.0 (versionCode 1, targetSdk 36, minSdk 26).
 Captures qa-01…qa-16 were taken at 18:22 from the same code without the walk-only label
 (APK 12,014,371 B, SHA-256 `830B7AAC…E017795`); captures qa-17/18 are from the final build.
+The signed **release** APK (R8, SHA-256 `35723C87…C6C1AA`) was smoke-tested separately at 20:27 —
+see "Release APK smoke" below.
 
 **Emulator:** `emulator-5556`, AVD `api36`, image `sdk_slim_x86_64-userdebug` (Android 16 / API 36),
 1080x2400, 420 dpi, headless. This image has **no step counter and no step detector** and does have the
@@ -46,6 +48,20 @@ Goldfish 3-axis accelerometer, so it exercises only the **estimate** tier. See
 | Walk screen labels its step count when the phone has no step sensor | Pass | Walk live, Arabic: "≈ 0" steps plus "لا يحتوي هاتفك على مستشعر للخطوات، لذا تُقدَّر خطوات هذه النزهة من حركة الهاتف." — [qa-17](qa-17-walk-estimated-live-ar.xml) |
 | Walk summary keeps the estimate label after saving | Pass | Summary: "≈ 0" steps plus the same note — [qa-18](qa-18-walk-summary-estimated-ar.xml) |
 | Creating, running and saving a walk does not crash | Pass | app-filtered crash buffer and logcat are empty — [qa-20](qa-20-crash-buffer-walk.txt), [qa-21](qa-21-logcat-errors-walk.txt) |
+
+### Release APK smoke (2026-11-19 20:27 +03:00)
+
+After the release rebuild, `dist/Sabeel-1.0-release.apk` (signed, R8-minified) was installed on a
+freshly wiped `api36` emulator (same image: accelerometer only, no step counter/detector). The app
+completed all four onboarding steps, started `StepCounterService` as a health foreground service
+(type `0x100`), and showed the estimate copy on Home. After 40 s of alternating injected
+acceleration the Home ring's accessibility semantics read **"Step progress: 0 percent. ≈ 40 of 8,000
+steps."** — the estimate is counted toward the goal and visibly marked — and the notification was
+titled **"Sabeel is estimating your steps"**. No crash was logged.
+
+- [qa-22-release-home.txt](qa-22-release-home.txt) — Home text nodes and accessibility strings
+- [qa-23-release-notification.txt](qa-23-release-notification.txt) — release foreground notification
+- [qa-24-release-crash-buffer.txt](qa-24-release-crash-buffer.txt) — empty crash buffer
 
 ## Capture limitation
 
@@ -101,3 +117,6 @@ this folder that shows the rendered UI.
 - `qa-18-walk-summary-estimated-ar.xml` — saved-walk summary with the label (Arabic)
 - `qa-20-crash-buffer-walk.txt` — app-filtered crash buffer after the walk (empty)
 - `qa-21-logcat-errors-walk.txt` — app-filtered FATAL scan after the walk (empty)
+- `qa-22-release-home.txt` — release APK smoke: Home text nodes and "≈ 40 of 8,000 steps" semantics
+- `qa-23-release-notification.txt` — release APK: "Sabeel is estimating your steps" notification
+- `qa-24-release-crash-buffer.txt` — release APK: empty crash buffer

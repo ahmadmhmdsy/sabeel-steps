@@ -1,0 +1,42 @@
+# Release APK smoke 2026-11-19 20:27 +03:00
+
+Installed dist/Sabeel-1.0-release.apk (signed, R8) on a wiped API 36 ATD emulator (no step counter/detector, accelerometer only).
+
+## Home text nodes
+
+- Today
+- No streak yet
+- Goal 8,000
+- Estimated from the phone’s motion, not a hardware step counter.
+- 0 active minutes
+- Every few minutes of walking adds up.
+- Updated 8:27 PM
+- Start a walk
+- 28 m
+- Distance (estimate)
+- 2 kcal
+- Energy (estimate)
+- Last 7 days
+- Fri
+- Sat
+- Sun
+- Mon
+- Tue
+- Wed
+- Thu
+- Home
+- History
+- Insights
+- Settings
+
+## Accessibility semantics
+
+- Step progress: 0 percent. ≈ 40 of 8,000 steps.
+- Bar chart of steps for the last 7 days. Average 5 steps per day.
+
+## Result
+
+- Onboarding step 1-4 rendered; Start walking completed.
+- StepCounterService foreground health FGS (0x100), notification title "Sabeel is estimating your steps".
+- Home shows the estimate note and semantics "≈ 40 of 8,000 steps" after 40 s of injected walking; estimated steps count toward the goal and are marked with ≈.
+- Crash buffer empty (scanned separately).

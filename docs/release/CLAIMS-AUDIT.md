@@ -140,19 +140,21 @@ tree. It was written by the Lead, not by the auditor.
 
 ### 6.1 Final artifacts and gates (measured on the final tree, build-tools 36.0.0)
 
+Refreshed 2026-11-19 after the source-ladder change; the 2026-11-17 values stay in git history.
+
 | Item | Final value |
 |---|---|
-| Debug APK | 12,001,632 B, SHA-256 `dcd1f3359e8554fbffc775b36eb83137bec01db662b78b7c07a5eb00dcbe615d` |
-| Release APK | 1,577,122 B, SHA-256 `e4570fffa3fb39891988615c9c84b60b2cefcea7f34b43d7460fd77c3717acd7` |
-| Release AAB | 3,374,452 B, SHA-256 `180c00d0fccb3f569201a70eec29259a582873c98e59719c90b5e8cf0a59629c` |
+| Debug APK | 12,015,507 B, SHA-256 `595cf33f6dddeceb48ab482bef4f29e769e96f18bd1d55a0ded8d99b96e22fab` |
+| Release APK | 1,683,698 B, SHA-256 `35723c87330a11500186f6eeae69245a0646e8ff2c58e6ee82d6ef2a4ec6c1aa` |
+| Release AAB | 3,538,379 B, SHA-256 `f8ee8b26a6d49b43e6ded3ad2c17eaf3e2898b3d30040928ac5b3d8283027d7b` |
 | Signatures | `apksigner verify`: Verifies (v2, 1 signer, upload cert `7B:12:AD:…:15:2D`); `jarsigner -verify` on the AAB: "jar verified." (self-signed upload cert, no timestamp) |
-| 16 KB alignment | `zipalign -c -P 16 4 dist/Sabeel-1.0-release.apk` exit 0 |
+| 16 KB alignment | `zipalign -c -P 16 4 dist/Sabeel-1.0-release.apk` exit 0; 8 stored `.so` entries are 16 KB-aligned, `extractNativeLibs=false` |
 | Release manifest | com.sabeel.steps, versionCode 1, versionName 1.0.0, minSdk 26, targetSdk 36, allowBackup false |
 | Permissions (release APK) | the same 10 as §5; no INTERNET, ACCESS_NETWORK_STATE, ACCESS_BACKGROUND_LOCATION or AD_ID |
-| Unit tests | **79 tests, 0 failures, 0 errors, 0 skipped** in 8 suites (report 22:26): CsvCodec 12, StepMerge 7, StepMath 24, StepPipeline 13, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5 |
-| Lint | `lintDebug` **exit 0** — 0 errors, 39 warnings, 1 hint (22:35) |
-| Emulator evidence | 9 UI dumps EN+AR in [adoption-smoke/](../review/2026-11-17/adoption-smoke/EVIDENCE.md) plus the 16 dumps of the earlier smoke pass; crash buffer empty (captured transcript in the evidence folder) |
-| dist/SHA256SUMS.txt | regenerated from the three artifacts above |
+| Unit tests | **108 tests, 0 failures, 0 errors, 0 skipped** in 11 suites (report 2026-11-19 18:44): CsvCodec 12, StepMerge 7, StepMath 24, StepPipeline 19, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5, MotionStepDetector 8, StepSourceHealth 9, StepSourcePolicy 6 |
+| Lint | `lintDebug` **exit 0** — 0 errors, 44 warnings, 1 hint (2026-11-19 19:02) |
+| Emulator evidence | 2026-11-17 passes (25 UI dumps EN+AR across [smoke/](../review/2026-11-17/smoke/SMOKE-EVIDENCE.md) and [adoption-smoke/](../review/2026-11-17/adoption-smoke/EVIDENCE.md)) plus the 2026-11-19 estimate-tier run (EN+AR, ≈ 97 estimated steps, walk labels; [step-source-resilience/EVIDENCE.md](../review/2026-11-19/step-source-resilience/EVIDENCE.md)); crash buffers empty |
+| dist/SHA256SUMS.txt | regenerated from the three artifacts above and verified by recomputation |
 
 ### 6.2 Resolution of every MISMATCH in §2 and §3
 

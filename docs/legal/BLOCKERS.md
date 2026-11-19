@@ -152,8 +152,13 @@ the Lead's green build: install the **signed release** AAB/APK on at least two
 physical devices (API 26–30 and API 33+), run the manual smoke list
 (onboarding, step counting with screen off, midnight rollover, walk resume,
 CSV, delete-all, language switch, reboot re-arm), and record results with the
-artifact SHA-256. Do not reuse earlier emulator evidence; it was labelled
-NOT VERIFIED — EMULATOR-ATTEMPTED and includes black screenshots/0-byte video.
+artifact SHA-256. The source ladder adds device-specific rows: a counter phone
+must be measured (no "≈", Diagnostics names the counter) and a detector-only
+phone must count through the detector. Do not reuse earlier emulator evidence;
+it was labelled NOT VERIFIED — EMULATOR-ATTEMPTED and includes black
+screenshots/0-byte video, and the 2026-11-19 emulator run covers only the
+labelled estimate tier. A command-level checklist to run and paste back is
+[docs/legal/HARDWARE-QA-CHECKLIST.md](HARDWARE-QA-CHECKLIST.md).
 
 **Acceptance:** evidence entries in docs/legal/release-evidence-log.md.
 **Owner:** engineering/owner.

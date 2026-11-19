@@ -1,0 +1,9 @@
+
+    NotificationRecord(0x0f6687db: pkg=com.sabeel.steps user=UserHandle{0} id=4101 tag=null importance=2 key=0|com.sabeel.steps|4101|null|10100: Notification(channel=steps shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|ONLY_ALERT_ONCE|NO_CLEAR|FOREGROUND_SERVICE color=0xff0f6b5c category=service vis=PUBLIC))
+      opPkg=com.sabeel.steps
+      icon=Icon(typ=RESOURCE pkg=com.sabeel.steps id=0x7f05000e)
+                android.title=String (Sabeel is estimating your steps)
+                android.text=String (No step counter is reporting, so this number comes from phone motion. Your steps stay on this phone.)
+                android.title=String (Serial console enabled)
+
+

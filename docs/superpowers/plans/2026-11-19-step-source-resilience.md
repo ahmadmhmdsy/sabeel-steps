@@ -1,6 +1,6 @@
 # Sabeel Step-Source Resilience Plan
 
-> **Status:** delivered 2026-11-19 — Phase A+B committed as `8246615`; Phase C evidence/docs delivered; physical-device validation remains owner-blocked. Created 2026-11-19 (Asia/Baghdad).
+> **Status:** delivered 2026-11-19 — Phase A+B committed as `8246615`; Phase C evidence/docs delivered, walk estimate labels added, signed release artifacts rebuilt and re-hashed; physical-device validation remains owner-blocked. Created 2026-11-19 (Asia/Baghdad).
 > **Owner:** Lead (inline execution). **Baseline:** \`fe51d2d\`.
 > **Skill:** \`writing-plans\`; verdict input: Qiyas Council Mode C, 2026-11-19 (council report in chat; prior TrueStep council at \`docs/review/2026-11-17/TRUESTEP-EXTERNAL-COUNCIL.md\`).
 
@@ -307,6 +307,16 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 - [x] Record the new evidence in \`docs/review/2026-11-19/step-source-resilience/EVIDENCE.md\`.
 - [x] Final \`testDebugUnitTest assembleDebug lintDebug\` and clean git status; final report to owner.
 
+### Post-plan closure (2026-11-19 evening, after the first owner report)
+- [x] Found and fixed a truth gap: walk sessions used the ladder but showed the estimated count unmarked. Live walk,
+      saved summary and walk notification now say "estimated"; no schema change. QA dumps: \`qa-17\`, \`qa-18\`.
+- [x] Rebuilt \`assembleRelease\` + \`bundleRelease\` from the current tree (2026-11-19 20:11), verified
+      \`apksigner\` (v2), \`jarsigner\` (AAB), \`zipalign -c -P 16\`, permissions and manifest, and regenerated
+      \`dist/SHA256SUMS.txt\`. \`docs/legal/release-signoff.md\` and \`CLAIMS-AUDIT.md\` §6.1 now carry the new values.
+- [x] Wrote [docs/legal/HARDWARE-QA-CHECKLIST.md](../../legal/HARDWARE-QA-CHECKLIST.md): counter-phone, detector-only,
+      estimate-tier, stall/battery and midnight rows with commands and a results header, so the owner can run B7
+      without project context.
+
 ---
 
 ## Owner decisions / gaps to raise (not silently decided)
@@ -323,6 +333,12 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
    probes run for 5 s after 10 min of silence and back off exponentially (2, 4, 8 ... up to 30 min) while the phone
    stays still, so an overnight-still phone is not probed every minute. Revisit with a real detector-only phone if
    drain is measurable.
+7. **CSV and saved-walk rows do not carry the estimate flag.** The walk screen, summary and notification say
+   "estimated", but a walk exported to CSV (or a daily total copied out) has no source marker. Adding one means a
+   schema/CSV-format change; current default is to leave the label in-app only. Raise before any data-format work.
+8. **versionCode before Play upload.** The current signed artifacts are versionCode 1 / versionName 1.0.0 (rebuilt
+   2026-11-19). Any upload after an existing track entry needs a higher versionCode, so rebuild, re-verify and
+   re-hash immediately before uploading; do not reuse the 2026-11-19 files if a build was already uploaded.
 
 ## Task order and write scopes
 

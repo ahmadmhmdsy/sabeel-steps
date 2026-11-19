@@ -1,0 +1,36 @@
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{a0159c8 u0 com.sabeel.steps/.service.StepCounterService c:com.sabeel.steps}
+    intent={cmp=com.sabeel.steps/.service.StepCounterService}
+    packageName=com.sabeel.steps
+    processName=com.sabeel.steps
+    targetSdkVersion=36
+    baseDir=/data/app/~~FD5rNwY6f-0o_JRIBvYh1w==/com.sabeel.steps-3mq7-Y-E0E-__DqT7IzDxQ==/base.apk
+    dataDir=/data/user/0/com.sabeel.steps
+    app=ProcessRecord{155c2c5 3092:com.sabeel.steps/u0a104}
+    useNewWiuLogic_forCapabilities()=true
+    useNewWiuLogic_forStart()=true
+    useNewBfslLogic()=true
+    mAllowWiu_noBinding=PROC_STATE_TOP
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=PROC_STATE_TOP
+    getFgsAllowWiu_legacy=PROC_STATE_TOP
+    getFgsAllowWiu_new=PROC_STATE_TOP
+    getFgsAllowWiu_forStart=PROC_STATE_TOP
+    getFgsAllowWiu_forCapabilities=PROC_STATE_TOP
+    allowUiJobScheduling=true
+    recentCallingPackage=com.sabeel.steps
+    recentCallingUid=10104
+    mAllowStart_noBinding=PROC_STATE_TOP
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=PROC_STATE_TOP
+    getFgsAllowStart_legacy=PROC_STATE_TOP
+    getFgsAllowStart_new=PROC_STATE_TOP
+    getFgsAllowStart=PROC_STATE_TOP
+    startForegroundCount=1
+    infoAllowStartForeground=[callingPackage: com.sabeel.steps; callingUid: 10104; uidState: TOP ; uidBFSL: [BFSL]; intent: Intent { xflg=0x4 cmp=com.sabeel.steps/.service.StepCounterService }; code:PROC_STATE_TOP; tempAllowListReason:<null>; allowWiu:12; targetSdkVersion:36; callerTargetSdkVersion:36; startForegroundCount:0; bindFromPackage:null: isBindService:false]
+    isForeground=true foregroundId=4101 types=0x00000100 foregroundNoti=Notification(channel=steps shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|ONLY_ALERT_ONCE|NO_CLEAR|FOREGROUND_SERVICE color=0xff0f6b5c category=service vis=PUBLIC)
+    createTime=-3m43s433ms startingBgTimeout=--
+    lastActivity=-36s408ms restartTime=-3m43s421ms createdFromFg=true
+    startRequested=true delayedStop=false stopIfKilled=false callStart=true lastStartId=3
+ startCommandResult=1

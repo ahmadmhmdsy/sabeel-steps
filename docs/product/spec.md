@@ -29,7 +29,7 @@ fix one of them explicitly. Status: v1.0, 2026-11-16.
 Preferences (DataStore): goalSteps (default 8000), units ('metric'|'imperial'), heightCm (default 170),
 weightKg (default 70), gender ('unspecified'|'male'|'female'), strideCm (0 = auto), language ('en'|'ar'),
 reminderEnabled (false), reminderMinutes (e.g. 1140 = 19:00), onboardingDone (false), todayBaseSteps,
-sensorBaselineRaw, baselineDate.
+sensorBaselineRaw, baselineDate, stepSource (COUNTER default), stepLastRawAt (0 default).
 
 ## 2. Algorithms (pure Kotlin in domain/StepMath.kt — unit tested)
 
@@ -41,25 +41,48 @@ Active minutes: count minutes in which cadence >= 60 steps/min; service keeps a 
 Pace: durationSec / (distanceMeters / 1000.0), only if distanceMeters >= 50; formatted m:ss /km.
 BMI (optional display only): weight / (height/100)^2, one decimal, never a diagnosis.
 
-## 3. Step pipeline (correctness is a feature)
+## 3. Step source ladder and pipeline (correctness is a feature)
 
-1. Sensor: Sensor.TYPE_STEP_COUNTER (cumulative since boot, float). Register with
-   SensorManager.SENSOR_DELAY_NORMAL; it is event-driven and cheap.
-2. State: baselineRaw (raw sensor value at last rebase), todayBase (steps already counted for the
-   current local date). Persist both atomically (DataStore) after every meaningful delta; today's
-   row in Room is upserted at most every ~5 s or on lifecycle boundaries.
-3. On event: raw = event.values[0]; if raw < baselineRaw - 1 => device rebooted or sensor reset:
-   baselineRaw = raw, keep todayBase unchanged. delta = max(0, raw - baselineRaw).
+1. Ladder: Sensor.TYPE_STEP_COUNTER (measured) -> Sensor.TYPE_STEP_DETECTOR (measured) ->
+   MOTION_ESTIMATE (accelerometer, always labelled "estimated") -> none. The tier is chosen from
+   SensorManager.getDefaultSensor availability, never from a feature flag; a failed registration drops
+   exactly one tier. Estimate mode is used only when no measured source exists or both registrations
+   fail. NO_SENSOR means the phone has no counter, no detector and no accelerometer.
+2. Counter adapter: cumulative since boot, event-driven, SENSOR_DELAY_NORMAL. When the HAL reports
+   getMaxDelay(), register batched with a delay capped at 20 s; the writer is never delayed by
+   batching.
+3. Detector adapter: one event per step; the adapter keeps a synthetic cumulative raw equal to the
+   number of detector events, so StepPipeline stays the only place that turns raw into a daily total.
+4. Estimate adapter: accelerometer at SENSOR_DELAY_UI -> MotionStepDetector (time-based EMA
+   coefficients so 10-50 Hz behave alike; 1.2 m/s^2 threshold with 0.15 hysteresis; 250-2000 ms
+   refractory; 3-peak burst; 2.5 s stop) -> synthetic cumulative raw. Estimates are marked at the
+   number ("≈"), in Home's note, in Diagnostics and in the foreground notification, and they count
+   toward the daily goal/streak only while marked (reversible owner decision).
+5. State: baselineRaw (raw sensor value at last rebase), source, lastRawAt (elapsedRealtime of the last
+   accepted event), todayBase (steps already counted for the current local date). Persist atomically
+   (DataStore) after every meaningful delta; today's row in Room is upserted at most every ~5 s or on
+   lifecycle boundaries.
+6. Rebase on every source switch: initialized = true, new baseline = first raw of the new source,
+   today's total preserved, the switch delta ignored (no double count). Date rollover still wins:
+   set todayBase = 0, baselineDate = today, baselineRaw = raw, and keep the source.
+7. Plausibility clamp: a single delta cannot exceed floor(elapsed_seconds * 4) + 3 when the previous
+   event time is known; skipped when the previous timestamp is unknown. Physically impossible jumps
+   only; normal walking is never clamped.
+8. Silence watchdog: a measured source that has reported and then stays silent for 10 min triggers a
+   5 s motion probe (accelerometer -> MotionStepDetector). Two consecutive walking probes switch to
+   the next tier; a non-walking probe resets the streak and the probe interval backs off exponentially
+   (2, 4, 8 ... minutes, capped at 30) so a still phone is not probed every minute. A counter event
+   arriving while on a fallback switches back immediately (delta ignored by rule 6). The counter stays
+   registered while a fallback is active.
+9. On event (measured adapter): raw = event.values[0]; if raw < baselineRaw - 1 => device rebooted or
+   sensor reset: baselineRaw = raw, keep todayBase unchanged. delta = max(0, raw - baselineRaw).
    todaySteps = todayBase + delta => upsert DailySteps(today).
-4. Date rollover (checked on every event, on service start, and in a 15-min periodic WorkManager):
-   if today's date != baselineDate, finalize yesterday (already in DB), set todayBase = 0,
-   baselineDate = today, baselineRaw = raw.
-5. Resilience: service START_STICKY; on service start re-read persisted state, never double count
-   (todaySteps is monotonic inside a day: todaySteps = max(db.todaySteps, todayBase + delta)).
-6. Boot: BOOT_COMPLETED receiver tries to start the FGS inside try/catch (Android 15 may restrict FGS
-   from boot for some types; type 'health' is attempted, failure is non-fatal). A WorkManager one-time
-   job guarantees a reconcile within 15 min if the service could not start.
-7. No polling loops, no AlarmManager exact alarms, no wakelocks in v1.
+10. Resilience: service START_STICKY; on service start re-read persisted state, never double count
+    (todaySteps is monotonic inside a day: todaySteps = max(db.todaySteps, todayBase + delta)).
+11. Boot: BOOT_COMPLETED receiver tries to start the FGS inside try/catch (Android 15 may restrict FGS
+    from boot for some types; type 'health' is attempted, failure is non-fatal). A WorkManager one-time
+    job guarantees a reconcile within 15 min if the service could not start.
+12. No polling loops, no AlarmManager exact alarms, no wakelocks in v1.
 
 ## 4. Services
 
@@ -70,7 +93,8 @@ WalkTrackingService: foreground service, type location while tracking; requests 
 runtime from the Walk screen; collects LocationManager updates (no Play Services dependency) every
 ~3 s or 5 m; computes GPS distance; persists an in-progress walk checkpoint every 20 s so a process
 death does not lose the route; notification with Stop action. If permission denied, tracking runs
-sensor/step-only and says so in the UI.
+sensor/step-only and says so in the UI. Walk steps use the same ladder as rule 1: counter delta,
+detector event, or the labelled accelerometer estimate when neither measured sensor exists.
 
 ## 5. Screens & navigation (Compose, Material3, Navigation-Compose)
 

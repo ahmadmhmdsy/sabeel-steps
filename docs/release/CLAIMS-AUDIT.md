@@ -192,3 +192,32 @@ Historical review/legal evidence files under `docs/review/2026-11-17/` and
 `docs/legal/release-evidence-log.md` keep their original measured values as dated snapshots;
 `FIX-REPORT.md` now carries a snapshot note pointing to the final numbers.
 
+
+## 7. Addendum — step-source resilience (2026-11-19)
+
+This section extends the audit; sections 1–6 remain the dated 2026-11-17/18 record. It covers the
+measured-first source ladder and the labelled last-resort estimate shipped after the 2026-11-19 Qiyas
+Council, in commit `8246615` plus its tests, strings and evidence.
+
+**Artifacts measured for this addendum:** debug APK built 2026-11-19 18:22 +03:00,
+12,014,371 B, SHA-256 `830B7AAC30E0CC8E02DBC3844D1C77E42D3624B32F355850531882300E017795`;
+JVM tests 108 in 11 suites, 0 failures; `lintDebug` exit 0 (0 errors, 44 warnings, 1 hint).
+Emulator evidence: [docs/review/2026-11-19/step-source-resilience/EVIDENCE.md](../review/2026-11-19/step-source-resilience/EVIDENCE.md).
+
+| Claim | Where it appears | Evidence | Status |
+|---|---|---|---|
+| Counting is measured-first: hardware counter → hardware detector → labelled accelerometer estimate → none, chosen from `SensorManager` availability | README.md "What it does"; docs/product/spec.md §3 rule 1; Diagnostics copy | `StepSource.kt` (`StepSourcePolicy.choose`), `StepSensors.kt`; `StepSourcePolicyTest` 6 tests; the emulator image has no counter/detector and the service chose `MOTION_ESTIMATE` (status XML + Diagnostics dumps) | VERIFIED |
+| Every source switch rebases, preserves today's total and ignores the switch delta; a counter catch-up after a fallback is not counted | README.md; docs/product/spec.md §3 rule 6 | `StepPipeline.kt` source-switch branch; `StepPipelineTest` source-switch, counter-catch-up and midnight tests; hardware transition not yet exercised | VERIFIED (unit level) |
+| Physically impossible deltas are clamped; normal walking is not | README.md; docs/product/spec.md §3 rule 7 | `MAX_STEPS_PER_SECOND = 4.0`, `CLAMP_GRACE_STEPS = 3` in `StepPipeline.kt`; `StepPipelineTest` clamp tests (10,000-step jump rejected, normal cadence kept, skip when timestamp unknown) | VERIFIED (unit level) |
+| A measured source that goes silent is probed for walking before switching, and still-phone probes back off exponentially | docs/product/spec.md §3 rule 8 | `StepSourceHealth.kt`; `StepSourceHealthTest` 9 tests (stall, two-probe switch, streak reset, backoff, estimate never probed) | VERIFIED (unit level) |
+| The estimate is labelled at the number, in Home, Diagnostics, the foreground notification and the goal notification | README.md; strings.xml / values-ar/strings.xml; strings_sensor.xml | EN+AR Home: "≈ 97"; estimate note; Diagnostics "Phone motion (estimated)"/"حركة الهاتف (تقديري)"; notification "Sabeel is estimating your steps"; goal text has an estimated variant; emulator dumps in the evidence folder | VERIFIED |
+| Diagnostics exposes live source, last sensor reading age and fallback count; NO_SENSOR now means no counter, no detector and no accelerometer | README.md; docs/product/spec.md §3 rule 1 | `StatusStore` source fields; `AppViewModels.sourceStatusFlow`; `DiagnosticsScreen.kt`; emulator Diagnostics dump shows source / last reading / "Fallbacks today: None" | VERIFIED |
+| Estimate accuracy is good enough to promise real-world step counts | — (no such claim is made) | Only a synthetic 1.8 Hz waveform was tested: 97 estimated from 108 injected cycles. Real bag-damped, hand-carry and handshake motion remains ambiguous; the label is the honesty mitigation | CAVEAT / NOT CLAIMED |
+| Walk sessions use the same ladder, so a detector-only or estimate-only phone counts walk steps | docs/product/spec.md §4 | `WalkTrackingService.kt` registration ladder, detector accumulator and estimate detector; compiles and all unit tests pass; no walk ran on the sensor-less emulator with a measured source (there is none) | VERIFIED (code) / hardware pending |
+| No new permission or dependency was added for any tier | README.md permission claims | Merged manifest still has the same 10 permissions, no INTERNET, `ACTIVITY_RECOGNITION` reused; no new dependency in `app/build.gradle.kts` | VERIFIED |
+| Estimated steps count toward the goal and streak only while marked | docs/superpowers/plans/2026-11-19-step-source-resilience.md (owner decision, reversible) | Estimate flows through the same writer/DB as measured steps and Home/Diagnostics mark the source; hiding estimate from arithmetic is a config change, not a code rewrite. Owner has not objected to the recommended default | CAVEAT (owner decision, reversible) |
+
+The 2026-11-17 §2 row "Step pipeline seeds its baseline… (unit-level only)" is superseded in wording by the
+source-ladder row above; its evidence claim about hardware is still accurate — no physical-device sensor
+validation exists. The Arabic estimate/fallback copy remains marked for native review (same status as the
+rest of the Arabic copy).

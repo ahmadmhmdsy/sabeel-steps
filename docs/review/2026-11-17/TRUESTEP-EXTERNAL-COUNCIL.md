@@ -423,3 +423,11 @@ signed debug and release artifacts rebuilt (hashes in `dist/SHA256SUMS.txt`); em
 prototype-only gamified material stayed out because the council found its measurement claims
 unsupported.
 
+**Superseding note (2026-11-19):** the row "accelerometer fallback — not adopted" above is kept as the
+2026-11-17 record, but the 2026-11-19 Qiyas Council re-opened **only** a last-resort, visibly labelled,
+no-new-permission accelerometer estimate behind a measured-first ladder (counter -> detector -> labelled
+estimate). It is not the prototype's silent fallback and no prototype code or copy was used. See
+`docs/superpowers/plans/2026-11-19-step-source-resilience.md`. The rest of the suspended Wave 3 list
+(HUD/economy, theme system, hourly scrub, Health Connect, JSON export, rating prompt, social sharing)
+stays suspended.
+

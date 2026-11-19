@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="mode">COUNTING</string>
+    <string name="source">MOTION_ESTIMATE</string>
+    <long name="last_alive_ms" value="1795102006736" />
+    <int name="source_switches" value="0" />
+    <string name="source_day">2026-11-19</string>
+    <long name="source_last_event_ms" value="1795102027199" />
+</map>

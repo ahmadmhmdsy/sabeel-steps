@@ -1,0 +1,12 @@
+=== emulator identity ===
+sdk_slim_x86_64-userdebug
+16 / API 36
+=== step sensor mentions in sensorservice (expect 0) ===
+0
+=== step features (expect 0) ===
+0
+=== accelerometer present ===
+0000000000) Goldfish 3-axis Accelerometer | The Android Open Source Project | ver: 1 | type: android.sensor.accelerometer(1) | perm: n/a | flags: 0x00000050
+=== app sensor registration ===
+	 com.sabeel.steps.service.StepCounterService | WakeLockRefCount 0 | uid 10104 | cache size 0 | max cache size 984 | has sensor access: true
+18:24:44 + 0x00000000 pid= 3092 uid=10104 samplingPeriod=   66667us batchingPeriod=  500000us result=OK (sensor, package): (Goldfish 3-axis Accelerometer, com.sabeel.steps.service.StepCounterService)

@@ -253,6 +253,11 @@ private fun WalkLive(
     onOpenPermission: () -> Unit,
 ) {
     val fontScale = LocalConfiguration.current.fontScale
+    val stepsValue = if (live.estimated) {
+        stringResource(R.string.estimated_steps_value, stepsText(live.steps))
+    } else {
+        stepsText(live.steps)
+    }
     Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
         Text(
             text = stringResource(R.string.walk_live_time),
@@ -279,7 +284,7 @@ private fun WalkLive(
                 modifier = Modifier.fillMaxWidth(),
             )
             StatCard(
-                value = stepsText(live.steps),
+                value = stepsValue,
                 label = stringResource(R.string.walk_live_steps),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -297,7 +302,7 @@ private fun WalkLive(
                 modifier = Modifier.weight(1f),
             )
             StatCard(
-                value = stepsText(live.steps),
+                value = stepsValue,
                 label = stringResource(R.string.walk_live_steps),
                 modifier = Modifier.weight(1f),
             )
@@ -310,6 +315,13 @@ private fun WalkLive(
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    if (live.estimated) {
+        Text(
+            text = stringResource(R.string.walk_estimated_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -355,6 +367,11 @@ private fun WalkSummary(
     units: Units,
     onDone: () -> Unit,
 ) {
+    val stepsValue = if (live.estimated) {
+        stringResource(R.string.estimated_steps_value, stepsText(live.steps))
+    } else {
+        stepsText(live.steps)
+    }
     Text(
         text = stringResource(R.string.walk_summary_title),
         modifier = Modifier.semantics { heading() },
@@ -383,9 +400,16 @@ private fun WalkSummary(
             modifier = Modifier.fillMaxWidth(),
         )
         StatCard(
-            value = stepsText(live.steps),
+            value = stepsValue,
             label = stringResource(R.string.walk_live_steps),
             modifier = Modifier.fillMaxWidth(),
+        )
+    }
+    if (live.estimated) {
+        Text(
+            text = stringResource(R.string.walk_estimated_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
     if (live.route.size >= 2) {

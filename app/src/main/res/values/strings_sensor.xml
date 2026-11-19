@@ -21,6 +21,7 @@
     <string name="sensor_notif_walk_title">Walk in progress</string>
     <string name="sensor_notif_walk_preparing">Getting ready…</string>
     <string name="sensor_notif_walk_progress">%1$s · %2$s</string>
+<string name="sensor_notif_walk_estimated_text">%1$s · steps estimated</string>
     <string name="sensor_notif_walk_step_only">Step-only walk (location is off)</string>
     <string name="sensor_notif_walk_stop">Stop</string>
 

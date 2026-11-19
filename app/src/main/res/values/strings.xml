@@ -124,6 +124,7 @@
     <string name="walk_live_steps">Steps</string>
     <string name="walk_gps_on">Location is recording your route.</string>
     <string name="walk_gps_off">Location is not available. Counting steps only.</string>
+    <string name="walk_estimated_note">Your phone has no step sensor, so this walk\'s steps are estimated from its motion.</string>
     <string name="walk_route_waiting">Waiting for the first location points…</string>
     <string name="walk_cd_route">Route sketch with %1$d recorded points.</string>
     <string name="walk_save">Save walk</string>

@@ -27,6 +27,7 @@ object WalkTracker {
         val elapsedSec: Int = 0,
         val distanceMeters: Double = 0.0,
         val steps: Int = 0,
+        val estimated: Boolean = false,
         val secondsPerKm: Int = 0,
         val route: List<RoutePoint> = emptyList(),
         val gpsActive: Boolean = false,

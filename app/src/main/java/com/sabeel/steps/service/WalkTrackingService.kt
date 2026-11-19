@@ -479,6 +479,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 elapsedSec = elapsedSec(),
                 distanceMeters = distanceMeters,
                 steps = steps,
+                estimated = stepSource == StepSource.MOTION_ESTIMATE,
                 secondsPerKm = paceSecPerKm(),
                 route = route,
                 gpsActive = gpsActive,
@@ -528,11 +529,16 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
         val localized = AppLocale.wrap(this)
         val title = localized.getString(R.string.sensor_notif_walk_title)
         val text = if (running) {
-            localized.getString(
+            val progress = localized.getString(
                 R.string.sensor_notif_walk_progress,
                 StepMath.formatDuration(elapsedSec().toLong()),
                 StepMath.formatDistance(distanceMeters, units),
             )
+            if (stepSource == StepSource.MOTION_ESTIMATE) {
+                localized.getString(R.string.sensor_notif_walk_estimated_text, progress)
+            } else {
+                progress
+            }
         } else {
             localized.getString(R.string.sensor_notif_walk_preparing)
         }

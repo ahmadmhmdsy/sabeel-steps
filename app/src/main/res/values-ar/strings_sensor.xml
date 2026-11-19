@@ -20,6 +20,7 @@
     <string name="sensor_notif_walk_title">مشية قيد التتبع</string>
     <string name="sensor_notif_walk_preparing">جارٍ التحضير…</string>
     <string name="sensor_notif_walk_progress">%1$s · %2$s</string>
+<string name="sensor_notif_walk_estimated_text">%1$s · الخطوات تقديرية</string>
     <string name="sensor_notif_walk_step_only">مشية بالخطوات فقط (الموقع مغلق)</string>
     <string name="sensor_notif_walk_stop">إيقاف</string>
 

@@ -140,6 +140,7 @@
     <string name="walk_live_steps">الخطوات</string>
     <string name="walk_gps_on">الموقع يسجّل مسارك.</string>
     <string name="walk_gps_off">الموقع غير متاح. نحسب الخطوات فقط.</string>
+<string name="walk_estimated_note">لا يحتوي هاتفك على مستشعر للخطوات، لذا تُقدَّر خطوات هذه النزهة من حركة الهاتف.</string>
     <string name="walk_route_waiting">بانتظار أول نقاط الموقع…</string>
     <string name="walk_cd_route">رسم المسار مع %1$d نقطة مسجّلة.</string>
     <string name="walk_save">احفظ المشية</string>

@@ -265,7 +265,7 @@
 
     <!-- Diagnostics -->
     <string name="diagnostics_title">Why is my count low?</string>
-    <string name="diagnostics_intro">Sabeel counts with the phone’s own step sensor. If the number looks low, one of these is usually the reason.</string>
+    <string name="diagnostics_intro">Sabeel counts with the best motion source this phone offers: a hardware step counter, a hardware step detector, or a labelled estimate from phone motion. If the number looks low, one of these is usually the reason.</string>
     <string name="diagnostics_now_title">Right now</string>
     <string name="diagnostics_status_label">Counting</string>
     <string name="diagnostics_status_counting">Counting on this phone</string>
@@ -292,7 +292,7 @@
     <string name="diagnostics_permission_label">Activity recognition</string>
     <string name="diagnostics_permission_granted">Allowed</string>
     <string name="diagnostics_permission_missing">Not allowed</string>
-    <string name="diagnostics_permission_body">Without this permission Sabeel cannot read the step sensor at all. Allow it, then open Sabeel again.</string>
+    <string name="diagnostics_permission_body">Without this permission Sabeel cannot read the step counter or step detector at all. Allow it, then open Sabeel again.</string>
     <string name="diagnostics_open_settings">Open app settings</string>
     <string name="diagnostics_battery_button">Open battery settings</string>
     <string name="diagnostics_oem_title">On this phone (%1$s)</string>
@@ -305,7 +305,7 @@
     <string name="diagnostics_oem_vivo">Open Settings › Battery › Background power consumption management, find Sabeel and allow background power usage. Also allow auto-start in iManager.</string>
     <string name="diagnostics_oem_generic">Open Settings › Apps › Sabeel › Battery and choose Unrestricted. If your phone has an autostart or startup manager, allow Sabeel there too.</string>
     <string name="diagnostics_body_title">What can pause counting</string>
-    <string name="diagnostics_body_sensor">The step sensor only counts while the phone is with you and moving. Steps never leave the phone, so nothing can recover steps that were not counted.</string>
+    <string name="diagnostics_body_sensor">A measured step sensor only counts while the phone is with you and moving; the estimate reads phone motion and is always marked as estimated. Steps never leave the phone, so nothing can recover steps that were not counted.</string>
     <string name="diagnostics_body_service">Sabeel keeps a small foreground service running. Android or the phone maker can still stop it. Sabeel reconnects when you open the app and after your phone restarts, and it never invents a total to fill a gap.</string>
     <string name="diagnostics_body_battery">Battery saver, a forced stop, or a restart can interrupt counting until Sabeel runs again.</string>
     <string name="diagnostics_body_rest">A rest day never changes the counted steps; only the streak pauses.</string>

@@ -281,7 +281,7 @@
 
     <!-- التشخيص -->
     <string name="diagnostics_title">لماذا عدّادي منخفض؟</string>
-    <string name="diagnostics_intro">يحسب سبيل الخطوات بمستشعر الخطوات في الهاتف. إذا بدا العدد منخفضًا، فغالبًا أحد هذه الأسباب.</string>
+    <string name="diagnostics_intro">يحسب سبيل الخطوات بأفضل مصدر حركة يوفّره الهاتف: عدّاد خطوات مادي، أو مستشعر اكتشاف خطوات، أو تقدير من حركة الهاتف. إذا بدا العدد منخفضًا، فغالبًا أحد هذه الأسباب.</string>
     <string name="diagnostics_now_title">الآن</string>
     <string name="diagnostics_status_label">العدّ</string>
     <string name="diagnostics_status_counting">العدّ يعمل على هذا الهاتف</string>
@@ -308,7 +308,7 @@
     <string name="diagnostics_permission_label">التعرّف على النشاط</string>
     <string name="diagnostics_permission_granted">مسموح</string>
     <string name="diagnostics_permission_missing">غير مسموح</string>
-    <string name="diagnostics_permission_body">بدون هذا الإذن لا يستطيع سبيل قراءة مستشعر الخطوات إطلاقًا. اسمح به ثم افتح سبيل مرة أخرى.</string>
+    <string name="diagnostics_permission_body">بدون هذا الإذن لا يستطيع سبيل قراءة عدّاد الخطوات أو مستشعر اكتشاف الخطوات إطلاقًا. اسمح به ثم افتح سبيل مرة أخرى.</string>
     <string name="diagnostics_open_settings">افتح إعدادات التطبيق</string>
     <string name="diagnostics_battery_button">افتح إعدادات البطارية</string>
     <string name="diagnostics_oem_title">على هذا الهاتف (%1$s)</string>
@@ -321,7 +321,7 @@
     <string name="diagnostics_oem_vivo">افتح الإعدادات › البطارية › إدارة استهلاك الطاقة في الخلفية، وابحث عن سبيل واسمح باستهلاك الطاقة في الخلفية. واسمح أيضًا بالتشغيل التلقائي في iManager.</string>
     <string name="diagnostics_oem_generic">افتح الإعدادات › التطبيقات › سبيل › البطارية واختر «بلا قيود». إن كان هاتفك به مدير تشغيل تلقائي فاسمح بسبيل فيه أيضًا.</string>
     <string name="diagnostics_body_title">ما قد يوقف العدّ</string>
-    <string name="diagnostics_body_sensor">لا يعدّ مستشعر الخطوات إلا حين يكون الهاتف معك ويتحرك. الخطوات لا تغادر الهاتف، لذا لا يمكن استرجاع خطوات لم تُحسب.</string>
+    <string name="diagnostics_body_sensor">لا يعدّ مستشعر الخطوات المادي إلا حين يكون الهاتف معك ويتحرك؛ أما التقدير فيقرأ حركة الهاتف ويُعلَّم دائمًا كتقدير. الخطوات لا تغادر الهاتف، لذا لا يمكن استرجاع خطوات لم تُحسب.</string>
     <string name="diagnostics_body_service">يبقي سبيل خدمة صغيرة قيد التشغيل. ومع ذلك قد يوقفها أندرويد أو الشركة المصنّعة. يعيد سبيل الاتصال عند فتح التطبيق وبعد إعادة تشغيل الهاتف، ولا يختلق مجموعًا لملء فراغ.</string>
     <string name="diagnostics_body_battery">قد يقطع موفّر البطارية أو الإيقاف القسري أو إعادة التشغيل العدّ حتى يعمل سبيل من جديد.</string>
     <string name="diagnostics_body_rest">يوم الراحة لا يغيّر الخطوات المحسوبة؛ تتوقف السلسلة فقط.</string>

@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.DateKey
+import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.StepServiceStatus
 import com.sabeel.steps.ui.components.BarChart
@@ -139,6 +140,7 @@ private fun HomeContent(
     onOpenDiagnostics: () -> Unit,
 ) {
     val steps = ui.today?.steps ?: 0
+    val estimated = ui.sourceStatus.source == StepSource.MOTION_ESTIMATE
     val goal = ui.settings.goalSteps.coerceAtLeast(1)
     val progress = (steps.toFloat() / goal.toFloat()).coerceIn(0f, 1f)
     val stackedCards = fontScale > 1.3f
@@ -148,7 +150,12 @@ private fun HomeContent(
         fontScale > 1.2f -> 210.dp
         else -> 230.dp
     }
-    val stepsLabel = stepsText(steps)
+    val stepsTextValue = stepsText(steps)
+    val stepsLabel = if (estimated) {
+        stringResource(R.string.estimated_steps_value, stepsTextValue)
+    } else {
+        stepsTextValue
+    }
     val bigStyle = when {
         fontScale > 1.5f && stepsLabel.length >= 6 -> MaterialTheme.typography.titleLarge
         fontScale > 1.5f -> MaterialTheme.typography.headlineSmall
@@ -241,6 +248,18 @@ private fun HomeContent(
                     )
                 }
             }
+        }
+
+        // An estimate is never presented as a measured fact. The marker sits on the number and the
+        // plain-language note explains where it came from.
+        if (estimated) {
+            Text(
+                text = stringResource(R.string.home_estimated_note),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
 
         // Active minutes live under the ring rather than in the metric row: a third card cannot fit

@@ -24,7 +24,9 @@ import androidx.core.content.ContextCompat
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.RoutePoint
+import com.sabeel.steps.domain.MotionStepDetector
 import com.sabeel.steps.domain.StepMath
+import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.domain.Walk
 import com.sabeel.steps.platform.Notifications
@@ -77,7 +79,10 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
 
     private var locationManager: LocationManager? = null
     private var sensorManager: SensorManager? = null
-    private var stepSensor: Sensor? = null
+    private var counterSensor: Sensor? = null
+    private var detectorSensor: Sensor? = null
+    private var accelerometerSensor: Sensor? = null
+    private var stepSource = StepSource.NONE
     private var stepRegistered = false
     private var locationRegistered = false
     private var foregroundStarted = false
@@ -90,6 +95,8 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
     @Volatile private var distanceMeters = 0.0
     @Volatile private var steps = 0
     @Volatile private var lastRaw = Float.NaN
+    private var detectorCumulative = 0f
+    private val motionDetector = MotionStepDetector()
     @Volatile private var lastLocation: Location? = null
 
     /**
@@ -121,7 +128,9 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
         Notifications.ensureChannels(this)
         locationManager = runCatching { getSystemService(LocationManager::class.java) }.getOrNull()
         sensorManager = runCatching { getSystemService(SensorManager::class.java) }.getOrNull()
-        stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        counterSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        detectorSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+        accelerometerSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         // The foreground notification must exist immediately (5 s rule).
         startInForeground()
     }
@@ -354,14 +363,43 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
 
     // region step sensor (walk delta only)
 
+    /**
+     * Registers the best source this phone reports for walk step deltas: the hardware counter, then
+     * the hardware detector, then a labelled accelerometer estimate. Walk distance without GPS is
+     * already a stride estimate, so the walk UI's wording still says "estimate" for it.
+     */
     private fun registerStepSensor() {
         val manager = sensorManager ?: return
-        val sensor = stepSensor ?: return
         if (stepRegistered) return
         if (!Permissions.hasActivityRecognition(this)) return
+        val (target, sensor) = when {
+            counterSensor != null -> StepSource.COUNTER to counterSensor
+            detectorSensor != null -> StepSource.DETECTOR to detectorSensor
+            accelerometerSensor != null -> StepSource.MOTION_ESTIMATE to accelerometerSensor
+            else -> return
+        }
+        val chosen = sensor ?: return
+        val sampling = if (target == StepSource.MOTION_ESTIMATE) {
+            SensorManager.SENSOR_DELAY_UI
+        } else {
+            SensorManager.SENSOR_DELAY_NORMAL
+        }
         stepRegistered = runCatching {
-            manager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            manager.registerListener(this, chosen, sampling)
         }.getOrDefault(false)
+        if (!stepRegistered) return
+        stepSource = target
+        when (target) {
+            StepSource.DETECTOR -> {
+                detectorCumulative = 0f
+                lastRaw = Float.NaN
+            }
+            StepSource.MOTION_ESTIMATE -> {
+                motionDetector.reset()
+                lastRaw = Float.NaN
+            }
+            else -> Unit
+        }
     }
 
     private fun unregisterStepSensor() {
@@ -372,19 +410,41 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         val e = event ?: return
-        if (!running) return
-        if (e.sensor.type != Sensor.TYPE_STEP_COUNTER || e.values.isEmpty()) return
-        val raw = e.values[0]
-        if (raw.isNaN() || raw.isInfinite()) return
-        if (lastRaw.isNaN() || raw < lastRaw - 1f) {
-            lastRaw = raw
-            return
+        if (!running || e.values.isEmpty()) return
+        when (e.sensor.type) {
+            Sensor.TYPE_STEP_COUNTER -> {
+                if (stepSource != StepSource.COUNTER) return
+                val raw = e.values[0]
+                if (raw.isNaN() || raw.isInfinite()) return
+                if (lastRaw.isNaN() || raw < lastRaw - 1f) {
+                    lastRaw = raw
+                    return
+                }
+                val delta = (raw - lastRaw).toInt()
+                if (delta <= 0) return
+                lastRaw = raw
+                steps += delta
+                publishLive()
+            }
+            Sensor.TYPE_STEP_DETECTOR -> {
+                if (stepSource != StepSource.DETECTOR) return
+                val detected = e.values[0].toInt().coerceAtLeast(1)
+                detectorCumulative += detected
+                steps += detected
+                publishLive()
+            }
+            Sensor.TYPE_ACCELEROMETER -> {
+                if (stepSource != StepSource.MOTION_ESTIMATE) return
+                val magnitude = kotlin.math.sqrt(
+                    e.values[0] * e.values[0] + e.values[1] * e.values[1] + e.values[2] * e.values[2],
+                )
+                val detected = motionDetector.onSample(magnitude, android.os.SystemClock.elapsedRealtime())
+                if (detected <= 0) return
+                steps += detected
+                publishLive()
+            }
+            else -> Unit
         }
-        val delta = (raw - lastRaw).toInt()
-        if (delta <= 0) return
-        lastRaw = raw
-        steps += delta
-        publishLive()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit

@@ -71,8 +71,8 @@
     <string name="home_status_stopped_title">Counting is paused</string>
     <string name="home_status_stopped_body">Sabeel’s step counter is not running, so today’s steps are not being counted. Start it again to keep counting.</string>
     <string name="home_status_action_start">Start counting</string>
-    <string name="home_status_no_sensor_title">No step sensor on this phone</string>
-    <string name="home_status_no_sensor_body">This phone does not report a built-in step counter, so Sabeel cannot count steps or track walks on it.</string>
+    <string name="home_status_no_sensor_title">No step source on this phone</string>
+    <string name="home_status_no_sensor_body">This phone reports no step counter, no step detector and no motion sensor, so Sabeel cannot count steps or track walks on it.</string>
     <string name="home_distance">Distance (estimate)</string>
     <string name="home_calories">Energy (estimate)</string>
     <string name="home_active_minutes">Active minutes</string>
@@ -114,7 +114,7 @@
     <string name="walk_resume_body">Sabeel kept this walk on your phone. Continue it from where it stopped, or discard it.</string>
     <string name="walk_resume_action">Resume walk</string>
     <string name="walk_resume_discard">Discard saved walk</string>
-    <string name="walk_start_blocked">A walk cannot start right now because step counting is unavailable on this phone.</string>
+    <string name="walk_start_blocked">A walk cannot start right now because this phone has no step or motion sensor.</string>
     <string name="walk_location_ready">Location is on. Sabeel will record the route of this walk.</string>
     <string name="walk_location_fallback">You can still walk without location: Sabeel counts steps and estimates distance.</string>
     <string name="walk_start">Start walk</string>
@@ -271,7 +271,20 @@
     <string name="diagnostics_status_counting">Counting on this phone</string>
     <string name="diagnostics_status_stopped">Paused</string>
     <string name="diagnostics_status_no_permission">No permission</string>
-    <string name="diagnostics_status_no_sensor">No step sensor</string>
+    <string name="diagnostics_status_no_sensor">No step source</string>
+    <string name="diagnostics_status_estimated">Counting (estimated)</string>
+    <string name="diagnostics_source_label">Source</string>
+    <string name="diagnostics_source_counter">Hardware step counter</string>
+    <string name="diagnostics_source_detector">Hardware step detector</string>
+    <string name="diagnostics_source_estimate">Phone motion (estimated)</string>
+    <string name="diagnostics_source_none">None</string>
+    <string name="diagnostics_last_event_label">Last sensor reading</string>
+    <string name="diagnostics_last_event_none">Not yet</string>
+    <string name="diagnostics_fallbacks_label">Fallbacks today</string>
+    <string name="diagnostics_fallbacks_none">None</string>
+    <string name="diagnostics_source_note">Sabeel uses the best sensor this phone reports. If a hardware sensor stops sending, another source takes over and this screen says so.</string>
+    <string name="home_estimated_note">Estimated from the phone’s motion, not a hardware step counter.</string>
+    <string name="estimated_steps_value">≈ %1$s</string>
     <string name="diagnostics_today_label">Today</string>
     <string name="diagnostics_today_value">%1$s steps</string>
     <string name="diagnostics_last_update_label">Last update</string>
@@ -296,7 +309,7 @@
     <string name="diagnostics_body_service">Sabeel keeps a small foreground service running. Android or the phone maker can still stop it. Sabeel reconnects when you open the app and after your phone restarts, and it never invents a total to fill a gap.</string>
     <string name="diagnostics_body_battery">Battery saver, a forced stop, or a restart can interrupt counting until Sabeel runs again.</string>
     <string name="diagnostics_body_rest">A rest day never changes the counted steps; only the streak pauses.</string>
-    <string name="diagnostics_no_sensor_note">This phone does not report a built-in step sensor, so no setting can turn counting on.</string>
+    <string name="diagnostics_no_sensor_note">This phone reports no step counter, no step detector and no motion sensor, so no setting can turn counting on.</string>
     <string name="diagnostics_footer">Wording and menus differ between phone models. These instructions are a guide, not a promise.</string>
     <string name="diagnostics_error_no_settings">This phone did not open that settings screen. Open your phone’s Settings app instead.</string>
 </resources>

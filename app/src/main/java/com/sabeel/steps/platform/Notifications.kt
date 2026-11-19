@@ -143,7 +143,12 @@ object Notifications {
      *
      * @return true when a notification was actually posted now.
      */
-    fun notifyGoalReached(context: Context, steps: Int, goalSteps: Int): Boolean {
+    fun notifyGoalReached(
+        context: Context,
+        steps: Int,
+        goalSteps: Int,
+        estimated: Boolean = false,
+    ): Boolean {
         if (goalSteps <= 0 || steps < goalSteps) return false
         if (!Permissions.hasNotifications(context)) return false
         val prefs = prefs(context)
@@ -154,7 +159,11 @@ object Notifications {
         if (isChannelOff(context, CHANNEL_GOAL)) return false
 
         val localized = AppLocale.wrap(context)
-        val text = localized.getString(R.string.sensor_notif_goal_text, steps, goalSteps)
+        val text = if (estimated) {
+            localized.getString(R.string.sensor_notif_goal_text_estimated, steps, goalSteps)
+        } else {
+            localized.getString(R.string.sensor_notif_goal_text, steps, goalSteps)
+        }
         val notification = NotificationCompat.Builder(context, CHANNEL_GOAL)
             .setSmallIcon(R.drawable.ic_stat_steps)
             .setColor(ACCENT_COLOR)

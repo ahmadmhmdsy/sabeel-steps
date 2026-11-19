@@ -12,8 +12,10 @@
     <string name="sensor_notif_counting_text">خطواتك تبقى على هذا الهاتف.</string>
     <string name="sensor_notif_permission_title">إذن النشاط البدني مطلوب</string>
     <string name="sensor_notif_permission_text">اسمح بالوصول إلى النشاط البدني من الإعدادات ليتمكن سبيل من قراءة مستشعر الخطوات.</string>
+    <string name="sensor_notif_estimate_title">سبيل يقدّر خطواتك</string>
+    <string name="sensor_notif_estimate_text">لا يرسل أي عدّاد خطوات، لذا يأتي هذا العدد من حركة الهاتف. خطواتك تبقى على هذا الهاتف.</string>
     <string name="sensor_notif_no_sensor_title">مستشعر الخطوات غير متاح</string>
-    <string name="sensor_notif_no_sensor_text">هذا الجهاز لا يوفّر عدّاد خطوات. تبقى المشيات محفوظة.</string>
+    <string name="sensor_notif_no_sensor_text">هذا الجهاز لا يوفّر عدّاد خطوات ولا مستشعر اكتشاف خطوات ولا مستشعر حركة. تبقى المشيات محفوظة.</string>
 
     <string name="sensor_notif_walk_title">مشية قيد التتبع</string>
     <string name="sensor_notif_walk_preparing">جارٍ التحضير…</string>
@@ -23,6 +25,7 @@
 
     <string name="sensor_notif_goal_title">أكملت هدفك اليومي</string>
     <string name="sensor_notif_goal_text">%1$d من %2$d خطوة اليوم</string>
+    <string name="sensor_notif_goal_text_estimated">%1$d من %2$d خطوة اليوم · تقديري</string>
 
     <string name="sensor_reminder_title">حان وقت المشي</string>
     <string name="sensor_reminder_text">مشي قصير يحافظ على سلسلتك.</string>

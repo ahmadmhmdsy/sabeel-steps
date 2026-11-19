@@ -16,12 +16,20 @@ import androidx.core.content.ContextCompat
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.domain.DateKey
+import com.sabeel.steps.domain.MotionStepDetector
+import com.sabeel.steps.domain.SourceAvailability
+import com.sabeel.steps.domain.StepSource
+import com.sabeel.steps.domain.StepSourceHealth
+import com.sabeel.steps.domain.StepSourcePolicy
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.Reminders
+import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.platform.StatusStore
 import com.sabeel.steps.platform.StepServiceStatus
+import com.sabeel.steps.platform.StepSourceStatus
 import com.sabeel.steps.ui.i18n.AppLocale
+import kotlin.math.sqrt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,17 +45,27 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * Foreground service (type health) that owns the hardware step counter.
+ * Foreground service (type health) that owns the step source.
  *
  * Contract with the rest of the app:
- *  - every sensor event is funnelled through StepsRepository.recordRawStep(raw, now, activeMinutes);
- *  - writes are coalesced (<= 1 write / 1.5 s) because the chip emits faster than Room should write,
- *    and the cumulative counter means the newest raw value always describes the whole day;
- *  - [StepCadence] turns the sensor stream into "active minutes" (minutes with >= 60 spm) and is
- *    day-aware, so a midnight tick never stamps yesterday's minutes onto today;
- *  - persisted pipeline state is the single source of truth, so a process death or a reboot never
+ *  - one source is active at a time, chosen from the [StepSourcePolicy] ladder (hardware counter ->
+ *    hardware detector -> labelled accelerometer estimate) from the sensors the SensorManager
+ *    actually reports;
+ *  - the hardware counter stays registered even while a fallback is active, so a counter event
+ *    recovers the primary source immediately instead of waiting for a restart;
+ *  - every event is funnelled through [StepsRepository.recordRawStep] with the active [StepSource],
+ *    and the pure [StepPipeline] rebases on any switch (never double counts the gap);
+ *  - writes are coalesced (<= 1 write / 1.5 s) because the chip emits faster than Room should write;
+ *  - [StepCadence] turns the sensor stream into "active minutes" and is day-aware;
+ *  - persisted pipeline state is the single source of truth, so process death or a reboot never
  *    loses or double counts the day;
- *  - [StatusStore] is kept fresh by a heartbeat so Home can tell the truth about counting.
+ *  - [StatusStore] carries the live source, its last event age and switch count for Home and
+ *    Diagnostics; a heartbeat keeps the "counting" mark fresh.
+ *
+ * Silence watchdog: a measured source that has not reported for [STALL_AFTER_MS] is probed with a
+ * 5 s accelerometer window. Two consecutive walking probes switch to the next tier; a still phone
+ * is never degraded. Only physically impossible deltas are clamped (pipeline), normal walking is
+ * never throttled.
  *
  * Android 14+ prerequisite: a foreground service of type health may only call startForeground()
  * when a qualifying health permission is granted. Sabeel declares ACTIVITY_RECOGNITION as its only
@@ -62,10 +80,23 @@ class StepCounterService : Service(), SensorEventListener {
     private val app: SabeelApp get() = application as SabeelApp
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val cadence = StepCadence()
+    private val health = StepSourceHealth()
 
     private var sensorManager: SensorManager? = null
-    private var stepSensor: Sensor? = null
-    private var registered = false
+    private var counterSensor: Sensor? = null
+    private var detectorSensor: Sensor? = null
+    private var accelerometerSensor: Sensor? = null
+    private var availability = SourceAvailability(counter = false, detector = false, accelerometer = false)
+
+    private var counterRegistered = false
+    private var detectorRegistered = false
+    private var accelerometerRegistered = false
+    private var probeActive = false
+    private var probeSteps = 0
+    private var probeDetector: MotionStepDetector? = null
+    private var probeJob: Job? = null
+    private val estimateDetector = MotionStepDetector()
+
     private var seeded = false
     private var foregroundStarted = false
     private var blocked = false
@@ -73,13 +104,29 @@ class StepCounterService : Service(), SensorEventListener {
     private var heartbeatJob: Job? = null
     private var mode = Mode.COUNTING
 
-    @Volatile private var latestRaw = Float.NaN
+    @Volatile private var activeSource = StepSource.NONE
+
+    /** The cumulative raw value of the active source, paired with the source to avoid mixed reads. */
+    private val rawLock = Any()
+    private var latestRaw = Float.NaN
+    private var latestSource = StepSource.NONE
+
+    private var detectorCumulative = 0f
+    private var estimateCumulative = 0f
+
+    /** Wall-clock time of the last event from the *active* source (0 = none yet). */
+    @Volatile private var lastEventAt = 0L
+
     @Volatile private var goalSteps = 8000
     @Volatile private var lastStatusMarkAt = 0L
+    @Volatile private var lastSourceMarkAt = 0L
+    private var switches = 0
+    private var statusDay = ""
 
     private var lastWrittenRaw = Float.NaN
     private var lastWrittenActive = -1
     private var lastWrittenDate = ""
+    private var lastWrittenSource = StepSource.NONE
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -94,8 +141,20 @@ class StepCounterService : Service(), SensorEventListener {
             return
         }
         sensorManager = runCatching { getSystemService(SensorManager::class.java) }.getOrNull()
-        stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        if (stepSensor == null || !Permissions.hasStepSensor(this)) {
+        val manager = sensorManager
+        if (manager == null) {
+            block(Mode.NO_SENSOR)
+            return
+        }
+        counterSensor = manager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        detectorSensor = manager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+        accelerometerSensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        availability = SourceAvailability(
+            counter = counterSensor != null,
+            detector = detectorSensor != null,
+            accelerometer = accelerometerSensor != null,
+        )
+        if (!availability.any) {
             block(Mode.NO_SENSOR)
             return
         }
@@ -120,7 +179,7 @@ class StepCounterService : Service(), SensorEventListener {
             }.getOrNull()
             if (reconciled != null) maybeNotifyGoal(reconciled.steps)
             seeded = true
-            withContext(Dispatchers.Main) { registerSensor() }
+            withContext(Dispatchers.Main) { startPrimarySource() }
             startWriter()
             startHeartbeat()
         }
@@ -138,10 +197,10 @@ class StepCounterService : Service(), SensorEventListener {
             stopSelf()
             return START_NOT_STICKY
         }
-        // START_STICKY restart: onCreate already restored everything; re-check the sensor here so a
+        // START_STICKY restart: onCreate already restored everything; re-check the source here so a
         // permission granted while the app was closed is picked up without a reboot.
-        if (seeded && !registered) registerSensor()
-        if (seeded && registered) {
+        if (seeded && activeSource == StepSource.NONE) startPrimarySource()
+        if (seeded && activeSource != StepSource.NONE) {
             runCatching { Reminders.ensureReconcile(this) }
         }
         return START_STICKY
@@ -149,18 +208,68 @@ class StepCounterService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         val e = event ?: return
-        if (e.sensor.type != Sensor.TYPE_STEP_COUNTER || e.values.isEmpty()) return
-        val raw = e.values[0]
-        if (raw.isNaN() || raw.isInfinite()) return
+        if (e.values.isEmpty()) return
         val now = System.currentTimeMillis()
-        cadence.onEvent(raw, now, DateKey.today(now))
-        latestRaw = raw
+        when (e.sensor.type) {
+            Sensor.TYPE_STEP_COUNTER -> onCounterEvent(e.values[0], now)
+            Sensor.TYPE_STEP_DETECTOR -> onDetectorEvent(e.values[0], now)
+            Sensor.TYPE_ACCELEROMETER -> onAccelerometerEvent(e.values, now)
+            else -> Unit
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
+    private fun onCounterEvent(raw: Float, now: Long) {
+        if (!raw.isFinite()) return
+        if (activeSource != StepSource.COUNTER) {
+            // The primary source recovered. Rebase to it and ignore the catch-up delta: the fallback
+            // already counted everything it could see.
+            activate(StepSource.COUNTER)
+            return
+        }
+        health.onEvent(now)
+        lastEventAt = now
+        cadence.onEvent(raw, now, DateKey.today(now))
+        publishRaw(raw)
+        maybeMarkSourceEvent(now)
+    }
+
+    private fun onDetectorEvent(value: Float, now: Long) {
+        val steps = value.toInt().coerceAtLeast(1)
+        if (activeSource == StepSource.MOTION_ESTIMATE) {
+            // The measured detector recovered while the estimate was live: prefer the measurement.
+            activate(StepSource.DETECTOR)
+            return
+        }
+        if (activeSource != StepSource.DETECTOR) return
+        detectorCumulative += steps
+        health.onEvent(now)
+        lastEventAt = now
+        cadence.onEvent(detectorCumulative, now, DateKey.today(now))
+        publishRaw(detectorCumulative)
+        maybeMarkSourceEvent(now)
+    }
+
+    private fun onAccelerometerEvent(values: FloatArray, now: Long) {
+        val magnitude = sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2])
+        val monotonic = android.os.SystemClock.elapsedRealtime()
+        if (probeActive) {
+            val detected = probeDetector?.onSample(magnitude, monotonic) ?: 0
+            probeSteps += detected
+        }
+        if (activeSource == StepSource.MOTION_ESTIMATE) {
+            estimateCumulative += estimateDetector.onSample(magnitude, monotonic)
+            health.onEvent(now)
+            lastEventAt = now
+            cadence.onEvent(estimateCumulative, now, DateKey.today(now))
+            publishRaw(estimateCumulative)
+            maybeMarkSourceEvent(now)
+        }
+    }
+
     override fun onDestroy() {
-        unregisterSensor()
+        unregisterAll()
         flushPending()
         val wasCounting = mode == Mode.COUNTING
         if (!eraseInProgress && wasCounting) StatusStore.markStopped(this)
@@ -168,35 +277,175 @@ class StepCounterService : Service(), SensorEventListener {
         super.onDestroy()
     }
 
-    private fun registerSensor() {
-        if (blocked || eraseInProgress) return
-        val manager = sensorManager
-        val sensor = stepSensor
-        if (manager == null || sensor == null) {
-            block(Mode.NO_SENSOR)
-            return
+    /** Picks the best source this phone reports and activates it, falling down the ladder on failure. */
+    private fun startPrimarySource() {
+        var target = StepSourcePolicy.choose(availability)
+        while (target != StepSource.NONE) {
+            if (activate(target)) return
+            availability = when (target) {
+                StepSource.COUNTER -> availability.copy(counter = false)
+                StepSource.DETECTOR -> availability.copy(detector = false)
+                StepSource.MOTION_ESTIMATE -> availability.copy(accelerometer = false)
+                StepSource.NONE -> availability
+            }
+            target = StepSourcePolicy.choose(availability)
         }
-        if (!Permissions.hasActivityRecognition(this)) {
-            block(Mode.NO_PERMISSION)
-            return
+        block(Mode.NO_SENSOR)
+    }
+
+    /**
+     * Registers [target] (plus the hardware counter whenever it exists, for recovery) and makes it
+     * the active source. The old source's pending value is flushed first; the new source's first
+     * event rebases the pipeline. Does not crash when a registration is refused: it reports false
+     * and removes that sensor from [availability].
+     */
+    private fun activate(target: StepSource): Boolean {
+        if (blocked || eraseInProgress) return false
+        if (target == StepSource.NONE) return false
+        if (target == activeSource) return true
+        val now = System.currentTimeMillis()
+
+        // Flush the old source before its scale is replaced, so its last steps are not lost.
+        if (activeSource != StepSource.NONE) flushPending()
+        cadence.rebase()
+
+        if (!ensureRegistrations(target)) return false
+
+        // Keep measured sensors registered for fast recovery; stop an accelerometer used only for a
+        // previous estimate when a measured source is back.
+        if (target != StepSource.MOTION_ESTIMATE && accelerometerRegistered && !probeActive) {
+            unregister(accelerometerSensor)
+            accelerometerRegistered = false
         }
-        if (registered) return
-        registered = runCatching {
-            manager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }.getOrDefault(false)
-        if (!registered) {
-            block(Mode.NO_SENSOR)
-            return
+        when (target) {
+            StepSource.DETECTOR -> detectorCumulative = 0f
+            StepSource.MOTION_ESTIMATE -> {
+                estimateCumulative = 0f
+                estimateDetector.reset()
+            }
+            else -> Unit
         }
+
+        synchronized(rawLock) {
+            latestRaw = Float.NaN
+            latestSource = target
+        }
+        lastWrittenRaw = Float.NaN
+        lastWrittenSource = StepSource.NONE
+        if (activeSource != StepSource.NONE) switches++
+        activeSource = target
+        lastEventAt = 0L
+        health.onSourceStart(target, now)
+        markSourceStatus(force = true)
         mode = Mode.COUNTING
         markAlive(force = true)
         updateNotification()
+        return true
     }
 
-    private fun unregisterSensor() {
-        if (!registered) return
-        registered = false
+    private fun ensureRegistrations(target: StepSource): Boolean {
+        if (sensorManager == null) return false
+        if (availability.counter && !counterRegistered) {
+            val sensor = counterSensor
+            counterRegistered = sensor != null && registerBatched(sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            if (!counterRegistered) availability = availability.copy(counter = false)
+        }
+        if (target == StepSource.COUNTER) {
+            if (!counterRegistered) return false
+        }
+        if (availability.detector && !detectorRegistered) {
+            val sensor = detectorSensor
+            detectorRegistered = sensor != null && registerBatched(sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            if (!detectorRegistered) availability = availability.copy(detector = false)
+        }
+        if (target == StepSource.DETECTOR && !detectorRegistered) return false
+        if (target == StepSource.MOTION_ESTIMATE) {
+            if (!availability.accelerometer) return false
+            if (!accelerometerRegistered) {
+                val sensor = accelerometerSensor
+                accelerometerRegistered = sensor != null &&
+                    registerBatched(sensor, SensorManager.SENSOR_DELAY_UI)
+                if (!accelerometerRegistered) availability = availability.copy(accelerometer = false)
+            }
+            if (!accelerometerRegistered) return false
+        }
+        return true
+    }
+
+    /** Batches counter/detector events when the HAL supports it; never delays the writer. */
+    private fun registerBatched(sensor: Sensor, samplingUs: Int): Boolean {
+        val manager = sensorManager ?: return false
+        val batchUs = runCatching { sensor.maxDelay.coerceIn(0, MAX_BATCH_US) }.getOrDefault(0)
+        return runCatching {
+            if (batchUs > 0) {
+                manager.registerListener(this, sensor, samplingUs, batchUs)
+            } else {
+                manager.registerListener(this, sensor, samplingUs)
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun unregister(sensor: Sensor?) {
+        val manager = sensorManager
+        if (manager == null || sensor == null) return
+        runCatching { manager.unregisterListener(this, sensor) }
+    }
+
+    private fun unregisterAll() {
+        probeActive = false
+        probeJob?.cancel()
+        probeJob = null
         runCatching { sensorManager?.unregisterListener(this) }
+        counterRegistered = false
+        detectorRegistered = false
+        accelerometerRegistered = false
+    }
+
+    /**
+     * Starts a 5 s accelerometer probe after a measured source went silent. The probe runs at a
+     * higher rate only for those 5 s; two consecutive walking probes switch tier.
+     */
+    private fun startMotionProbe() {
+        if (probeActive || probeJob?.isActive == true) return
+        val sensor = accelerometerSensor ?: return
+        if (!availability.accelerometer || activeSource == StepSource.MOTION_ESTIMATE) return
+        if (!accelerometerRegistered) {
+            accelerometerRegistered = registerBatched(sensor, SensorManager.SENSOR_DELAY_GAME)
+            if (!accelerometerRegistered) {
+                availability = availability.copy(accelerometer = false)
+                return
+            }
+        }
+        probeDetector = MotionStepDetector()
+        probeSteps = 0
+        probeActive = true
+        probeJob = scope.launch {
+            delay(PROBE_WINDOW_MS)
+            withContext(Dispatchers.Main) {
+                val detector = probeDetector
+                probeActive = false
+                probeDetector = null
+                val walking = detector?.isWalking == true || probeSteps >= PROBE_MIN_STEPS
+                // The probe-accelerometer is only kept when it is the active estimate source.
+                if (activeSource != StepSource.MOTION_ESTIMATE && accelerometerRegistered) {
+                    unregister(accelerometerSensor)
+                    accelerometerRegistered = false
+                }
+                val action = health.onProbeResult(System.currentTimeMillis(), walking)
+                if (action == StepSourceHealth.Action.Fallback) switchFallback()
+            }
+        }
+    }
+
+    /** Moves to the next tier the phone can actually provide. */
+    private fun switchFallback() {
+        var target = StepSourcePolicy.fallbackTarget(activeSource, availability)
+        while (target != null) {
+            if (activate(target)) return
+            target = StepSourcePolicy.fallbackTarget(activeSource, availability)
+        }
+        // Nothing left to switch to: stay on the current source and keep the honest status.
+        markSourceStatus(force = true)
     }
 
     /** Degraded state: mark it (Home renders the matching card) and stop without crashing. */
@@ -225,19 +474,29 @@ class StepCounterService : Service(), SensorEventListener {
             while (isActive) {
                 delay(WRITE_INTERVAL_MS)
                 if (eraseInProgress) continue
-                val raw = latestRaw
-                if (raw.isNaN()) continue
+                val (raw, source) = readSnapshot()
+                if (raw.isNaN() || source == StepSource.NONE) continue
                 val now = System.currentTimeMillis()
                 val today = DateKey.today(now)
                 val active = cadence.activeMinutesFor(today)
-                if (raw == lastWrittenRaw && active == lastWrittenActive && today == lastWrittenDate) continue
+                if (raw == lastWrittenRaw && active == lastWrittenActive &&
+                    today == lastWrittenDate && source == lastWrittenSource
+                ) {
+                    continue
+                }
                 val result = runCatching {
-                    app.container.steps.recordRawStep(raw = raw, now = now, activeMinutesToday = active)
+                    app.container.steps.recordRawStep(
+                        raw = raw,
+                        now = now,
+                        activeMinutesToday = active,
+                        source = source,
+                    )
                 }
                 if (result.isFailure) continue
                 lastWrittenRaw = raw
                 lastWrittenActive = active
                 lastWrittenDate = today
+                lastWrittenSource = source
                 val row = result.getOrNull() ?: continue
                 markAlive()
                 maybeNotifyGoal(row.steps)
@@ -250,7 +509,14 @@ class StepCounterService : Service(), SensorEventListener {
         if (heartbeatJob?.isActive == true) return
         heartbeatJob = scope.launch {
             while (isActive) {
-                if (!eraseInProgress) markAlive(force = true)
+                if (!eraseInProgress) {
+                    markAlive(force = true)
+                    markSourceStatus(force = true)
+                    val action = health.onTick(System.currentTimeMillis())
+                    if (action == StepSourceHealth.Action.ProbeMotion) {
+                        withContext(Dispatchers.Main) { startMotionProbe() }
+                    }
+                }
                 delay(STATUS_HEARTBEAT_MS)
             }
         }
@@ -268,18 +534,56 @@ class StepCounterService : Service(), SensorEventListener {
         StatusStore.mark(this, status)
     }
 
+    /** Writes source/last-event/switches at most every [SOURCE_MARK_INTERVAL_MS] (and on switches). */
+    private fun markSourceStatus(force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (!force && now - lastSourceMarkAt < SOURCE_MARK_INTERVAL_MS) return
+        lastSourceMarkAt = now
+        val today = DateKey.today(now)
+        if (today != statusDay) {
+            statusDay = today
+            switches = 0
+        }
+        val (_, source) = readSnapshot()
+        StatusStore.markSource(
+            this,
+            StepSourceStatus(source = source, lastEventAt = lastEventAt, switches = switches),
+        )
+    }
+
+    private fun maybeMarkSourceEvent(now: Long) {
+        if (now - lastSourceMarkAt < SOURCE_MARK_INTERVAL_MS) return
+        markSourceStatus()
+    }
+
+    private fun publishRaw(raw: Float) {
+        synchronized(rawLock) {
+            latestRaw = raw
+            latestSource = activeSource
+        }
+    }
+
+    private fun readSnapshot(): Pair<Float, StepSource> = synchronized(rawLock) {
+        latestRaw to latestSource
+    }
+
     /** Final write at a lifecycle boundary (best effort, bounded so onDestroy cannot hang). */
     private fun flushPending() {
         if (eraseInProgress) return
-        val raw = latestRaw
-        if (raw.isNaN()) return
+        val (raw, source) = readSnapshot()
+        if (raw.isNaN() || source == StepSource.NONE) return
         val now = System.currentTimeMillis()
         val today = DateKey.today(now)
         val active = cadence.finish(now, today)
         val row = runBlocking {
             withTimeoutOrNull(FLUSH_TIMEOUT_MS) {
                 runCatching {
-                    app.container.steps.recordRawStep(raw = raw, now = now, activeMinutesToday = active)
+                    app.container.steps.recordRawStep(
+                        raw = raw,
+                        now = now,
+                        activeMinutesToday = active,
+                        source = source,
+                    )
                 }.getOrNull()
             }
         }
@@ -288,7 +592,8 @@ class StepCounterService : Service(), SensorEventListener {
 
     private fun maybeNotifyGoal(steps: Int) {
         if (steps < goalSteps) return
-        runCatching { Notifications.notifyGoalReached(this, steps, goalSteps) }
+        val estimated = activeSource == StepSource.MOTION_ESTIMATE
+        runCatching { Notifications.notifyGoalReached(this, steps, goalSteps, estimated) }
     }
 
     /** @return false when the platform refused to put the service in the foreground. */
@@ -313,13 +618,16 @@ class StepCounterService : Service(), SensorEventListener {
 
     private fun buildNotification(): Notification {
         val localized = AppLocale.wrap(this)
-        val (title, text) = when (mode) {
-            Mode.COUNTING -> localized.getString(R.string.sensor_notif_counting_title) to
-                localized.getString(R.string.sensor_notif_counting_text)
-            Mode.NO_PERMISSION -> localized.getString(R.string.sensor_notif_permission_title) to
+        val (title, text) = when {
+            mode == Mode.NO_PERMISSION -> localized.getString(R.string.sensor_notif_permission_title) to
                 localized.getString(R.string.sensor_notif_permission_text)
-            Mode.NO_SENSOR -> localized.getString(R.string.sensor_notif_no_sensor_title) to
+            mode == Mode.NO_SENSOR -> localized.getString(R.string.sensor_notif_no_sensor_title) to
                 localized.getString(R.string.sensor_notif_no_sensor_text)
+            activeSource == StepSource.MOTION_ESTIMATE ->
+                localized.getString(R.string.sensor_notif_estimate_title) to
+                    localized.getString(R.string.sensor_notif_estimate_text)
+            else -> localized.getString(R.string.sensor_notif_counting_title) to
+                localized.getString(R.string.sensor_notif_counting_text)
         }
         return Notifications.stepServiceNotification(this, title, text)
     }
@@ -328,6 +636,11 @@ class StepCounterService : Service(), SensorEventListener {
         private const val WRITE_INTERVAL_MS = 1_500L
         private const val FLUSH_TIMEOUT_MS = 800L
         private const val STATUS_HEARTBEAT_MS = 30_000L
+        private const val SOURCE_MARK_INTERVAL_MS = 10_000L
+        private const val STALL_AFTER_MS = 600_000L
+        private const val PROBE_WINDOW_MS = 5_000L
+        private const val PROBE_MIN_STEPS = 3
+        private const val MAX_BATCH_US = 20_000_000
 
         /**
          * True while delete-all is suppressing service writes. Volatile because a service instance
@@ -338,9 +651,9 @@ class StepCounterService : Service(), SensorEventListener {
         /**
          * Starts the step service only when it can legally and usefully run.
          *
-         * @return false when ACTIVITY_RECOGNITION or the step sensor is missing (the status store
-         * already holds the reason), or when the platform refuses the start. Never throws: callers
-         * include onboarding, app-open and boot entry points where a crash is unacceptable.
+         * @return false when ACTIVITY_RECOGNITION or every counting sensor is missing (the status
+         * store already holds the reason), or when the platform refuses the start. Never throws:
+         * callers include onboarding, app-open and boot entry points where a crash is unacceptable.
          */
         fun ensureStarted(context: Context): Boolean {
             val appContext = context.applicationContext
@@ -348,7 +661,7 @@ class StepCounterService : Service(), SensorEventListener {
                 StatusStore.mark(appContext, StepServiceStatus.NO_PERMISSION)
                 return false
             }
-            if (!Permissions.hasStepSensor(appContext)) {
+            if (!StepSensors.hasAny(appContext)) {
                 StatusStore.mark(appContext, StepServiceStatus.NO_SENSOR)
                 return false
             }

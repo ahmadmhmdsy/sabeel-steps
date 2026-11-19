@@ -7,12 +7,14 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.sabeel.steps.domain.AppLanguage
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.Gender
+import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.domain.StepState
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.domain.UserSettings
@@ -46,6 +48,8 @@ private object Keys {
     val todaySteps = intPreferencesKey("step_today_steps")
     val baselineDate = stringPreferencesKey("step_baseline_date")
     val initialized = booleanPreferencesKey("step_initialized")
+    val source = stringPreferencesKey("step_source")
+    val lastRawAt = longPreferencesKey("step_last_raw_at")
 }
 
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
@@ -82,6 +86,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             todaySteps = prefs[Keys.todaySteps] ?: 0,
             baselineDate = prefs[Keys.baselineDate] ?: today,
             initialized = prefs[Keys.initialized] ?: false,
+            source = prefs[Keys.source]?.let { runCatching { StepSource.valueOf(it) }.getOrNull() }
+                ?: StepSource.COUNTER,
+            lastRawAt = prefs[Keys.lastRawAt] ?: 0L,
         )
     }.getOrElse { StepState.initial(today) }
 
@@ -91,6 +98,8 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             prefs[Keys.todaySteps] = state.todaySteps
             prefs[Keys.baselineDate] = state.baselineDate
             prefs[Keys.initialized] = state.initialized
+            prefs[Keys.source] = state.source.name
+            prefs[Keys.lastRawAt] = state.lastRawAt
         }
     }
 

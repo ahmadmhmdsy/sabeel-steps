@@ -10,6 +10,7 @@ import com.sabeel.steps.domain.DailyStep
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.StepPipeline
+import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.domain.StepState
 import com.sabeel.steps.domain.UserSettings
 import kotlinx.coroutines.delay
@@ -97,10 +98,11 @@ class StepsRepository(
         raw: Float,
         now: Long = System.currentTimeMillis(),
         activeMinutesToday: Int = -1,
+        source: StepSource = StepSource.COUNTER,
     ): DailyStep? = mutex.withLock {
         val today = DateKey.today(now)
         val state = settings.readStepState(today)
-        val update = StepPipeline.onSensor(state, raw, today)
+        val update = StepPipeline.onSensor(state, raw, today, source = source, nowMillis = now)
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(update.state, existing?.steps)
         settings.writeStepState(update.state.copy(todaySteps = steps))
@@ -115,15 +117,23 @@ class StepsRepository(
         now: Long = System.currentTimeMillis(),
         raw: Float? = null,
         activeMinutesToday: Int = -1,
+        source: StepSource = StepSource.COUNTER,
     ): DailyStep? = mutex.withLock {
         val today = DateKey.today(now)
         var state = settings.readStepState(today)
         if (raw != null) {
-            state = StepPipeline.onSensor(state, raw, today).state
+            state = StepPipeline.onSensor(state, raw, today, source = source, nowMillis = now).state
         } else if (state.baselineDate != today) {
             // No sensor reading yet on the new day: forget the old baseline and re-seed on the next
             // event, but keep the existing day row (max rule below).
-            state = StepState(baselineRaw = 0f, todaySteps = 0, baselineDate = today, initialized = false)
+            state = StepState(
+                baselineRaw = 0f,
+                todaySteps = 0,
+                baselineDate = today,
+                initialized = false,
+                source = state.source,
+                lastRawAt = 0L,
+            )
         }
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(state, existing?.steps)

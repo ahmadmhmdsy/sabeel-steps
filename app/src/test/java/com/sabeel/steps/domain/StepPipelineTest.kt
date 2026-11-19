@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+
 /** Pure-JVM tests for the sensor -> daily aggregate reconciliation. */
 class StepPipelineTest {
 
@@ -134,5 +135,123 @@ class StepPipelineTest {
         assertEquals(120, StepPipeline.resolveTodaySteps(state, dbTodaySteps = null))
         assertEquals(120, StepPipeline.resolveTodaySteps(state, dbTodaySteps = 40))
         assertEquals(0, StepPipeline.resolveTodaySteps(state.copy(todaySteps = -5), dbTodaySteps = null))
+    }
+
+    @Test
+    fun sourceSwitchRebasesWithoutCountingTheGap() {
+        // The counter went silent; the detector starts at its own zero. The switch itself must not
+        // turn the new sensor's first raw value into steps, and the day's total must be preserved.
+        val state = StepState(
+            baselineRaw = 1000f,
+            todaySteps = 500,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        val update = StepPipeline.onSensor(
+            state,
+            raw = 55f,
+            today = today,
+            source = StepSource.DETECTOR,
+            nowMillis = 2_000L,
+        )
+        assertEquals(500, update.todaySteps)
+        assertEquals(55.0, update.state.baselineRaw.toDouble(), 0.001)
+        assertEquals(StepSource.DETECTOR, update.state.source)
+        assertEquals(2_000L, update.state.lastRawAt)
+        assertFalse(update.rolledOver)
+    }
+
+    @Test
+    fun counterCatchUpAfterFallbackIsIgnored() {
+        // While the detector was live, the counter kept counting. Returning to the counter must not
+        // dump its whole catch-up into today: the switch is a rebase, not a delta.
+        val state = StepState(
+            baselineRaw = 300f,
+            todaySteps = 800,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.DETECTOR,
+            lastRawAt = 5_000L,
+        )
+        val update = StepPipeline.onSensor(
+            state,
+            raw = 9_000f,
+            today = today,
+            source = StepSource.COUNTER,
+            nowMillis = 6_000L,
+        )
+        assertEquals(800, update.todaySteps)
+        assertEquals(9_000.0, update.state.baselineRaw.toDouble(), 0.001)
+        assertEquals(StepSource.COUNTER, update.state.source)
+    }
+
+    @Test
+    fun sourceSwitchAcrossMidnightRollsOver() {
+        val state = StepState(
+            baselineRaw = 500f,
+            todaySteps = 5_000,
+            baselineDate = yesterday,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        val update = StepPipeline.onSensor(
+            state,
+            raw = 20f,
+            today = today,
+            source = StepSource.DETECTOR,
+            nowMillis = 2_000L,
+        )
+        assertTrue(update.rolledOver)
+        assertEquals(0, update.todaySteps)
+        assertEquals(today, update.state.baselineDate)
+        assertEquals(StepSource.DETECTOR, update.state.source)
+    }
+
+    @Test
+    fun impossibleCatchUpIsClampedToTheElapsedTime() {
+        // One second elapsed, so at most 4 steps + 3 grace = 7 are plausible.
+        val state = StepState(
+            baselineRaw = 100f,
+            todaySteps = 0,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        val update = StepPipeline.onSensor(state, raw = 10_100f, today = today, nowMillis = 2_000L)
+        assertEquals(7, update.todaySteps)
+        assertEquals(10_100.0, update.state.baselineRaw.toDouble(), 0.001)
+    }
+
+    @Test
+    fun normalWalkingIsNotClamped() {
+        val state = StepState(
+            baselineRaw = 100f,
+            todaySteps = 0,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        // 9 steps in 2 s is a fast walk, still physically possible.
+        val update = StepPipeline.onSensor(state, raw = 109f, today = today, nowMillis = 3_000L)
+        assertEquals(9, update.todaySteps)
+    }
+
+    @Test
+    fun clampIsSkippedWhenThePreviousTimestampIsUnknown() {
+        val state = StepState(
+            baselineRaw = 100f,
+            todaySteps = 0,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 0L,
+        )
+        val update = StepPipeline.onSensor(state, raw = 10_100f, today = today, nowMillis = 2_000L)
+        assertEquals(10_000, update.todaySteps)
     }
 }

@@ -30,6 +30,14 @@ class StepCadence(
     var activeMinutesToday: Int = 0
         private set
 
+    /**
+     * Forgets the previous raw value without touching the day's active minutes. Called when the
+     * active source changes: a detector/estimate raw scale must not be compared with a counter raw.
+     */
+    fun rebase() {
+        lastRaw = Float.NaN
+    }
+
     /** Loads the day's already-counted active minutes (process-death restore) and anchors the ring. */
     fun seed(date: String, activeMinutes: Int, nowMillis: Long) {
         day = date

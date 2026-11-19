@@ -13,8 +13,10 @@
     <string name="sensor_notif_counting_text">Your steps stay on this phone.</string>
     <string name="sensor_notif_permission_title">Physical activity permission needed</string>
     <string name="sensor_notif_permission_text">Allow physical activity access in Settings so Sabeel can read the step sensor.</string>
+    <string name="sensor_notif_estimate_title">Sabeel is estimating your steps</string>
+    <string name="sensor_notif_estimate_text">No step counter is reporting, so this number comes from phone motion. Your steps stay on this phone.</string>
     <string name="sensor_notif_no_sensor_title">Step sensor not available</string>
-    <string name="sensor_notif_no_sensor_text">This device does not report a step counter. Walks are still saved.</string>
+    <string name="sensor_notif_no_sensor_text">This device reports no step counter, step detector or motion sensor. Walks are still saved.</string>
 
     <string name="sensor_notif_walk_title">Walk in progress</string>
     <string name="sensor_notif_walk_preparing">Getting ready…</string>
@@ -24,6 +26,7 @@
 
     <string name="sensor_notif_goal_title">Daily goal reached</string>
     <string name="sensor_notif_goal_text">%1$d of %2$d steps today</string>
+    <string name="sensor_notif_goal_text_estimated">%1$d of %2$d steps today · estimated</string>
 
     <string name="sensor_reminder_title">Time for a walk</string>
     <string name="sensor_reminder_text">A short walk keeps your streak alive.</string>

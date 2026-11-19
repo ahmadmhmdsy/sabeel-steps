@@ -37,7 +37,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.platform.OemBatteryGuide
+import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.platform.Permissions
+import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.platform.StepServiceStatus
 import com.sabeel.steps.ui.components.CountingStatusCard
 import com.sabeel.steps.ui.components.PermissionCard
@@ -70,7 +72,7 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
         onPauseOrDispose { }
     }
     val hasActivityPermission = remember(permissionEpoch) { Permissions.hasActivityRecognition(context) }
-    val hasSensor = remember(permissionEpoch) { Permissions.hasStepSensor(context) }
+    val hasSource = remember(permissionEpoch) { StepSensors.hasAny(context) }
     val activityPermission = Permissions.activityRecognitionPermission()
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -99,11 +101,24 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
     val statusText = when {
         !hasActivityPermission || ui.serviceStatus == StepServiceStatus.NO_PERMISSION ->
             stringResource(R.string.diagnostics_status_no_permission)
-        !hasSensor || ui.serviceStatus == StepServiceStatus.NO_SENSOR ->
+        !hasSource || ui.serviceStatus == StepServiceStatus.NO_SENSOR ->
             stringResource(R.string.diagnostics_status_no_sensor)
+        ui.sourceStatus.source == StepSource.MOTION_ESTIMATE ->
+            stringResource(R.string.diagnostics_status_estimated)
         ui.serviceStatus == StepServiceStatus.COUNTING ->
             stringResource(R.string.diagnostics_status_counting)
         else -> stringResource(R.string.diagnostics_status_stopped)
+    }
+    val sourceLastEvent = ui.sourceStatus.lastEventAt
+    val lastSensorText = if (sourceLastEvent > 0L) {
+        timeText(sourceLastEvent)
+    } else {
+        stringResource(R.string.diagnostics_last_event_none)
+    }
+    val fallbacksText = if (ui.sourceStatus.switches > 0) {
+        ui.sourceStatus.switches.toString()
+    } else {
+        stringResource(R.string.diagnostics_fallbacks_none)
     }
     val updatedAt = ui.today?.updatedAt ?: 0L
     val lastUpdateText = if (updatedAt > 0L) {
@@ -145,6 +160,21 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 InfoRow(
+                    label = stringResource(R.string.diagnostics_source_label),
+                    value = stringResource(StepSensors.labelRes(ui.sourceStatus.source)),
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_last_event_label),
+                    value = lastSensorText,
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_fallbacks_label),
+                    value = fallbacksText,
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
                     label = stringResource(R.string.diagnostics_permission_label),
                     value = stringResource(
                         if (hasActivityPermission) R.string.diagnostics_permission_granted
@@ -168,7 +198,7 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 onClick = { openSettings(appSettingsIntent) },
             )
         }
-        if (!hasSensor || ui.serviceStatus == StepServiceStatus.NO_SENSOR) {
+        if (!hasSource || ui.serviceStatus == StepServiceStatus.NO_SENSOR) {
             CountingStatusCard(
                 title = stringResource(R.string.home_status_no_sensor_title),
                 body = stringResource(R.string.diagnostics_no_sensor_note),
@@ -185,6 +215,7 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                DiagnosticsBodyText(stringResource(R.string.diagnostics_source_note))
                 DiagnosticsBodyText(stringResource(R.string.diagnostics_body_sensor))
                 DiagnosticsBodyText(stringResource(R.string.diagnostics_body_service))
                 DiagnosticsBodyText(stringResource(R.string.diagnostics_body_battery))

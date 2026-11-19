@@ -23,7 +23,9 @@ import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.Reminders
 import com.sabeel.steps.platform.StatusStore
+import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.platform.StepServiceStatus
+import com.sabeel.steps.platform.StepSourceStatus
 import com.sabeel.steps.ui.i18n.AppLocale
 import com.sabeel.steps.ui.screens.SavedWalkUi
 import com.sabeel.steps.service.StepCounterService
@@ -74,6 +76,7 @@ data class HomeUiState(
     val last7: List<DailyStep> = emptyList(),
     val streak: Int = 0,
     val serviceStatus: StepServiceStatus = StepServiceStatus.STOPPED,
+    val sourceStatus: StepSourceStatus = StepSourceStatus(),
     val restDayToday: Boolean = false,
 )
 
@@ -86,7 +89,7 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
             emit(
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
-                    !Permissions.hasStepSensor(app) -> StepServiceStatus.NO_SENSOR
+                    !StepSensors.hasAny(app) -> StepServiceStatus.NO_SENSOR
                     else -> StatusStore.read(app)
                 },
             )
@@ -100,14 +103,28 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
         container.settings.restDaysFlow,
     ) { settings, restDays -> settings to (DateKey.today() in restDays) }
 
+    /** Service status plus the live source, polled together so Home never shows mismatched state. */
+    private fun statusFlow(): Flow<Pair<StepServiceStatus, StepSourceStatus>> = combine(
+        serviceStatusFlow(),
+        sourceStatusFlow(),
+    ) { status, source -> status to source }
+
+    private fun sourceStatusFlow(): Flow<StepSourceStatus> = flow {
+        while (true) {
+            emit(StatusStore.readSource(app))
+            delay(5_000)
+        }
+    }.distinctUntilChanged()
+
     val state: StateFlow<HomeUiState> = combine(
         preferencesFlow,
         container.steps.todayFlow(),
         container.steps.lastDaysFlow(7),
         container.steps.streakFlow(),
-        serviceStatusFlow(),
-    ) { preferences, today, last7, streak, serviceStatus ->
+        statusFlow(),
+    ) { preferences, today, last7, streak, status ->
         val (settings, restDayToday) = preferences
+        val (serviceStatus, sourceStatus) = status
         val window = StepMath.windowDates(DateKey.today(), 7)
         HomeUiState(
             settings = settings,
@@ -115,6 +132,7 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
             last7 = StepMath.fillWindow(last7, window),
             streak = streak,
             serviceStatus = serviceStatus,
+            sourceStatus = sourceStatus,
             restDayToday = restDayToday,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
@@ -137,6 +155,7 @@ data class DiagnosticsUiState(
     val settings: UserSettings = UserSettings(),
     val today: DailyStep? = null,
     val serviceStatus: StepServiceStatus = StepServiceStatus.STOPPED,
+    val sourceStatus: StepSourceStatus = StepSourceStatus(),
 )
 
 /**
@@ -149,10 +168,17 @@ class DiagnosticsViewModel(private val app: SabeelApp) : ViewModel() {
             emit(
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
-                    !Permissions.hasStepSensor(app) -> StepServiceStatus.NO_SENSOR
+                    !StepSensors.hasAny(app) -> StepServiceStatus.NO_SENSOR
                     else -> StatusStore.read(app)
                 },
             )
+            delay(3_000)
+        }
+    }.distinctUntilChanged()
+
+    private fun sourceStatusFlow(): Flow<StepSourceStatus> = flow {
+        while (true) {
+            emit(StatusStore.readSource(app))
             delay(3_000)
         }
     }.distinctUntilChanged()
@@ -161,8 +187,14 @@ class DiagnosticsViewModel(private val app: SabeelApp) : ViewModel() {
         app.container.settings.settingsFlow,
         app.container.steps.todayFlow(),
         serviceStatusFlow(),
-    ) { settings, today, serviceStatus ->
-        DiagnosticsUiState(settings = settings, today = today, serviceStatus = serviceStatus)
+        sourceStatusFlow(),
+    ) { settings, today, serviceStatus, sourceStatus ->
+        DiagnosticsUiState(
+            settings = settings,
+            today = today,
+            serviceStatus = serviceStatus,
+            sourceStatus = sourceStatus,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiagnosticsUiState())
 
     companion object {

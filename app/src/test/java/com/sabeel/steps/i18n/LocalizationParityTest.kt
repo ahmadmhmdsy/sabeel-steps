@@ -145,6 +145,8 @@ class LocalizationParityTest {
             "string/settings_export_file_name",
             "string/settings_language_ar",
             "string/settings_language_en",
+            // The provider's brand name is the same Latin string in both languages.
+            "string/settings_health_connect_title",
         )
     }
 }

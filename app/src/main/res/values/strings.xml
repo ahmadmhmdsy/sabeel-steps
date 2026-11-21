@@ -104,6 +104,7 @@
     <string name="history_walks_empty">Walks you save appear here.</string>
     <string name="history_walk_detail_title">Walk details</string>
     <string name="history_walk_close">Close</string>
+    <string name="history_estimated_badge">Includes estimated steps</string>
 
     <!-- Walk -->
     <string name="walk_title">Walk</string>
@@ -125,6 +126,7 @@
     <string name="walk_gps_on">Location is recording your route.</string>
     <string name="walk_gps_off">Location is not available. Counting steps only.</string>
     <string name="walk_estimated_note">Your phone has no step sensor, so this walk\'s steps are estimated from its motion.</string>
+    <string name="walk_estimated_saved_note">Part of this walk\'s steps are estimated from phone motion, not measured by a step sensor.</string>
     <string name="walk_route_waiting">Waiting for the first location points…</string>
     <string name="walk_cd_route">Route sketch with %1$d recorded points.</string>
     <string name="walk_save">Save walk</string>
@@ -154,6 +156,13 @@
     <string name="settings_goal">Daily goal</string>
     <string name="settings_goal_steps_per_day">Steps per day</string>
     <string name="settings_section_tracking">Tracking</string>
+    <string name="settings_health_connect_title">Health Connect</string>
+    <string name="settings_health_connect_row_title">Use synced steps</string>
+    <string name="settings_health_connect_desc">This phone has no built-in step sensor. If a watch or another app saves steps to Health Connect, Sabeel can read today\'s total instead of estimating.</string>
+    <string name="settings_health_connect_connect">Connect</string>
+    <string name="settings_health_connect_connected">Connected — synced steps replace the estimate</string>
+    <string name="settings_health_connect_manage">Manage</string>
+    <string name="settings_health_connect_note">Read-only: Sabeel reads today\'s total and never writes to Health Connect.</string>
     <string name="settings_section_units_language">Units &amp; language</string>
     <string name="settings_section_app">App</string>
     <string name="settings_units">Units</string>
@@ -274,17 +283,21 @@
     <string name="diagnostics_status_no_permission">No permission</string>
     <string name="diagnostics_status_no_sensor">No step source</string>
     <string name="diagnostics_status_estimated">Counting (estimated)</string>
+    <string name="diagnostics_status_synced">Counting (synced from Health Connect)</string>
     <string name="diagnostics_source_label">Source</string>
     <string name="diagnostics_source_counter">Hardware step counter</string>
     <string name="diagnostics_source_detector">Hardware step detector</string>
     <string name="diagnostics_source_estimate">Phone motion (estimated)</string>
+    <string name="diagnostics_source_health_connect">Health Connect (synced)</string>
     <string name="diagnostics_source_none">None</string>
     <string name="diagnostics_last_event_label">Last sensor reading</string>
+    <string name="diagnostics_last_sync_label">Last sync from Health Connect</string>
     <string name="diagnostics_last_event_none">Not yet</string>
     <string name="diagnostics_fallbacks_label">Fallbacks today</string>
     <string name="diagnostics_fallbacks_none">None</string>
     <string name="diagnostics_source_note">Sabeel uses the best sensor this phone reports. If a hardware sensor stops sending, another source takes over and this screen says so.</string>
     <string name="home_estimated_note">Estimated from the phone’s motion, not a hardware step counter.</string>
+    <string name="home_health_connect_note">Synced from Health Connect (a watch or another app). It can lag behind your phone.</string>
     <string name="estimated_steps_value">≈ %1$s</string>
     <string name="diagnostics_today_label">Today</string>
     <string name="diagnostics_today_value">%1$s steps</string>
@@ -306,7 +319,7 @@
     <string name="diagnostics_oem_vivo">Open Settings › Battery › Background power consumption management, find Sabeel and allow background power usage. Also allow auto-start in iManager.</string>
     <string name="diagnostics_oem_generic">Open Settings › Apps › Sabeel › Battery and choose Unrestricted. If your phone has an autostart or startup manager, allow Sabeel there too.</string>
     <string name="diagnostics_body_title">What can pause counting</string>
-    <string name="diagnostics_body_sensor">A measured step sensor only counts while the phone is with you and moving; the estimate reads phone motion and is always marked as estimated. Steps never leave the phone, so nothing can recover steps that were not counted.</string>
+    <string name="diagnostics_body_sensor">A measured step sensor only counts while the phone is with you and moving; the estimate reads phone motion and is always marked as estimated. Steps never leave the phone, so nothing can recover steps that were not counted. Health Connect steps come from another app or a watch, can lag, and are applied only as a floor — Sabeel never writes to Health Connect.</string>
     <string name="diagnostics_body_service">Sabeel keeps a small foreground service running. Android or the phone maker can still stop it. Sabeel reconnects when you open the app and after your phone restarts, and it never invents a total to fill a gap.</string>
     <string name="diagnostics_body_battery">Battery saver, a forced stop, or a restart can interrupt counting until Sabeel runs again.</string>
     <string name="diagnostics_body_rest">A rest day never changes the counted steps; only the streak pauses.</string>

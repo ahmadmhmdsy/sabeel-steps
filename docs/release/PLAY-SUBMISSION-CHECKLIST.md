@@ -99,6 +99,9 @@ file records exactly what must be done and what evidence proves it.
   - Data shared: **No**.
   - Data processed on device only (steps, GPS route, body data, settings) is
     **not collection**; state this in the privacy policy and any free-text field.
+  - The opt-in Health Connect read is also on-device only: today's step total is
+    read from Health Connect, never transmitted, never written back. Say so in
+    the free-text field if one is offered.
   - No SDKs that collect data; no INTERNET permission.
   - Encryption in transit: not applicable (no transmission).
   - Users can delete data in-app (delete-all). No account deletion URL needed
@@ -109,6 +112,9 @@ file records exactly what must be done and what evidence proves it.
       app. Step counting and walking are fitness tracking; the app makes no
       diagnostic/treatment claims. Complete the Health Content and Services
       declaration truthfully (no medical device claims, disclaimer present).
+      **Health Connect:** declare the Steps data type as **read** (opt-in, only on
+      phones with no hardware step sensor, used as a daily floor; no write
+      access is requested and the app never writes to Health Connect).
 - [ ] **4.9 Foreground service declarations** — declare both types:
   - **health** — continuous step counting using `ACTIVITY_RECOGNITION`.
   - **location** — user-started GPS walk tracking.
@@ -123,7 +129,13 @@ file records exactly what must be done and what evidence proves it.
 - [ ] **4.11 Photo/video, contacts, SMS, call log, microphone** — not requested;
       no declarations needed.
 - [ ] **4.12 Permissions declaration** — no restricted permissions are used
-      beyond the FGS/health/location items above.
+      beyond the FGS/health/location items above. The build declares
+      `android.permission.health.READ_STEPS` for the opt-in Health Connect tier
+      (runtime health permission, requested through the system Health Connect
+      screen from the Settings card; revocable there).
+- [ ] **4.13 Health Connect data access form** — in the Health Connect section,
+      list Steps as read-only, describe the fallback reason (no hardware step
+      sensor), and keep the privacy policy/Data safety answers consistent.
 
 ## 5. Testing tracks and rollout
 

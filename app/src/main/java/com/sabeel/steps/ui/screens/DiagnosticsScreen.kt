@@ -38,6 +38,7 @@ import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.platform.OemBatteryGuide
 import com.sabeel.steps.domain.StepSource
+import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.platform.StepServiceStatus
@@ -72,7 +73,9 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
         onPauseOrDispose { }
     }
     val hasActivityPermission = remember(permissionEpoch) { Permissions.hasActivityRecognition(context) }
-    val hasSource = remember(permissionEpoch) { StepSensors.hasAny(context) }
+    val hasSource = remember(permissionEpoch) {
+        StepSensors.hasAny(context) || HealthConnect.isReady(context)
+    }
     val activityPermission = Permissions.activityRecognitionPermission()
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -103,8 +106,10 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             stringResource(R.string.diagnostics_status_no_permission)
         !hasSource || ui.serviceStatus == StepServiceStatus.NO_SENSOR ->
             stringResource(R.string.diagnostics_status_no_sensor)
-        ui.sourceStatus.source == StepSource.MOTION_ESTIMATE ->
+        ui.sourceStatus.source == StepSource.MOTION_ESTIMATE || (ui.today?.estimatedSteps ?: 0) > 0 ->
             stringResource(R.string.diagnostics_status_estimated)
+        ui.sourceStatus.source == StepSource.HEALTH_CONNECT ->
+            stringResource(R.string.diagnostics_status_synced)
         ui.serviceStatus == StepServiceStatus.COUNTING ->
             stringResource(R.string.diagnostics_status_counting)
         else -> stringResource(R.string.diagnostics_status_stopped)
@@ -165,7 +170,13 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 InfoRow(
-                    label = stringResource(R.string.diagnostics_last_event_label),
+                    label = stringResource(
+                        if (ui.sourceStatus.source == StepSource.HEALTH_CONNECT) {
+                            R.string.diagnostics_last_sync_label
+                        } else {
+                            R.string.diagnostics_last_event_label
+                        },
+                    ),
                     value = lastSensorText,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

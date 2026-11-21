@@ -21,13 +21,17 @@ still pending (see *Known limitations*).
 
 - **Steps:** a measured-first source ladder in a foreground service:
   `TYPE_STEP_COUNTER` (hardware counter) → `TYPE_STEP_DETECTOR` (hardware
-  detector) → a clearly labelled accelerometer estimate only when neither
-  measured sensor works. Every source switch is rebased (today's total is
-  preserved, the switch delta is ignored) and physically impossible jumps are
-  rejected. Home shows "≈" plus an estimate note, and Diagnostics names the live
-  source, its last reading and the number of fallbacks today. The step pipeline
-  seeds its baseline from the first sample, rolls over at local midnight and
-  keeps per-day totals monotonic.
+  detector) → **Health Connect** (opt-in, read-only daily total from a watch or
+  another app, only on phones with no hardware step sensor) → a clearly labelled
+  accelerometer estimate only when none of the above works. Every source switch
+  is rebased (today's total is preserved, the switch delta is ignored) and
+  physically impossible jumps are rejected; Health Connect contributes an
+  absolute floor, never an added delta. Home shows "≈" plus an estimate note (or
+  a sync note on Health Connect), and Diagnostics names the live source, its last
+  reading and the number of fallbacks today. The step pipeline seeds its baseline
+  from the first sample, rolls over at local midnight and keeps per-day totals
+  monotonic. The estimate portion of a day is persisted and marked in History and
+  in the CSV export.
 - **Home:** progress ring against a personal goal, distance, active minutes,
   streak, last-7-day bars, counting-status card and one-tap walk.
 - **History:** 7/30-day bars with goal line, per-day list and saved walks.
@@ -44,7 +48,9 @@ still pending (see *Known limitations*).
   can/cannot do.
 
 Deliberately **not** in v1: accounts, cloud sync, ads, subscriptions, social,
-Health Connect, widgets.
+Health Connect **write/export**, widgets. (Reading today's step total from Health
+Connect is an offline, opt-in fallback described above; the app never writes to
+Health Connect.)
 
 ## Architecture
 
@@ -117,22 +123,22 @@ Without the property, `BuildConfig.PRIVACY_POLICY_URL` is an empty string and
 the in-app link must be hidden. Filling and hosting the policy is an owner
 action: [docs/privacy-site/FILL-AND-HOST.md](docs/privacy-site/FILL-AND-HOST.md).
 
-## Verification status (2026-11-19)
+## Verification status (2026-11-21)
 
 > Everything below is either measured in this repository or explicitly marked
 > pending. Emulator evidence is included; no physical-device validation or
 > publication is claimed. The signed release APK/AAB in `dist/` were rebuilt from
-> this tree on 2026-11-19 after the source-ladder change and are pinned in
-> `dist/SHA256SUMS.txt`; nothing has been uploaded to Play.
+> this tree on 2026-11-21 after the Health Connect + estimate-provenance change and
+> are pinned in `dist/SHA256SUMS.txt`; nothing has been uploaded to Play.
 
 | Item | State |
 |---|---|
-| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-19 18:44 — `app/build/outputs/apk/debug/app-debug.apk`, 12,015,507 B, SHA-256 `595cf33f…e22fab` |
-| Unit tests | **108 tests, 0 failures** (`testDebugUnitTest` exit 0, 2026-11-19 18:30; 11 suites): CsvCodec 12, StepMerge 7, StepMath 24, StepPipeline 19, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5, MotionStepDetector 8, StepSourceHealth 9, StepSourcePolicy 6 |
+| Debug build | `assembleDebug` BUILD SUCCESSFUL 2026-11-21 22:32 — `app/build/outputs/apk/debug/app-debug.apk`, 15,188,660 B, SHA-256 `72d97c3b…6b238` |
+| Unit tests | **121 tests, 0 failures** (`testDebugUnitTest` exit 0, 2026-11-21 22:47; 11 suites): CsvCodec 15, StepMerge 7, StepMath 24, StepPipeline 26, StepCadence 5, GoalAdvisor 9, LocalizationParity 4, OemBatteryGuide 5, MotionStepDetector 8, StepSourceHealth 9, StepSourcePolicy 9 |
 | Lint | `lintDebug` **exit 0** — 0 errors, 44 warnings, 1 hint (non-blocking; report in `app/build/reports/lint-results-debug.txt`) |
-| Release APK / AAB | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL 2026-11-19 20:11 — signed with the upload key (v2, upload cert `7b12ad6b…6152d`), `apksigner verify` OK, `jarsigner -verify` on the AAB OK, `zipalign -c -P 16` OK; APK 1,683,698 B, AAB 3,538,379 B; hashes in `dist/SHA256SUMS.txt`; not uploaded |
+| Release APK / AAB | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL 2026-11-21 22:44 — signed with the upload key (v2, upload cert `7b12ad6b…6152d`), `apksigner verify` OK, `jarsigner -verify` on the AAB OK, `zipalign -c -P 16` OK; APK 1,861,838 B, AAB 3,977,681 B (+178,140 B / +439,302 B for the Health Connect client after R8); hashes in `dist/SHA256SUMS.txt`; not uploaded |
 | Release signing | Upload keystore generated; fingerprint in docs/release/KEYSTORE.md; Play App Signing registration pending (owner) |
-| Device / emulator run | **Emulator runs completed** on the API 36 ATD image (1080x2400). The signed release APK pass covered onboarding EN, skip-permissions and grant paths, honest no-sensor status, Arabic RTL (in-app switch and `ar-IQ` device locale) for Home/History/Insights, walk foreground service with location denied, delete-all and relaunch (evidence: 16 UI-hierarchy dumps plus [SMOKE-EVIDENCE.md](docs/review/2026-11-17/smoke/SMOKE-EVIDENCE.md); the ATD image returns blank `screencap` frames, so no PNGs are kept). A second pass on the debug build exercised the diagnostics screen, the goal-advice suggestion and the rest-day streak pause in English and Arabic, and caught a rest-day streak bug that is now fixed and covered by tests (evidence: 9 UI-hierarchy dumps, [EVIDENCE.md](docs/review/2026-11-17/adoption-smoke/EVIDENCE.md)); the crash buffer was empty. A third pass on 2026-11-19 exercised the labelled estimate tier on the same sensor-less image: stationary stayed at ≈ 0, an injected 1.8 Hz walking waveform produced ≈ 97 estimated steps in 60 s, and Home/Diagnostics/notification stated the estimated source in English and Arabic (evidence: [step-source-resilience/EVIDENCE.md](docs/review/2026-11-19/step-source-resilience/EVIDENCE.md); crash buffer empty). The signed release APK was then smoke-tested on a freshly wiped image: four onboarding steps, labelled estimate Home (≈ 40 of 8,000 with injected walking), estimate notification, no crash (qa-22…24 in the same evidence folder). The measured counter→detector ladder still needs real hardware. Physical-device validation is still pending |
+| Device / emulator run | **Emulator runs completed** on the API 36 ATD image (1080x2400). The signed release APK pass covered onboarding EN, skip-permissions and grant paths, honest no-sensor status, Arabic RTL (in-app switch and `ar-IQ` device locale) for Home/History/Insights, walk foreground service with location denied, delete-all and relaunch (evidence: 16 UI-hierarchy dumps plus [SMOKE-EVIDENCE.md](docs/review/2026-11-17/smoke/SMOKE-EVIDENCE.md); the ATD image returns blank `screencap` frames, so no PNGs are kept). A second pass on the debug build exercised the diagnostics screen, the goal-advice suggestion and the rest-day streak pause in English and Arabic, and caught a rest-day streak bug that is now fixed and covered by tests (evidence: 9 UI-hierarchy dumps, [EVIDENCE.md](docs/review/2026-11-17/adoption-smoke/EVIDENCE.md)); the crash buffer was empty. A third pass on 2026-11-19 exercised the labelled estimate tier on the same sensor-less image: stationary stayed at ≈ 0, an injected 1.8 Hz walking waveform produced ≈ 97 estimated steps in 60 s, and Home/Diagnostics/notification stated the estimated source in English and Arabic (evidence: [step-source-resilience/EVIDENCE.md](docs/review/2026-11-19/step-source-resilience/EVIDENCE.md); crash buffer empty). The signed release APK was then smoke-tested on a freshly wiped image: four onboarding steps, labelled estimate Home (≈ 40 of 8,000 with injected walking), estimate notification, no crash (qa-22…24 in the same evidence folder). The measured counter→detector ladder still needs real hardware. A fourth pass on 2026-11-21 installed the rebuilt release APK over the previous release install (Room v1→v2 migration, boot and Home render, no crash), captured the Settings Health Connect card and Health Connect's read-only Steps permission screen, and captured the estimate source and Arabic/English labels in Home, Diagnostics and Settings, and ran a synthetic-input estimated walk (live ≈ 81, summary, History badge, saved-walk dialog) (evidence: [health-connect/EVIDENCE.md](docs/review/2026-11-21/health-connect/EVIDENCE.md)); the grant was not completed on the image, so the synced floor itself is still untested. Physical-device validation is still pending |
 | Play publication | **Not published.** Declarations and assets are owner actions |
 
 Do not copy a count or hash into a release note unless it was produced by the
@@ -148,6 +154,14 @@ command that built that artifact.
 - The accelerated estimate is deliberately labelled and conservative. It cannot
   distinguish walking from some hand-carried or handshake motion; do not present
   it as exact step counts.
+- The Health Connect tier is unit-tested, and its card and read-only Steps
+  permission screen were captured on the emulator, but no Health Connect step
+  data existed on the image, so the read path, the floor reconciliation and the
+  30-minute staleness fallback still need a phone whose watch or app writes steps
+  to Health Connect (owner hardware item, [HARDWARE-QA-CHECKLIST.md §5b](docs/legal/HARDWARE-QA-CHECKLIST.md)).
+- The v1.1 CSV format adds a sixth `estimated_steps` column. Five-column files
+  from v1.0 still import (the estimate is stored as 0); other apps that read the
+  CSV may need the new header.
 - Arabic copy has not had a native-speaker review; Arabic launch is blocked
   until that review happens (owner action).
 - Store assets (screenshots, feature graphic, FGS demo video) are not ready.

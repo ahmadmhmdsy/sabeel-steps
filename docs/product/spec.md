@@ -1,7 +1,8 @@
 # Product spec v1 — Sabeel (working name)
 
 Read docs/product/brief.md first. This file is the build contract: if code and this file disagree,
-fix one of them explicitly. Status: v1.0, 2026-11-16.
+fix one of them explicitly. Status: v1.1, 2026-11-21 (owner-approved read-only Health Connect tier,
+persisted estimate markers). v1.0 was 2026-11-16.
 
 ## 1. Data model (Room, versions start at 1)
 
@@ -14,6 +15,7 @@ fix one of them explicitly. Status: v1.0, 2026-11-16.
 | calories | REAL | estimated kcal |
 | activeMinutes | INTEGER | minutes with cadence >= 60 spm, best-effort |
 | updatedAt | INTEGER | epoch millis |
+| estimatedSteps | INTEGER NOT NULL DEFAULT 0 | how many of `steps` came from the labelled estimate; 0..steps, monotonic within a day, exactly 0 on measured/synced sources |
 
 ### Walk (table walks)
 | column | type | notes |
@@ -25,6 +27,11 @@ fix one of them explicitly. Status: v1.0, 2026-11-16.
 | distanceMeters | REAL | GPS polyline length when available, else stride estimate |
 | avgPaceSecPerKm | INTEGER | derived, 0 if < 50 m |
 | routeJson | TEXT | JSON array [{"lat":..,"lng":..,"t":millis}, ...], empty when no GPS |
+| estimated | INTEGER NOT NULL DEFAULT 0 | 1 when any step counted during the walk came from the estimate |
+
+CSV export/import (SAF, round-trip safe): header `date,steps,distance_meters,calories,active_minutes,estimated_steps`;
+import also accepts the legacy 5-column header/rows (estimated_steps = 0). `estimated_steps` must be
+0..steps; a row that violates that is skipped, not silently repaired.
 
 Preferences (DataStore): goalSteps (default 8000), units ('metric'|'imperial'), heightCm (default 170),
 weightKg (default 70), gender ('unspecified'|'male'|'female'), strideCm (0 = auto), language ('en'|'ar'),
@@ -44,10 +51,13 @@ BMI (optional display only): weight / (height/100)^2, one decimal, never a diagn
 ## 3. Step source ladder and pipeline (correctness is a feature)
 
 1. Ladder: Sensor.TYPE_STEP_COUNTER (measured) -> Sensor.TYPE_STEP_DETECTOR (measured) ->
+   HEALTH_CONNECT (read-only daily total from another app/watch, owner-approved 2026-11-21) ->
    MOTION_ESTIMATE (accelerometer, always labelled "estimated") -> none. The tier is chosen from
-   SensorManager.getDefaultSensor availability, never from a feature flag; a failed registration drops
-   exactly one tier. Estimate mode is used only when no measured source exists or both registrations
-   fail. NO_SENSOR means the phone has no counter, no detector and no accelerometer.
+   SensorManager.getDefaultSensor availability plus Health Connect availability, never from a feature
+   flag; a failed registration drops exactly one tier. Estimate mode is used only when no measured
+   source exists or both registrations fail. Health Connect is offered only when the phone reports no
+   counter and no detector, and only after the user opts in from Settings; NO_SENSOR means the phone has
+   no counter, no detector and no accelerometer and Health Connect is unavailable.
 2. Counter adapter: cumulative since boot, event-driven, SENSOR_DELAY_NORMAL. When the HAL reports
    getMaxDelay(), register batched with a delay capped at 20 s; the writer is never delayed by
    batching.
@@ -58,12 +68,25 @@ BMI (optional display only): weight / (height/100)^2, one decimal, never a diagn
    refractory; 3-peak burst; 2.5 s stop) -> synthetic cumulative raw. Estimates are marked at the
    number ("≈"), in Home's note, in Diagnostics and in the foreground notification, and they count
    toward the daily goal/streak only while marked (reversible owner decision).
+4b. Health Connect adapter (read-only floor): every 2 min (first read 5 s after the service starts) read
+   `StepsRecord.COUNT_TOTAL` for today with `AggregateRequest`; never write to Health Connect. The provider
+   total is absolute, so it is applied as `todaySteps = max(todaySteps, providerTotal)`, never added. It
+   only becomes the active source when it is ahead of the current total; a repeated or lower read changes
+   nothing. Only a *rising* total counts as liveness; a static total lets the silence watchdog resume the
+   live estimate (the estimate is closer to the phone in hand). Failed reads for 30 min fall back to the
+   estimate. While Health Connect is active the estimate portion stays as already counted and is never
+   reduced. Health Connect has no step timestamps, so an HC-only phone shows 0 active minutes; a walk
+   never reads Health Connect — it keeps its own counter → detector → labelled estimate ladder
+   (a sensor-less phone with an accelerometer still counts estimated walk steps; a phone with no motion
+   sensor counts no walk steps, while GPS distance still works).
 5. State: baselineRaw (raw sensor value at last rebase), source, lastRawAt (elapsedRealtime of the last
-   accepted event), todayBase (steps already counted for the current local date). Persist atomically
+   accepted event), todayBase (steps already counted for the current local date), estimatedStepsToday
+   (estimate portion). Persist atomically
    (DataStore) after every meaningful delta; today's row in Room is upserted at most every ~5 s or on
    lifecycle boundaries.
 6. Rebase on every source switch: initialized = true, new baseline = first raw of the new source,
-   today's total preserved, the switch delta ignored (no double count). Date rollover still wins:
+   today's total preserved, the switch delta ignored (no double count). Switching to Health Connect
+   applies its absolute total as a floor instead of a delta. Date rollover still wins:
    set todayBase = 0, baselineDate = today, baselineRaw = raw, and keep the source.
 7. Plausibility clamp: a single delta cannot exceed floor(elapsed_seconds * 4) + 3 when the previous
    event time is known; skipped when the previous timestamp is unknown. Physically impossible jumps
@@ -82,7 +105,9 @@ BMI (optional display only): weight / (height/100)^2, one decimal, never a diagn
 11. Boot: BOOT_COMPLETED receiver tries to start the FGS inside try/catch (Android 15 may restrict FGS
     from boot for some types; type 'health' is attempted, failure is non-fatal). A WorkManager one-time
     job guarantees a reconcile within 15 min if the service could not start.
-12. No polling loops, no AlarmManager exact alarms, no wakelocks in v1.
+12. No continuous sensor polling, no AlarmManager exact alarms, no wakelocks. The one polling loop is
+    the opt-in Health Connect read every 2 min while the counting service is alive (stopped with it);
+    it is a content-provider read, not a sensor registration.
 
 ## 4. Services
 
@@ -103,15 +128,17 @@ Routes: onboarding (when !onboardingDone), home, history, walk, insights, settin
 - Home: today ring (steps/goal), 3 stat cards (distance, kcal, active min), streak chip, gentle status
   line ("A short walk after lunch keeps the streak alive"), primary CTA "Start walk", last-7-days mini
   bars. Pull-to-refresh not needed; state from Flow.
-- History: range toggle 7/30 days, bar chart with goal line, list of day rows (date, steps, distance).
+- History: range toggle 7/30 days, bar chart with goal line, list of day rows (date, steps, distance,
+  "≈ estimated" badge when part of the day came from the estimate), saved walks (same badge per walk).
 - Walk: idle state (permission explainer) -> live (timer, distance, pace, steps, our own Canvas route
   trace) -> summary (save/discard, stats, route thumbnail). No map tiles, no API key, no network.
 - Insights: 7-day average, best day, goal-hit rate, total distance, streak; one plain-language
   sentence; all numbers derived, no invented coaching.
 - Settings: goal stepper, units toggle, reminder switch + time, height/weight/gender, language switch
   (en/ar), export AND import CSV (SAF CreateDocument/OpenDocument, round-trip safe — council add: import
-  is the mitigation for "no cloud backup"), delete all data (confirm dialog, clears DB + prefs),
-  privacy policy, About (version, licenses note).
+  is the mitigation for "no cloud backup"), Health Connect opt-in card (only on phones with no counter
+  and no detector: connect/manage the read-only `READ_STEPS` grant), delete all data (confirm dialog,
+  clears DB + prefs), privacy policy, About (version, licenses note).
 - Privacy screen: plain-language offline statement, permissions list and why, no-ads statement.
 
 ## 6. Accessibility & i18n acceptance criteria

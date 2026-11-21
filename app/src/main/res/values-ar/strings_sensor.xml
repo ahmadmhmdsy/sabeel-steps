@@ -12,6 +12,8 @@
     <string name="sensor_notif_counting_text">خطواتك تبقى على هذا الهاتف.</string>
     <string name="sensor_notif_permission_title">إذن النشاط البدني مطلوب</string>
     <string name="sensor_notif_permission_text">اسمح بالوصول إلى النشاط البدني من الإعدادات ليتمكن سبيل من قراءة مستشعر الخطوات.</string>
+    <string name="sensor_notif_health_connect_title">سبيل يقرأ الخطوات من Health Connect</string>
+    <string name="sensor_notif_health_connect_text">خطوات مزامنة من ساعتك أو تطبيق آخر. سبيل لا يكتب في Health Connect أبدًا.</string>
     <string name="sensor_notif_estimate_title">سبيل يقدّر خطواتك</string>
     <string name="sensor_notif_estimate_text">لا يرسل أي عدّاد خطوات، لذا يأتي هذا العدد من حركة الهاتف. خطواتك تبقى على هذا الهاتف.</string>
     <string name="sensor_notif_no_sensor_title">مستشعر الخطوات غير متاح</string>

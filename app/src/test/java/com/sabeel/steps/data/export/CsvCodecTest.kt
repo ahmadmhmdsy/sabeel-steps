@@ -33,6 +33,45 @@ class CsvCodecTest {
     }
 
     @Test
+    fun legacyFiveColumnHeaderStillValidates() {
+        assertTrue(CsvCodec.validateHeader(CsvCodec.LEGACY_HEADER_FIELDS))
+        assertFalse(
+            CsvCodec.validateHeader(
+                CsvCodec.LEGACY_HEADER_FIELDS + "mystery_column",
+            ),
+        )
+    }
+
+    @Test
+    fun legacyExportWithoutEstimateColumnImportsAsUnrecorded() {
+        val legacy = "date,steps,distance_meters,calories,active_minutes\n" +
+            "2026-11-16,8000,5632,320,54\n"
+        val decoded = CsvCodec.decode(legacy)
+        assertEquals(0, decoded.skipped)
+        assertEquals(1, decoded.rows.size)
+        assertEquals(8000, decoded.rows[0].steps)
+        assertEquals(0, decoded.rows[0].estimatedSteps)
+    }
+
+    @Test
+    fun estimatedColumnRoundTripsAndCannotExceedTheTotal() {
+        val day = DailyStep(
+            "2026-11-16",
+            steps = 8000,
+            distanceMeters = 5632.0,
+            calories = 320.0,
+            activeMinutes = 54,
+            estimatedSteps = 1200,
+        )
+        val decoded = CsvCodec.decode(CsvCodec.toCsv(listOf(day)), updatedAt = 1L)
+        assertEquals(1, decoded.rows.size)
+        assertEquals(1200, decoded.rows[0].estimatedSteps)
+
+        val impossible = CsvCodec.HEADER + "\n2026-11-16,100,70,4,2,101\n"
+        assertEquals(1, CsvCodec.decode(impossible).skipped)
+    }
+
+    @Test
     fun parseHandlesQuotedCommasAndDoubledQuotes() {
         val rows = CsvCodec.parse("a,\"b,c\",\"say \"\"hi\"\"\"\n1,2,3\n")
         assertEquals(2, rows.size)
@@ -103,10 +142,11 @@ class CsvCodecTest {
 
     @Test
     fun extraColumnsAreToleratedOnImport() {
-        val text = CsvCodec.HEADER + ",extra\n2026-11-16,8000,5632,320,54,ignored\n"
+        val text = CsvCodec.HEADER + ",extra\n2026-11-16,8000,5632,320,54,0,ignored\n"
         val decoded = CsvCodec.decode(text)
         assertEquals(1, decoded.rows.size)
         assertEquals(8000, decoded.rows[0].steps)
+        assertEquals(0, decoded.rows[0].estimatedSteps)
     }
 
     @Test

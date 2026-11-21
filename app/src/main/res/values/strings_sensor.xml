@@ -13,6 +13,8 @@
     <string name="sensor_notif_counting_text">Your steps stay on this phone.</string>
     <string name="sensor_notif_permission_title">Physical activity permission needed</string>
     <string name="sensor_notif_permission_text">Allow physical activity access in Settings so Sabeel can read the step sensor.</string>
+    <string name="sensor_notif_health_connect_title">Sabeel is reading steps from Health Connect</string>
+    <string name="sensor_notif_health_connect_text">Steps synced from your watch or another app. Sabeel never writes to Health Connect.</string>
     <string name="sensor_notif_estimate_title">Sabeel is estimating your steps</string>
     <string name="sensor_notif_estimate_text">No step counter is reporting, so this number comes from phone motion. Your steps stay on this phone.</string>
     <string name="sensor_notif_no_sensor_title">Step sensor not available</string>

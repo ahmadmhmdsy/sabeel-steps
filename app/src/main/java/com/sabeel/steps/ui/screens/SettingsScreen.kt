@@ -59,8 +59,11 @@ import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.Gender
 import com.sabeel.steps.domain.GoalAdvisor
 import com.sabeel.steps.domain.Units
+import androidx.health.connect.client.PermissionController
+import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
+import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.ui.components.ScreenScaffold
 import com.sabeel.steps.ui.components.SectionHeader
 import com.sabeel.steps.ui.components.Stepper
@@ -163,6 +166,17 @@ fun SettingsScreen(
     }
     val notificationsGranted = remember(permissionEpoch) { Permissions.hasNotifications(context) }
 
+    // Health Connect opt-in only exists where it is the one honest way to get steps: the phone has
+    // no hardware step sensor and the provider is installed. The system dialog owns the grant; the
+    // returned set is re-checked on resume like every other permission.
+    val healthConnectAvailability = remember(permissionEpoch) { HealthConnect.availability(context) }
+    val noMeasuredStepSensor = remember(permissionEpoch) {
+        StepSensors.availability(context).noMeasuredStepSensor
+    }
+    val healthConnectLauncher = rememberLauncherForActivityResult(
+        PermissionController.createRequestPermissionResultContract(),
+    ) { permissionEpoch++ }
+
     // Recreate with the new locale and re-create notification channels so their names switch too.
     val chooseLanguage: (AppLanguage) -> Unit = { chosen ->
         viewModel.syncLanguage(chosen)
@@ -233,6 +247,34 @@ fun SettingsScreen(
                 onClick = onOpenDiagnostics,
                 stacked = stackedRows,
             )
+        }
+
+        if (noMeasuredStepSensor && healthConnectAvailability != HealthConnect.Availability.UNAVAILABLE) {
+            SectionHeader(title = stringResource(R.string.settings_health_connect_title))
+            SettingsCard {
+                if (healthConnectAvailability == HealthConnect.Availability.READY) {
+                    SettingsClickableRow(
+                        title = stringResource(R.string.settings_health_connect_connected),
+                        subtitle = stringResource(R.string.settings_health_connect_note),
+                        value = stringResource(R.string.settings_health_connect_manage),
+                        onClick = {
+                            runCatching { context.startActivity(HealthConnect.settingsIntent(context)) }
+                                .onFailure {
+                                    onMessage(context.getString(R.string.diagnostics_error_no_settings))
+                                }
+                        },
+                        stacked = stackedRows,
+                    )
+                } else {
+                    SettingsClickableRow(
+                        title = stringResource(R.string.settings_health_connect_row_title),
+                        subtitle = stringResource(R.string.settings_health_connect_desc),
+                        value = stringResource(R.string.settings_health_connect_connect),
+                        onClick = { healthConnectLauncher.launch(HealthConnect.readPermissions) },
+                        stacked = stackedRows,
+                    )
+                }
+            }
         }
 
         SectionHeader(title = stringResource(R.string.settings_section_units_language))

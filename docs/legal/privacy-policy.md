@@ -1,8 +1,8 @@
 # Sabeel Privacy Policy
 
-**Status:** v1.0 accepted by Lead on 2026-11-16. Remaining OWNER actions: fill the placeholders in [square brackets], host the page, and commission the Arabic native review (launch precondition). Verify the manifest points in the internal checklist at the end before publishing. This file is the source text for the hosted page.
+**Status:** v1.1 accepted by Lead on 2026-11-21 (adds the opt-in, read-only Health Connect step read). Remaining OWNER actions: fill the placeholders in [square brackets], host the page, and commission the Arabic native review (launch precondition). Verify the manifest points in the internal checklist at the end before publishing. This file is the source text for the hosted page.
 
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-21
 **Effective date:** [DATE OF FIRST PUBLICATION]
 **Hosted page:** docs/privacy-site/index.html (generated from this v1.0 source; English first, then Arabic with dir=rtl; zero external scripts/fonts/trackers). Keep the two in sync.
 
@@ -26,6 +26,8 @@ Sabeel is an offline step counter and walking tracker for Android, published by 
 The app stores the information you create or that your phone measures, only in the app's private storage on your device:
 
 - step counts and walking history;
+- if you opt in on a phone with no built-in step sensor: today's step total read from Health Connect
+  (a watch or another app). This is read-only: the app never writes anything back to Health Connect;
 - distance, active minutes and calorie estimates shown for your walks;
 - routes, if you allow location while tracking a walk;
 - goals, streaks, achievements and reminder settings;
@@ -38,6 +40,7 @@ This information is used only on your device to show your activity and to run th
 | Permission | When it is used | Why | If you say no |
 |---|---|---|---|
 | Physical activity / activity recognition | When you use step counting | To read the phone's step sensor and count your steps (Android 10 and later asks at runtime) | Step counting will not work; other features that do not need it still work |
+| Health Connect steps (read-only) | Only if you tap "Use synced steps" in Settings, and only on a phone with no built-in step sensor | To read today's step total that another app or watch already saved to Health Connect, instead of estimating from motion. The app never writes to Health Connect | The app falls back to the labelled motion estimate; nothing else changes |
 | Notifications | When you turn on reminders or start tracking a walk | To show the reminders you set and the ongoing notification Android requires while a walk is being tracked | You may not see reminders; tracking still works, but Android may show it only in the system's active-apps area |
 | Location (precise or approximate, depending on what you allow) | Only after you start a walk and allow it | To draw your route and improve distance while that walk is active. The app does not request background location | The walk is still tracked by steps; no map or route is recorded |
 | Start at boot | After your phone restarts | To reschedule the reminders you already set | Reminders may not be restored until you open the app again |
@@ -110,6 +113,8 @@ Questions about this policy or the app's privacy:
 يحفظ التطبيق المعلومات التي تنشئها أو التي يقيسها هاتفك، وذلك فقط في مساحة التخزين الخاصة بالتطبيق على جهازك:
 
 - عدد الخطوات وسجل المشي؛
+- إذا اخترت ذلك على هاتف لا يحتوي مستشعر خطوات مدمجًا: مجموع خطوات اليوم المقروء من Health Connect
+  (ساعة أو تطبيق آخر). القراءة فقط: لا يكتب التطبيق شيئًا في Health Connect؛
 - المسافة والدقائق النشطة وتقديرات السعرات الحرارية المعروضة لجولاتك؛
 - المسارات، إذا سمحت بالوصول إلى الموقع أثناء تتبّع جولة مشي؛
 - الأهداف والسلاسل المتتالية والإنجازات وإعدادات التذكير؛
@@ -122,6 +127,7 @@ Questions about this policy or the app's privacy:
 | الإذن | وقت الاستخدام | السبب | إذا رفضت |
 |---|---|---|---|
 | النشاط البدني / التعرّف على النشاط | عند استخدام عدّاد الخطوات | لقراءة مستشعر الخطوات في الهاتف وعدّ خطواتك (يُطلب وقت التشغيل في أندرويد 10 وما بعده) | لن يعمل عدّاد الخطوات، وتبقى الميزات الأخرى التي لا تحتاجه تعمل |
+| خطوات Health Connect (قراءة فقط) | فقط إذا ضغطت «استخدام الخطوات المزامنة» في الإعدادات، وعلى هاتف لا يحتوي مستشعر خطوات مدمجًا | لقراءة مجموع خطوات اليوم الذي حفظته ساعة أو تطبيق آخر في Health Connect بدل التقدير من الحركة. لا يكتب التطبيق في Health Connect أبدًا | يعود التطبيق إلى التقدير الحركي المعلَّم، ولا يتغير شيء آخر |
 | الإشعارات | عند تفعيل التذكيرات أو بدء تتبّع جولة مشي | لعرض التذكيرات التي ضبطتها والإشعار المستمر الذي يتطلبه أندرويد أثناء تتبّع الجولة | قد لا ترى التذكيرات؛ ويستمر التتبّع، لكن أندرويد قد يعرضه فقط في منطقة التطبيقات النشطة |
 | الموقع (الدقيق أو التقريبي، حسب ما تسمح به) | فقط بعد أن تبدأ جولة مشي وتسمح بالوصول إلى الموقع | لرسم مسارك وتحسين حساب المسافة أثناء تلك الجولة. لا يطلب التطبيق الوصول إلى الموقع في الخلفية | تظل الجولة محسوبة بالخطوات، ولا يُسجَّل أي خريطة أو مسار |
 | بدء التشغيل | بعد إعادة تشغيل هاتفك | لإعادة جدولة التذكيرات التي ضبطتها سابقًا | قد لا تُستعاد التذكيرات حتى تفتح التطبيق مرة أخرى |
@@ -200,14 +206,14 @@ Questions about this policy or the app's privacy:
 - [ ] C4: no android.permission.INTERNET in the merged manifest/APK.
 - [ ] C5/C6: android:allowBackup="false" in the post-manifest-pass artifact.
 - [ ] C8: dependency audit shows no advertising/analytics/crash-reporting SDKs.
-- [ ] The user-facing items in this policy are consistent with the merged manifest: ACTIVITY_RECOGNITION, POST_NOTIFICATIONS, ACCESS_FINE_LOCATION + ACCESS_COARSE_LOCATION (foreground-only; the user may grant approximate location), RECEIVE_BOOT_COMPLETED, foreground service types health/location. Normal permissions (WAKE_LOCK, FOREGROUND_SERVICE, ACCESS_NETWORK_STATE if still present) are not user-facing and need not be enumerated here, but no permission that contradicts this text may be present; no background location, no storage/camera/microphone/contacts/SMS.
+- [ ] The user-facing items in this policy are consistent with the merged manifest: ACTIVITY_RECOGNITION, POST_NOTIFICATIONS, ACCESS_FINE_LOCATION + ACCESS_COARSE_LOCATION (foreground-only; the user may grant approximate location), android.permission.health.READ_STEPS (read-only Health Connect, opt-in), RECEIVE_BOOT_COMPLETED, foreground service types health/location. Normal permissions (WAKE_LOCK, FOREGROUND_SERVICE, ACCESS_NETWORK_STATE if still present) are not user-facing and need not be enumerated here, but no permission that contradicts this text may be present; no background location, no storage/camera/microphone/contacts/SMS.
 - [ ] In-app "Delete all data" and CSV export exist and behave as described.
 - [ ] If any sentence would become untrue (ads, accounts, sync, Health Connect, analytics, crash reporting, new permissions), rewrite this policy and re-run this checklist before shipping that build.
 - [ ] If this Markdown changes, regenerate docs/privacy-site/index.html and bump the version/date in both files; keep the old published version archived.
 
 ### Consistency with Play Console
-- [ ] Data safety: "No data collected / No data shared"; user-initiated CSV export noted as the exception; security practices = no transmission, app sandbox, backups disabled.
-- [ ] Health apps declaration: Activity and Fitness; store listing health wording matches section 9.
+- [ ] Data safety: "No data collected / No data shared"; on-device Health Connect read noted (local processing, never transmitted, never written back); user-initiated CSV export noted as the exception; security practices = no transmission, app sandbox, backups disabled.
+- [ ] Health apps declaration: Activity and Fitness; Health Connect declaration lists the Steps data type as **read** only; store listing health wording matches section 9.
 - [ ] Arabic text reviewed by a native Arabic reviewer (**launch precondition** — Lead decision 2026-11-16); keep the two versions equivalent (if they differ, the English version governs, and say so on the hosted page).
 - [ ] Effective date and "Last updated" are the same on the hosted English and Arabic pages.
 

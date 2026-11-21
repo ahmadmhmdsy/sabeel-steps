@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.sabeel.steps.data.db.AppDatabase
+import com.sabeel.steps.data.db.MIGRATION_1_2
 import com.sabeel.steps.data.prefs.SettingsRepository
 import com.sabeel.steps.data.prefs.SabeelDataStore
 import com.sabeel.steps.data.repo.StepsRepository
@@ -23,6 +24,7 @@ class AppContainer(context: Context) {
     // Schema is exported under app/schemas by the Room compiler (see build.gradle.kts). No
     // fallbackToDestructiveMigration: a missing migration must fail loudly in tests, not wipe data.
     val database: AppDatabase = Room.databaseBuilder(appContext, AppDatabase::class.java, "Sabeel.db")
+        .addMigrations(MIGRATION_1_2)
         .build()
 
     val settings = SettingsRepository(store)

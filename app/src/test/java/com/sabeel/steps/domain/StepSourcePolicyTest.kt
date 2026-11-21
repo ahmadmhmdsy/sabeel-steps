@@ -58,7 +58,42 @@ class StepSourcePolicyTest {
     fun measuredFlagOnlyTrustsHardwareSensors() {
         assertTrue(StepSource.COUNTER.measured)
         assertTrue(StepSource.DETECTOR.measured)
+        assertFalse(StepSource.HEALTH_CONNECT.measured)
         assertFalse(StepSource.MOTION_ESTIMATE.measured)
         assertFalse(StepSource.NONE.measured)
+    }
+
+    @Test
+    fun syncedSourceOutranksTheEstimateButNotHardware() {
+        val hcEstimate = SourceAvailability(counter = false, detector = false, accelerometer = true, healthConnect = true)
+        assertEquals(StepSource.HEALTH_CONNECT, StepSourcePolicy.choose(hcEstimate))
+        assertEquals(
+            StepSource.COUNTER,
+            StepSourcePolicy.choose(SourceAvailability(counter = true, detector = false, accelerometer = true, healthConnect = true)),
+        )
+        assertEquals(
+            StepSource.DETECTOR,
+            StepSourcePolicy.choose(SourceAvailability(counter = false, detector = true, accelerometer = true, healthConnect = true)),
+        )
+    }
+
+    @Test
+    fun fallbackCanReachHealthConnectBeforeTheEstimate() {
+        val hcEstimate = SourceAvailability(counter = false, detector = false, accelerometer = true, healthConnect = true)
+        assertEquals(StepSource.HEALTH_CONNECT, StepSourcePolicy.fallbackTarget(StepSource.COUNTER, hcEstimate))
+        assertEquals(StepSource.HEALTH_CONNECT, StepSourcePolicy.fallbackTarget(StepSource.DETECTOR, hcEstimate))
+        assertEquals(StepSource.MOTION_ESTIMATE, StepSourcePolicy.fallbackTarget(StepSource.HEALTH_CONNECT, hcEstimate))
+        assertNull(StepSourcePolicy.fallbackTarget(StepSource.HEALTH_CONNECT, SourceAvailability(false, false, false, healthConnect = true)))
+    }
+
+    @Test
+    fun syncedAndEstimatedAreMarkedAsApproximate() {
+        assertTrue(StepSource.MOTION_ESTIMATE.approximate)
+        assertTrue(StepSource.HEALTH_CONNECT.approximate)
+        assertTrue(StepSource.HEALTH_CONNECT.synced)
+        assertFalse(StepSource.COUNTER.synced)
+        assertFalse(StepSource.COUNTER.approximate)
+        assertTrue(SourceAvailability(false, false, true).noMeasuredStepSensor)
+        assertFalse(SourceAvailability(true, false, true).noMeasuredStepSensor)
     }
 }

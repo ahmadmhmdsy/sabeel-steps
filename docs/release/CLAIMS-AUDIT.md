@@ -223,3 +223,62 @@ The 2026-11-17 §2 row "Step pipeline seeds its baseline… (unit-level only)" i
 source-ladder row above; its evidence claim about hardware is still accurate — no physical-device sensor
 validation exists. The Arabic estimate/fallback copy remains marked for native review (same status as the
 rest of the Arabic copy).
+
+## 8. Addendum — Health Connect read-only floor and estimate provenance (2026-11-21)
+
+This section extends the audit; sections 1–7 remain dated records. It covers the optional read-only
+Health Connect tier, the labelled estimate provenance now stored in the database/CSV/UI, and the
+Room v1→v2 migration.
+
+**Artifacts measured for this addendum (2026-11-21, build-tools 36.0.0):**
+
+- Release APK: 1,861,838 B, SHA-256 `C5BD200DA95D3FD1F1C417FB6C11FBE8E06700CB6A75C07E5CA793F1A1DC4958`;
+  AAB: 3,977,681 B, SHA-256 `7A2FD53AA12603127403D852A35C168325A9AD4FA7F5843CD9782819EA06BC77`;
+  debug APK: 15,188,660 B, SHA-256 `72D97C3B3FAF8889834AFC5871C9A4CA8A09C232DAE3571EEA7913891156B238`.
+  The release APK/AAB are signed with the upload key (cert `7b12ad6baf07817e76a2539954f7b4bde2e13f6b33454824830102566b6152d`);
+  `apksigner verify`, `jarsigner -verify` and `zipalign -c -P 16` are OK. VersionCode 1,
+  versionName 1.0.0 (unchanged; nothing uploaded).
+- JVM tests: **121 tests in 11 suites, 0 failures, 0 errors, 0 skipped**;
+  `lintDebug` exit 0 (0 errors, 44 warnings, 1 hint); `lintVitalRelease` passes.
+- Emulator evidence: [docs/review/2026-11-21/health-connect/EVIDENCE.md](../review/2026-11-21/health-connect/EVIDENCE.md).
+
+| Claim | Where it appears | Evidence | Status |
+|---|---|---|---|
+| Health Connect is an optional extra tier, tried only when the phone has no hardware counter and no hardware detector | README.md; docs/product/spec.md §3 rule 4b; docs/superpowers/plans/2026-11-19-step-source-resilience.md | `StepSource.choose` receives `SourceAvailability.healthConnect`; `StepSourcePolicyTest` (9 tests); `StepCounterService` gates readiness on neither sensor existing; the Settings card is gated by `StepSensors.availability(context).noMeasuredStepSensor` (emulator Settings dump shows it on the sensor-less image) | VERIFIED |
+| The app reads steps from Health Connect and never writes to it | README.md; docs/legal/privacy-policy.md; docs/legal/play-compliance-checklist.md §6.3b | The manifest declares only `android.permission.health.READ_STEPS`; `HealthConnect.kt` uses `HealthPermission.getReadPermission(StepsRecord::class)` and an aggregate `StepsRecord.COUNT_TOTAL` read; a source audit finds no `insertRecords`/`writeRecords`/`deleteRecords` call; Health Connect's own permission screen for Sabeel asks "Allow “Sabeel” to read" with **Steps** as the only type (ui-03) | VERIFIED |
+| A Health Connect total is an absolute floor (`max(current, hcToday)`), never added to the estimate, so repeated polls and repeated activation cannot double count | docs/product/spec.md §3 rule 4b; README.md | `StepPipeline.onExternalTotal`; `StepPipelineTest` external-total tests (floor, same/lower total ignored, day rollover resets the estimate, negative total rejected) | VERIFIED (unit level) |
+| Health Connect polling is bounded: first poll 5 s, then every 2 min; 30 min of failed reads fall back to the estimate; only a **rising** provider total counts as liveness, so a static provider cannot suppress the estimate watchdog | README.md; docs/product/spec.md §3 rule 4b and the polling paragraph | `StepCounterService` constants `HC_FIRST_POLL_MS`, `HC_POLL_MS`, `HC_STALE_MS`; `onExternalTotal` only refreshes liveness when the total rises; the estimate watchdog is untouched. The timing/device path is not exercised: the emulator has no Health Connect step data | VERIFIED (code) / device pending |
+| The estimate provenance is persisted and exported: `daily_steps.estimatedSteps`, `walks.estimated`, and a sixth `estimated_steps` CSV column | README.md; docs/product/spec.md CSV schema; docs/release/PLAY-SUBMISSION-CHECKLIST.md | Entities/mappers and `StepsRepository` clamp the estimate to `0..steps`; `CsvCodec` 6-column header/round-trip; legacy 5-column header and rows still import with `estimatedSteps = 0`; `CsvCodecTest` 15 tests | VERIFIED (unit level) |
+| The Room v1→v2 upgrade is additive and non-destructive | README.md; docs/product/spec.md | `MIGRATION_1_2` has two `ALTER TABLE … ADD COLUMN … NOT NULL DEFAULT 0` statements; there is no `fallbackToDestructiveMigration`; schema 2 is exported (`app/schemas/com.sabeel.steps.data.db.AppDatabase/2.json`, identity hash `457d96f3d646b8b49e6481015a89a024`); the release APK was installed over the previous release install and the old 19 Nov rows (40 steps) still render in History/Insights after the upgrade (ui-08, ui-09) | VERIFIED (emulator upgrade) |
+| The estimate is marked at the number and in each surface; the Health Connect source is described as synced, not as a sensor | README.md; strings.xml / values-ar/strings.xml; Home, History, Diagnostics screens | Home note "Estimated from the phone's motion…"; History daily/saved-walk estimate badges; Diagnostics "(estimated)" status and source; localization parity test; emulator EN and AR dumps (ui-01, ui-05, ui-06, ui-07), plus an estimated walk rendered live → summary → History row → saved-walk dialog (ui-10…ui-13). The HC "synced" source branch was not rendered (no HC data on the image) | VERIFIED (unit + emulator walk/EN/AR estimate); HC synced render unexercised |
+| The new permission is disclosed for Play | docs/legal/play-compliance-checklist.md; docs/release/PLAY-SUBMISSION-CHECKLIST.md §4.7, §4.8, §4.12, §4.13; docs/legal/privacy-policy.md v1.1 | Documentation updated; the Play Console Data safety / Health Connect declarations and the Health Connect data-access form are **not yet submitted** (owner action), and the privacy policy still needs to be filled and hosted | CAVEAT (owner action) |
+
+**Superseded / amended earlier rows:**
+
+- §7 row "No new permission or dependency was added for any tier" is superseded: this change adds
+  `androidx.health.connect:connect-client:1.1.0` and `android.permission.health.READ_STEPS`. The
+  merged release APK now has 11 permissions (the previous 10 plus `READ_STEPS`) and still has no
+  INTERNET, AD_ID, ACCESS_NETWORK_STATE or background location.
+- §1/§2 wording that v1 has "no … Health Connect" is superseded for v1.1: Health Connect is an
+  optional read-only source, not an account or cloud feature; nothing is uploaded and the app still
+  works with no Health Connect at all.
+- §6.1 final artifacts and gates remain the dated 2026-11-19 snapshot; the measured values above
+  supersede them. Historical review/legal evidence files keep their original values.
+- The estimate counts toward the goal and streak but is always marked — the owner confirmed this as
+  the intended default (2026-11-21 answers), matching §7's caveat.
+
+**Still not verified for this addendum:**
+
+- The Health Connect grant was not completed on the emulator (the "Allow" tap fell through to the
+  gesture-navigation area and the screen was backed out), and no watch/app wrote steps to Health
+  Connect, so the read path, the floor reconciliation, the synced notification line and the
+  30-minute staleness fallback remain untested on a device; they need §5b HP1–HP7 of
+  [HARDWARE-QA-CHECKLIST.md](../legal/HARDWARE-QA-CHECKLIST.md).
+- The estimated walk above was driven by synthetic acceleration, so it proves the label plumbing,
+  not accuracy; a walk counted by a real counter/detector and the GPS route sketch still need
+  hardware. The v1.0 walks migrated with `estimated = 0`.
+- CSV import of a legacy 5-column file is unit-tested, not exercised through the SAF picker on the
+  emulator.
+- The release grew by 178,140 B (APK) and 439,302 B (AAB) because of the Health Connect client after
+  R8; this is recorded here rather than called free.
+

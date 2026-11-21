@@ -18,6 +18,12 @@ data class StepState(
     val initialized: Boolean = false,
     val source: StepSource = StepSource.COUNTER,
     val lastRawAt: Long = 0L,
+    /**
+     * How many of [todaySteps] came from the labelled motion estimate. It only ever grows while the
+     * estimate is the active source; a source switch preserves it because those steps were still
+     * walked, and a date change starts a new day at zero.
+     */
+    val estimatedStepsToday: Int = 0,
 ) {
     companion object {
         fun initial(date: String) = StepState(
@@ -27,6 +33,7 @@ data class StepState(
             initialized = false,
             source = StepSource.COUNTER,
             lastRawAt = 0L,
+            estimatedStepsToday = 0,
         )
     }
 }
@@ -58,6 +65,11 @@ object StepPipeline {
         today: String,
         source: StepSource = state.source,
         nowMillis: Long = 0L,
+        /**
+         * Trusted absolute totals (e.g. a Health Connect day aggregate) can legitimately jump a lot
+         * between polls, so the per-second plausibility clamp must not apply to them.
+         */
+        trusted: Boolean = false,
     ): StepUpdate {
         // Sensor hardware never reports non-finite values; if it does, ignore the event rather
         // than poisoning the persisted baseline with NaN/Infinity.
@@ -76,6 +88,7 @@ object StepPipeline {
                     initialized = true,
                     source = source,
                     lastRawAt = nowMillis,
+                    estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
                 ),
                 todaySteps = steps,
                 rolledOver = false,
@@ -95,6 +108,7 @@ object StepPipeline {
                     initialized = true,
                     source = source,
                     lastRawAt = nowMillis,
+                    estimatedStepsToday = 0,
                 ),
                 todaySteps = 0,
                 rolledOver = true,
@@ -114,6 +128,7 @@ object StepPipeline {
                     initialized = true,
                     source = source,
                     lastRawAt = nowMillis,
+                    estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
                 ),
                 todaySteps = steps,
                 rolledOver = false,
@@ -123,8 +138,13 @@ object StepPipeline {
         // Counter reset (reboot, sensor reset): rebase and count nothing for the lost interval.
         val baseline = if (raw < state.baselineRaw - 1f) raw else state.baselineRaw
         val rawDelta = (raw - baseline).coerceAtLeast(0f)
-        val plausibleDelta = clampDelta(rawDelta, state.lastRawAt, nowMillis)
+        val plausibleDelta = if (trusted) rawDelta.toInt().coerceAtLeast(0) else clampDelta(rawDelta, state.lastRawAt, nowMillis)
         val todaySteps = (state.todaySteps + plausibleDelta).coerceAtLeast(0)
+        val estimatedSteps = if (source == StepSource.MOTION_ESTIMATE) {
+            (state.estimatedStepsToday + plausibleDelta).coerceIn(0, todaySteps)
+        } else {
+            state.estimatedStepsToday.coerceIn(0, todaySteps)
+        }
         return StepUpdate(
             state = StepState(
                 baselineRaw = raw,
@@ -133,8 +153,57 @@ object StepPipeline {
                 initialized = true,
                 source = source,
                 lastRawAt = if (nowMillis > 0L) nowMillis else state.lastRawAt,
+                estimatedStepsToday = estimatedSteps,
             ),
             todaySteps = todaySteps,
+            rolledOver = false,
+        )
+    }
+
+    /**
+     * Reconciles an absolute daily total from a synced source (Health Connect). There is no raw
+     * counter to diff: every read already is "steps since midnight", so the stored total is raised
+     * to the external total and never lowered. That floor rule makes polls idempotent and cannot
+     * double count with an earlier estimate or sensor total.
+     */
+    fun onExternalTotal(
+        state: StepState,
+        totalSteps: Int,
+        today: String,
+        source: StepSource = StepSource.HEALTH_CONNECT,
+        nowMillis: Long = 0L,
+    ): StepUpdate {
+        if (totalSteps < 0) return StepUpdate(state, state.todaySteps, rolledOver = false)
+        val external = totalSteps.coerceAtLeast(0)
+
+        if (today != state.baselineDate) {
+            return StepUpdate(
+                state = StepState(
+                    baselineRaw = external.toFloat(),
+                    todaySteps = external,
+                    baselineDate = today,
+                    initialized = true,
+                    source = source,
+                    lastRawAt = nowMillis,
+                    estimatedStepsToday = 0,
+                ),
+                todaySteps = external,
+                rolledOver = true,
+            )
+        }
+
+        val steps = maxOf(state.todaySteps.coerceAtLeast(0), external)
+        return StepUpdate(
+            state = StepState(
+                baselineRaw = external.toFloat(),
+                todaySteps = steps,
+                baselineDate = today,
+                initialized = true,
+                source = source,
+                lastRawAt = nowMillis,
+                estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
+            ),
+            todaySteps = steps,
             rolledOver = false,
         )
     }

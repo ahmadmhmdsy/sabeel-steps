@@ -105,11 +105,14 @@ class StepsRepository(
         val update = StepPipeline.onSensor(state, raw, today, source = source, nowMillis = now)
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(update.state, existing?.steps)
-        settings.writeStepState(update.state.copy(todaySteps = steps))
+        val estimatedSteps = resolveEstimatedSteps(update.state.estimatedStepsToday, existing, steps)
+        settings.writeStepState(
+            update.state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps),
+        )
         if (!state.initialized && steps == 0 && existing == null) return@withLock null
         val user = settings.current()
-        upsertDay(today, steps, user, now, activeMinutesToday, existing)
-        dayRow(today, steps, user, now, activeMinutesToday, existing)
+        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
     }
 
     /** Writes the current step total (used on service start / reconcile after boot). */
@@ -137,11 +140,38 @@ class StepsRepository(
         }
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(state, existing?.steps)
-        settings.writeStepState(state.copy(todaySteps = steps))
+        val estimatedSteps = resolveEstimatedSteps(state.estimatedStepsToday, existing, steps)
+        settings.writeStepState(state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps))
         if (steps == 0 && existing == null) return@withLock null
         val user = settings.current()
-        upsertDay(today, steps, user, now, activeMinutesToday, existing)
-        dayRow(today, steps, user, now, activeMinutesToday, existing)
+        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+    }
+
+    /**
+     * Called by StepCounterService when a synced source (Health Connect) reports the absolute daily
+     * total. The pipeline floor rule raises the day to that total and never lowers it, so repeated
+     * polls cannot double count; the day row stays the durable record.
+     */
+    suspend fun recordExternalTotal(
+        totalSteps: Int,
+        now: Long = System.currentTimeMillis(),
+        activeMinutesToday: Int = -1,
+        source: StepSource = StepSource.HEALTH_CONNECT,
+    ): DailyStep? = mutex.withLock {
+        val today = DateKey.today(now)
+        val state = settings.readStepState(today)
+        val update = StepPipeline.onExternalTotal(state, totalSteps, today, source = source, nowMillis = now)
+        val existing = dao.today(today)?.toDomain()
+        val steps = StepPipeline.resolveTodaySteps(update.state, existing?.steps)
+        val estimatedSteps = resolveEstimatedSteps(update.state.estimatedStepsToday, existing, steps)
+        settings.writeStepState(
+            update.state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps),
+        )
+        if (steps == 0 && existing == null) return@withLock null
+        val user = settings.current()
+        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
     }
 
     /**
@@ -186,17 +216,19 @@ class StepsRepository(
     private suspend fun upsertDay(
         date: String,
         steps: Int,
+        estimatedSteps: Int,
         user: UserSettings,
         now: Long,
         activeMinutes: Int,
         existing: DailyStep?,
     ) {
-        dao.upsert(dayRow(date, steps, user, now, activeMinutes, existing).toEntity())
+        dao.upsert(dayRow(date, steps, estimatedSteps, user, now, activeMinutes, existing).toEntity())
     }
 
     private fun dayRow(
         date: String,
         steps: Int,
+        estimatedSteps: Int,
         user: UserSettings,
         now: Long,
         activeMinutes: Int,
@@ -208,7 +240,15 @@ class StepsRepository(
         calories = StepMath.calories(steps, user.weightKg),
         activeMinutes = resolveActiveMinutes(activeMinutes, existing),
         updatedAt = now,
+        estimatedSteps = estimatedSteps.coerceIn(0, steps),
     )
+
+    /**
+     * The marker never decreases (the database is the durable record) and never exceeds the day's
+     * total; a row written before the marker existed contributes 0.
+     */
+    private fun resolveEstimatedSteps(stateEstimated: Int, existing: DailyStep?, steps: Int): Int =
+        maxOf(stateEstimated, existing?.estimatedSteps ?: 0).coerceIn(0, steps.coerceAtLeast(0))
 
     /**
      * Active minutes are measured by the service's cadence. There is deliberately no synthetic

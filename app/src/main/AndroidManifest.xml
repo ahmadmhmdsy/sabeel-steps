@@ -5,6 +5,9 @@
     <!-- Permissions. There is deliberately NO INTERNET permission in v1: the app is offline.
          ACCESS_NETWORK_STATE is pulled in transitively (WorkManager); it is removed on purpose. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Optional source: read steps that Health Connect already holds from a watch or another
+         app. The user grants this inside Health Connect; the app never writes health data. -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
@@ -15,6 +18,15 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+
+    <!-- Health Connect lives in its own provider package; the settings intent lets the user manage
+         the grant. Both are visibility declarations, not permissions. -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+        <intent>
+            <action android:name="androidx.health.ACTION_HEALTH_CONNECT_SETTINGS" />
+        </intent>
+    </queries>
 
     <application
         android:name=".SabeelApp"
@@ -36,6 +48,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Health Connect opens this alias when it explains the step permission to the user. It
+             renders the same app (no separate screen) and must be exported with the platform
+             permission, because Health Connect itself sends the intent. -->
+        <activity-alias
+            android:name=".ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- Hardware step counter, foreground service type health. -->
         <service

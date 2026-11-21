@@ -9,12 +9,15 @@ import java.util.Locale
  * escaping/parsing rules are unit-tested on the JVM.
  *
  * Format (fixed header):
- *   date,steps,distance_meters,calories,active_minutes
- *   2026-11-16,8000,5632,320,54
+ *   date,steps,distance_meters,calories,active_minutes,estimated_steps
+ *   2026-11-16,8000,5632,320,54,0
+ *
+ * Files exported before the estimate marker existed omit the last column; [validateHeader] and
+ * [decode] still accept them, and the missing marker decodes as 0 ("not recorded").
  */
 object CsvCodec {
 
-    const val HEADER = "date,steps,distance_meters,calories,active_minutes"
+    const val HEADER = "date,steps,distance_meters,calories,active_minutes,estimated_steps"
 
     val HEADER_FIELDS: List<String> = listOf(
         "date",
@@ -22,7 +25,11 @@ object CsvCodec {
         "distance_meters",
         "calories",
         "active_minutes",
+        "estimated_steps",
     )
+
+    /** Header written before the estimate marker existed; accepted on import for compatibility. */
+    val LEGACY_HEADER_FIELDS: List<String> = HEADER_FIELDS.dropLast(1)
 
     /** Thrown when a file is not a Sabeel daily-steps export (or has no usable header). */
     class CsvFormatException(message: String) : IllegalArgumentException(message)
@@ -96,12 +103,19 @@ object CsvCodec {
         return rows
     }
 
-    /** True when the first record is our header (case-insensitive, trimmed). */
+    /**
+     * True when the first record is a Sabeel header (case-insensitive, trimmed): either the legacy
+     * five-column one or the current six-column one. Anything after a recognised header is ignored
+     * by the decoder, which keeps imports forward-tolerant.
+     */
     fun validateHeader(fields: List<String>): Boolean {
-        if (fields.size < HEADER_FIELDS.size) return false
-        return HEADER_FIELDS.indices.all { position ->
-            fields[position].trim().equals(HEADER_FIELDS[position], ignoreCase = true)
+        if (fields.size < LEGACY_HEADER_FIELDS.size) return false
+        val legacyMatches = LEGACY_HEADER_FIELDS.indices.all { position ->
+            fields[position].trim().equals(LEGACY_HEADER_FIELDS[position], ignoreCase = true)
         }
+        if (!legacyMatches) return false
+        if (fields.size == LEGACY_HEADER_FIELDS.size) return true
+        return fields[LEGACY_HEADER_FIELDS.size].trim().equals("estimated_steps", ignoreCase = true)
     }
 
     /** Locale-independent decimal text; trailing zeros are trimmed (10.50 -> "10.5", 10.00 -> "10"). */
@@ -119,6 +133,7 @@ object CsvCodec {
             formatDecimal(day.distanceMeters, 2),
             formatDecimal(day.calories, 1),
             day.activeMinutes.toString(),
+            day.estimatedSteps.toString(),
         ),
     )
 
@@ -148,14 +163,17 @@ object CsvCodec {
     }
 
     private fun decodeRow(fields: List<String>, updatedAt: Long): DailyStep? {
-        if (fields.size < HEADER_FIELDS.size) return null
+        if (fields.size < LEGACY_HEADER_FIELDS.size) return null
         return try {
             val date = LocalDate.parse(fields[0].trim()).toString()
             val steps = fields[1].trim().toInt()
             val distanceMeters = fields[2].trim().toDouble()
             val calories = fields[3].trim().toDouble()
             val activeMinutes = fields[4].trim().toInt()
-            if (steps < 0 || distanceMeters < 0 || calories < 0 || activeMinutes < 0) {
+            val estimatedSteps = if (fields.size > LEGACY_HEADER_FIELDS.size) fields[5].trim().toInt() else 0
+            if (steps < 0 || distanceMeters < 0 || calories < 0 || activeMinutes < 0 ||
+                estimatedSteps < 0 || estimatedSteps > steps
+            ) {
                 null
             } else {
                 DailyStep(
@@ -165,6 +183,7 @@ object CsvCodec {
                     calories = calories,
                     activeMinutes = activeMinutes,
                     updatedAt = if (updatedAt > 0L) updatedAt else System.currentTimeMillis(),
+                    estimatedSteps = estimatedSteps,
                 )
             }
         } catch (t: Throwable) {

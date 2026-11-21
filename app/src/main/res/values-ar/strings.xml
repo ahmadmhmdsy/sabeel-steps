@@ -119,6 +119,7 @@
     <string name="history_walks_title">المشيات المحفوظة</string>
     <string name="history_walks_empty">ستظهر هنا المشيات التي تحفظها.</string>
     <string name="history_walk_detail_title">تفاصيل المشية</string>
+    <string name="history_estimated_badge">يشمل خطوات تقديرية</string>
     <string name="history_walk_close">إغلاق</string>
 
     <!-- المشية -->
@@ -141,6 +142,7 @@
     <string name="walk_gps_on">الموقع يسجّل مسارك.</string>
     <string name="walk_gps_off">الموقع غير متاح. نحسب الخطوات فقط.</string>
 <string name="walk_estimated_note">لا يحتوي هاتفك على مستشعر للخطوات، لذا تُقدَّر خطوات هذه النزهة من حركة الهاتف.</string>
+<string name="walk_estimated_saved_note">جزء من خطوات هذه النزهة تقديري من حركة الهاتف، وليس مقيسًا بمستشعر خطوات.</string>
     <string name="walk_route_waiting">بانتظار أول نقاط الموقع…</string>
     <string name="walk_cd_route">رسم المسار مع %1$d نقطة مسجّلة.</string>
     <string name="walk_save">احفظ المشية</string>
@@ -170,6 +172,13 @@
     <string name="settings_goal">الهدف اليومي</string>
     <string name="settings_goal_steps_per_day">الخطوات اليومية</string>
     <string name="settings_section_tracking">التتبع</string>
+    <string name="settings_health_connect_title">Health Connect</string>
+    <string name="settings_health_connect_row_title">استخدام الخطوات المزامنة</string>
+    <string name="settings_health_connect_desc">لا يوفّر هذا الهاتف مستشعر خطوات. إذا حفظت ساعة أو تطبيق آخر خطواتك في Health Connect، يستطيع سبيل قراءة مجموع اليوم بدل التقدير.</string>
+    <string name="settings_health_connect_connect">ربط</string>
+    <string name="settings_health_connect_connected">متصل — الخطوات المزامنة تحلّ محل التقدير</string>
+    <string name="settings_health_connect_manage">إدارة</string>
+    <string name="settings_health_connect_note">قراءة فقط: سبيل يقرأ مجموع اليوم ولا يكتب في Health Connect أبدًا.</string>
     <string name="settings_section_units_language">الوحدات واللغة</string>
     <string name="settings_section_app">التطبيق</string>
     <string name="settings_units">الوحدات</string>
@@ -290,17 +299,21 @@
     <string name="diagnostics_status_no_permission">بلا إذن</string>
     <string name="diagnostics_status_no_sensor">لا مصدر للخطوات</string>
     <string name="diagnostics_status_estimated">يتم العدّ (تقديري)</string>
+    <string name="diagnostics_status_synced">يتم العدّ (مزامنة من Health Connect)</string>
     <string name="diagnostics_source_label">المصدر</string>
     <string name="diagnostics_source_counter">عدّاد الخطوات المادي</string>
     <string name="diagnostics_source_detector">مستشعر اكتشاف الخطوات</string>
     <string name="diagnostics_source_estimate">حركة الهاتف (تقديري)</string>
+    <string name="diagnostics_source_health_connect">Health Connect (مزامنة)</string>
     <string name="diagnostics_source_none">لا يوجد</string>
     <string name="diagnostics_last_event_label">آخر قراءة من المستشعر</string>
+    <string name="diagnostics_last_sync_label">آخر مزامنة من Health Connect</string>
     <string name="diagnostics_last_event_none">لم تحدث بعد</string>
     <string name="diagnostics_fallbacks_label">التحويلات اليوم</string>
     <string name="diagnostics_fallbacks_none">لا يوجد</string>
     <string name="diagnostics_source_note">يستخدم سبيل أفضل مستشعر يوفّره هذا الهاتف. إذا توقّف مستشعر مادي عن الإرسال، يتحوّل إلى مصدر آخر وتوضّح هذه الشاشة ذلك.</string>
     <string name="home_estimated_note">عدد تقديري من حركة الهاتف، وليس من عدّاد خطوات مادي.</string>
+    <string name="home_health_connect_note">مزامنة من Health Connect (ساعة أو تطبيق آخر). قد تتأخر عن هاتفك.</string>
     <string name="estimated_steps_value">≈ %1$s</string>
     <string name="diagnostics_today_label">اليوم</string>
     <string name="diagnostics_today_value">%1$s خطوة</string>
@@ -322,7 +335,7 @@
     <string name="diagnostics_oem_vivo">افتح الإعدادات › البطارية › إدارة استهلاك الطاقة في الخلفية، وابحث عن سبيل واسمح باستهلاك الطاقة في الخلفية. واسمح أيضًا بالتشغيل التلقائي في iManager.</string>
     <string name="diagnostics_oem_generic">افتح الإعدادات › التطبيقات › سبيل › البطارية واختر «بلا قيود». إن كان هاتفك به مدير تشغيل تلقائي فاسمح بسبيل فيه أيضًا.</string>
     <string name="diagnostics_body_title">ما قد يوقف العدّ</string>
-    <string name="diagnostics_body_sensor">لا يعدّ مستشعر الخطوات المادي إلا حين يكون الهاتف معك ويتحرك؛ أما التقدير فيقرأ حركة الهاتف ويُعلَّم دائمًا كتقدير. الخطوات لا تغادر الهاتف، لذا لا يمكن استرجاع خطوات لم تُحسب.</string>
+    <string name="diagnostics_body_sensor">لا يعدّ مستشعر الخطوات المادي إلا حين يكون الهاتف معك ويتحرك؛ أما التقدير فيقرأ حركة الهاتف ويُعلَّم دائمًا كتقدير. الخطوات لا تغادر الهاتف، لذا لا يمكن استرجاع خطوات لم تُحسب. خطوات Health Connect تأتي من تطبيق آخر أو ساعة، وقد تتأخر، وتُطبَّق كحدّ أدنى فقط — وسبيل لا يكتب في Health Connect أبدًا.</string>
     <string name="diagnostics_body_service">يبقي سبيل خدمة صغيرة قيد التشغيل. ومع ذلك قد يوقفها أندرويد أو الشركة المصنّعة. يعيد سبيل الاتصال عند فتح التطبيق وبعد إعادة تشغيل الهاتف، ولا يختلق مجموعًا لملء فراغ.</string>
     <string name="diagnostics_body_battery">قد يقطع موفّر البطارية أو الإيقاف القسري أو إعادة التشغيل العدّ حتى يعمل سبيل من جديد.</string>
     <string name="diagnostics_body_rest">يوم الراحة لا يغيّر الخطوات المحسوبة؛ تتوقف السلسلة فقط.</string>

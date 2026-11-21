@@ -19,6 +19,7 @@ import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.Units
 import com.sabeel.steps.domain.UserSettings
 import com.sabeel.steps.domain.Walk
+import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.Reminders
@@ -89,7 +90,7 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
             emit(
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
-                    !StepSensors.hasAny(app) -> StepServiceStatus.NO_SENSOR
+                    !StepSensors.hasAny(app) && !HealthConnect.isReady(app) -> StepServiceStatus.NO_SENSOR
                     else -> StatusStore.read(app)
                 },
             )
@@ -168,7 +169,7 @@ class DiagnosticsViewModel(private val app: SabeelApp) : ViewModel() {
             emit(
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
-                    !StepSensors.hasAny(app) -> StepServiceStatus.NO_SENSOR
+                    !StepSensors.hasAny(app) && !HealthConnect.isReady(app) -> StepServiceStatus.NO_SENSOR
                     else -> StatusStore.read(app)
                 },
             )
@@ -357,6 +358,7 @@ private fun Walk.toSavedWalkUi() = SavedWalkUi(
     distanceMeters = distanceMeters,
     secondsPerKm = secondsPerKm,
     route = route,
+    estimated = estimated,
 )
 
 class SettingsViewModel(private val app: SabeelApp) : ViewModel() {

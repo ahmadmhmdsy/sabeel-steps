@@ -147,6 +147,10 @@ dependencies {
     // DataStore preferences
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    // Health Connect client: optional read-only source for phones with no hardware step sensor.
+    // Read steps only; nothing is ever written to Health Connect.
+    implementation("androidx.health.connect:connect-client:1.1.0")
+
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.10.0")
 

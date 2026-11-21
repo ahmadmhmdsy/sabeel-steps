@@ -4,8 +4,9 @@ Use this together with [BLOCKERS.md](BLOCKERS.md) B7 and [release-evidence-log.m
 It is written so someone with two phones and no project context can run it and paste results back.
 
 **Status: OPEN — no physical-device run has been recorded.** The emulator can only exercise the
-labelled estimate tier (the API 36 slim image has no step counter and no step detector); the measured
-counter → detector ladder is unit-tested only.
+labelled estimate tier and the Health Connect opt-in card (the API 36 slim image has no step counter and
+no step detector, and no watch steps to read); the measured counter → detector ladder and the Health
+Connect floor are unit-tested only.
 
 ## 0. What you need
 
@@ -14,6 +15,9 @@ counter → detector ladder is unit-tested only.
 - Phone **B**: a different phone, ideally Android 8–10 (API 26–30), with either a counter or at least
   a step detector. If you have a detector-only device (some budget phones), it is the most valuable
   test phone.
+- Phone **C** (HP1–HP6): a phone with **no counter and no detector** (the estimate-tier phone), with the
+  **Health Connect** app installed and a watch or another app writing steps to it. If phone C has no
+  Health Connect data, HP1–HP6 cannot be exercised — write "not exercisable", do not fake it.
 - The signed release APK from `dist/` and the matching `dist/SHA256SUMS.txt`.
 - A measuring tape or a known 100-step corridor (optional, for estimate accuracy).
 - Optional but useful: a second person to count 100 physical steps.
@@ -36,6 +40,9 @@ Paste both hashes into the results header. **If a hash does not match `dist/SHA2
 adb install dist\Sabeel-1.0-release.apk
 adb shell pm grant com.sabeel.steps android.permission.ACTIVITY_RECOGNITION
 adb shell pm grant com.sabeel.steps android.permission.POST_NOTIFICATIONS
+# Health Connect (phone C only): the grant normally comes from the system dialog; a manual grant is
+# possible on some builds but does not replace the user-facing opt-in check:
+adb shell pm grant com.sabeel.steps android.permission.health.READ_STEPS
 ```
 
 Open the app, finish onboarding, choose English on phone A and Arabic on phone B (to spread locale
@@ -84,7 +91,27 @@ pretending B1 passed.
 | E2 | Leave the phone still on a table for 2 minutes. | ≈ 0 new steps; no phantom walk. | |
 | E3 | Walk 100 counted steps in a normal pocket carry. | Estimate is positive and in the right order of magnitude; record the observed number. It is an estimate: do not fail it for being 10–20% off, but record the delta. | |
 | E4 | Start a walk on this phone, walk 2 minutes, save. | Walk live and summary show "≈" and the note; the walk notification says steps are estimated. | |
-| E5 | Exported CSV (Settings → export) | Rows contain the same step numbers; note whether the file is marked as estimated (today it is not — record the gap if you consider it a release blocker). | |
+| E5 | Exported CSV (Settings → export) | Rows contain the same step numbers **and** a non-zero `estimated_steps` for estimated days; History day rows and saved walks show the "estimated" badge. | |
+| E6 | If you have a phone with **no motion sensor at all** (no accelerometer), start a walk. | The walk is not blocked and GPS distance still records, but walk steps stay 0 and nothing claims measured steps; a Health Connect synced total is never presented as walk steps. | |
+
+## 5b. Health Connect floor (phone C, no counter/detector, watch/app steps in Health Connect)
+
+Prerequisite: Health Connect installed, the watch/app has written steps for today, the app is on the
+**release APK above**. The tier is opt-in and only offered on phones with **no** counter and **no**
+detector; if the card is missing on phone C, record why (Health Connect unavailable, or a sensor was
+detected) and skip the rest.
+
+| # | Do | Expected | Result |
+|---|---|---|---|
+| HP1 | Open Settings. | A "Health Connect" card appears (only on this no-sensor phone) with a "Use synced steps" row and a read-only note; on phones A/B the card must be absent. | |
+| HP2 | Tap Connect and read the system Health Connect screen. | Only step **read** access is requested (no write); declining returns to the app without a crash and the estimate stays live. | |
+| HP3 | Grant, go to Home, wait ~2 min (first read 5 s after the service starts). | Home shows the synced total with the Health Connect note (not "≈"); Diagnostics source = "Health Connect (synced)", "Last sync from Health Connect" is fresh, "Fallbacks today" unchanged. Compare with the Health Connect app's own today total for the same date: app steps must not be lower. | |
+| HP4 | Walk with the phone in hand while the watch is **not** connected/updating. | Within ~10–12 min (watchdog probe) the app falls back to the labelled estimate and keeps the highest total; no double count when the watch catches up later (the floor only raises). | |
+| HP5 | Revoke step access in Health Connect settings (or Android Settings → Health Connect → App permissions), reopen the app. | The app returns to the labelled estimate; no crash; Diagnostics no longer claims synced; the Settings card offers Connect again. | |
+| HP6 | Open Health Connect → Data and access → App permissions (or the per-app usage screen). | Sabeel shows **read** access only; nothing was written by Sabeel; the privacy-usage activity opens without a crash. | |
+| HP7 | Export CSV on this phone. | `estimated_steps` is 0 for days fully synced; if a day mixed estimate and sync, the estimate portion is preserved and `0 <= estimated_steps <= steps`. | |
+
+Record the Health Connect app version and the watch/app data source in the results header.
 
 ## 6. Stall and fallback, on hardware (best effort)
 
@@ -106,6 +133,7 @@ working; if you cannot produce it, write "not exercisable on this hardware" and 
 Run date/time:
 Phone A: model, Android version, ABI, counter/detector present:
 Phone B: model, Android version, ABI, counter/detector present:
+Phone C: model, Android version, ABI, counter/detector present, Health Connect app version, step data source:
 APK SHA-256:            (must equal dist/SHA256SUMS.txt)
 AAB SHA-256:            (must equal dist/SHA256SUMS.txt)
 Locale(s):

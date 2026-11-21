@@ -140,7 +140,11 @@ private fun HomeContent(
     onOpenDiagnostics: () -> Unit,
 ) {
     val steps = ui.today?.steps ?: 0
-    val estimated = ui.sourceStatus.source == StepSource.MOTION_ESTIMATE
+    // The marker follows the data, not just the live source: a day that contains estimated steps
+    // stays marked even after a real sensor takes over again.
+    val estimated = ui.sourceStatus.source == StepSource.MOTION_ESTIMATE ||
+        (ui.today?.estimatedSteps ?: 0) > 0
+    val synced = ui.sourceStatus.source == StepSource.HEALTH_CONNECT
     val goal = ui.settings.goalSteps.coerceAtLeast(1)
     val progress = (steps.toFloat() / goal.toFloat()).coerceIn(0f, 1f)
     val stackedCards = fontScale > 1.3f
@@ -255,6 +259,16 @@ private fun HomeContent(
         if (estimated) {
             Text(
                 text = stringResource(R.string.home_estimated_note),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        } else if (synced) {
+            // Synced steps are real measurements made elsewhere, not an estimate, but they are not
+            // live either: say where they came from and that they can lag.
+            Text(
+                text = stringResource(R.string.home_health_connect_note),
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

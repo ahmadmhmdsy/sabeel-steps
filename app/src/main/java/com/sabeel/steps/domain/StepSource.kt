@@ -5,6 +5,7 @@ package com.sabeel.steps.domain
  *
  * COUNTER        the hardware step counter (cumulative since boot, measured)
  * DETECTOR       the hardware step detector (one event per step, measured)
+ * HEALTH_CONNECT an absolute daily total already held by Health Connect (synced, may lag)
  * MOTION_ESTIMATE an accelerometer estimate, only when no measured source can work; always labelled
  * NONE           nothing can count on this phone (still handled honestly by the UI)
  *
@@ -14,6 +15,7 @@ package com.sabeel.steps.domain
 enum class StepSource {
     COUNTER,
     DETECTOR,
+    HEALTH_CONNECT,
     MOTION_ESTIMATE,
     NONE,
     ;
@@ -21,6 +23,14 @@ enum class StepSource {
     /** Measured sources may be presented as facts; an estimate must always be marked as one. */
     val measured: Boolean
         get() = this == COUNTER || this == DETECTOR
+
+    /** Synced data comes from another app or a watch; it is honest but not live. */
+    val synced: Boolean
+        get() = this == HEALTH_CONNECT
+
+    /** Values that are not a live hardware measurement and must never masquerade as one. */
+    val approximate: Boolean
+        get() = this == MOTION_ESTIMATE || this == HEALTH_CONNECT
 }
 
 /** What the SensorManager actually reports on this device (never inferred from a feature flag). */
@@ -28,8 +38,16 @@ data class SourceAvailability(
     val counter: Boolean,
     val detector: Boolean,
     val accelerometer: Boolean,
+    /**
+     * True when Health Connect is installed/available, the user granted the step read permission,
+     * and this phone has no hardware step counter or detector (the case the tier exists for).
+     */
+    val healthConnect: Boolean = false,
 ) {
-    val any: Boolean get() = counter || detector || accelerometer
+    val any: Boolean get() = counter || detector || accelerometer || healthConnect
+
+    /** True when no on-device step measurement is possible, so synced/estimated sources are the only options. */
+    val noMeasuredStepSensor: Boolean get() = !counter && !detector
 }
 
 /**
@@ -44,6 +62,8 @@ object StepSourcePolicy {
     fun choose(available: SourceAvailability): StepSource = when {
         available.counter -> StepSource.COUNTER
         available.detector -> StepSource.DETECTOR
+        // Synced data is a real measurement made by another device, so it outranks an estimate.
+        available.healthConnect -> StepSource.HEALTH_CONNECT
         available.accelerometer -> StepSource.MOTION_ESTIMATE
         else -> StepSource.NONE
     }
@@ -72,10 +92,16 @@ object StepSourcePolicy {
     fun fallbackTarget(current: StepSource, available: SourceAvailability): StepSource? = when (current) {
         StepSource.COUNTER -> when {
             available.detector -> StepSource.DETECTOR
+            available.healthConnect -> StepSource.HEALTH_CONNECT
             available.accelerometer -> StepSource.MOTION_ESTIMATE
             else -> null
         }
-        StepSource.DETECTOR -> if (available.accelerometer) StepSource.MOTION_ESTIMATE else null
+        StepSource.DETECTOR -> when {
+            available.healthConnect -> StepSource.HEALTH_CONNECT
+            available.accelerometer -> StepSource.MOTION_ESTIMATE
+            else -> null
+        }
+        StepSource.HEALTH_CONNECT -> if (available.accelerometer) StepSource.MOTION_ESTIMATE else null
         else -> null
     }
 }

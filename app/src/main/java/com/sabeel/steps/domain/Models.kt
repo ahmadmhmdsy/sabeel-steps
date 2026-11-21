@@ -19,6 +19,12 @@ data class DailyStep(
     val calories: Double = 0.0,
     val activeMinutes: Int = 0,
     val updatedAt: Long = 0L,
+    /**
+     * How many of [steps] were produced by the labelled motion estimate rather than a measured
+     * sensor. 0 on days with no estimated steps, and also on rows written before this marker was
+     * recorded (the app never invents a marker it did not measure).
+     */
+    val estimatedSteps: Int = 0,
 )
 
 data class RoutePoint(val lat: Double, val lng: Double, val t: Long)
@@ -32,6 +38,8 @@ data class Walk(
     val distanceMeters: Double = 0.0,
     val secondsPerKm: Int = 0,
     val route: List<RoutePoint> = emptyList(),
+    /** True when at least part of this walk's step count came from the labelled estimate. */
+    val estimated: Boolean = false,
 )
 
 data class UserSettings(

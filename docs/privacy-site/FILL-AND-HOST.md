@@ -6,6 +6,14 @@ data and hosting are missing. **This is a blocker (B1 in
 [docs/legal/BLOCKERS.md](../legal/BLOCKERS.md)) — do not submit to Play before
 it is closed.**
 
+> **Version check (2026-11-21).** The Markdown source
+> [docs/legal/privacy-policy.md](../legal/privacy-policy.md) is now **v1.1** and
+> documents the optional read-only Health Connect Steps read. The HTML page
+> `index.html` is still generated from **v1.0**, so regenerate it from the v1.1
+> Markdown (and bump the version/date in the page) before filling placeholders
+> and hosting. Do not host the v1.0 page against a build that requests
+> `READ_STEPS`.
+
 ## 1. What gets hosted
 
 | File | Host it? | Why |

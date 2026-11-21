@@ -1,6 +1,10 @@
 # Sabeel Step-Source Resilience Plan
 
-> **Status:** delivered 2026-11-19 — Phase A+B committed as `8246615`; Phase C evidence/docs delivered, walk estimate labels added, signed release artifacts rebuilt and re-hashed; physical-device validation remains owner-blocked. Created 2026-11-19 (Asia/Baghdad).
+> **Status:** delivered 2026-11-19 (Phases A–C, commit `8246615`). **v1.1 update 2026-11-21:** owner approved
+> (1) keeping the estimate in goal/streak arithmetic (recommended default, always marked), (2) the read-only
+> **Health Connect** tier (dependency + `READ_STEPS` + Play health declaration), and (3) persisting the estimate
+> marker in the DB/CSV/saved walks. Phases D deliver those; physical-device validation remains owner-blocked.
+> Created 2026-11-19 (Asia/Baghdad).
 > **Owner:** Lead (inline execution). **Baseline:** \`fe51d2d\`.
 > **Skill:** \`writing-plans\`; verdict input: Qiyas Council Mode C, 2026-11-19 (council report in chat; prior TrueStep council at \`docs/review/2026-11-17/TRUESTEP-EXTERNAL-COUNCIL.md\`).
 
@@ -41,7 +45,9 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 - The 2026-11-17 council suspended "Wave 3" including an **accelerometer fallback** because it was unlabelled and
   over-scoped. The 2026-11-19 council reversed that suspension **only** for a last-resort, visibly estimated,
   no-new-permission tier; measured fallback (detector) and transition safety are the primary scope.
-- Health Connect remains **suspended** pending owner approval of dependency + \`READ_STEPS\` + Play health declaration.
+- **Health Connect was unsuspended by the owner on 2026-11-21** for a read-only daily-total tier on phones
+  with no hardware step sensor (dependency + \`READ_STEPS\` + Play health declaration approved). It is an
+  absolute floor, never additive, never written back, and never active alongside a hardware sensor.
   Manual step editing stays dropped; midnight late-arrival recovery stays suspended.
 - The estimate counting toward the daily goal / streak is the recommended default (always marked), reversible by
   hiding the estimate from goal arithmetic if the owner later prefers display-only.
@@ -58,10 +64,12 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 | D6 | Silence watchdog: a measured source that reports an event after starting and then goes silent for 10 min triggers a 5 s motion probe. Two consecutive probes that detect walking switch to the next tier. A counter event arriving while on a fallback switches back immediately (delta ignored). |
 | D7 | Estimate mode is only chosen when no counter and no detector exists or both registrations fail; it is labelled everywhere (Home number, Diagnostics, notification), never silently mixed into measured numbers. |
 | D8 | Status/Diagnostics must expose source, last sensor reading age, and switch/fallback count. \`NO_SENSOR\` now means "no counter, no detector, no accelerometer" (truly cannot count). |
-| D9 | No new permissions, no new dependencies, no INTERNET. Sensor batching is used when the HAL reports it, but never delays the writer. |
+| D9 | No INTERNET and no new dependencies **except** the owner-approved \`androidx.health.connect:connect-client\` and the read-only \`health.READ_STEPS\` permission (owner approval 2026-11-21). Sensor batching is used when the HAL reports it, but never delays the writer. |
 | D10 | Walk sessions use the same ladder; a step-only walk on a detector phone must count steps instead of staying at 0. |
 | D11 | EN and AR strings are added together; \`LocalizationParityTest\` is the gate. Arabic copy is marked for native review. |
 | D12 | Every phase is committed separately with its tests; emulator evidence goes under \`docs/review/2026-11-19/\`. |
+| D13 | Health Connect tier: read-only \`StepsRecord.COUNT_TOTAL\` for today every 2 min (first read 5 s), applied as an absolute floor (\`max(current, providerTotal)\`), active only when the phone has no counter and no detector and the user opted in; only a rising total counts as liveness; 30 min of failed reads falls back to the estimate; no write access is declared or used. |
+| D14 | The estimate portion of a day is persisted (\`daily_steps.estimatedSteps\`) and the saved-walk estimate flag (\`walks.estimated\`), Room v1->v2 migration, and exposed in CSV (\`estimated_steps\`) plus legacy 5-column import. Estimate markers never decrease within a day and are clamped to 0..steps. |
 
 ## Definition of Done (gates)
 
@@ -73,6 +81,8 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 - G4 EN and AR parity test green; Arabic screenshots of Home + Diagnostics captured in the evidence folder.
 - G5 No path lowers a day, resurrects a deleted day, or counts a counter catch-up after a fallback (unit tests).
 - G6 One commit per phase; working tree clean except untracked \`.external/\`.
+- G7 (v1.1) The estimate marker survives restarts in Room and CSV (round-trip tests), and the Health Connect
+  floor never lowers a day, never adds a total twice and is never active beside a hardware sensor (unit tests).
 
 ---
 
@@ -307,12 +317,65 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 - [x] Record the new evidence in \`docs/review/2026-11-19/step-source-resilience/EVIDENCE.md\`.
 - [x] Final \`testDebugUnitTest assembleDebug lintDebug\` and clean git status; final report to owner.
 
+## Phase D - owner-approved v1.1 additions (2026-11-21)
+
+### D1. Persist the estimate marker (#3 approval)
+- [x] Room v2: \`daily_steps.estimatedSteps INTEGER NOT NULL DEFAULT 0\`, \`walks.estimated INTEGER NOT NULL
+      DEFAULT 0\`; \`MIGRATION_1_2\` added without destructive fallback; schema \`app/schemas/.../2.json\` exported.
+- [x] \`StepPipeline\` tracks \`estimatedStepsToday\` (estimate source only, preserved across switches, reset at
+      midnight, never above today's total); repository persists it monotonically.
+- [x] \`WalkTrackingService\` keeps a sticky \`estimatedUsed\` flag (also restored from the checkpoint) and saves
+      \`Walk(estimated = true)\` when any counted step came from the estimate.
+- [x] CSV v2: header \`date,steps,distance_meters,calories,active_minutes,estimated_steps\`; legacy 5-column
+      header/rows still import with 0; a row whose estimate exceeds its steps (or is negative) is skipped.
+- [x] History: daily rows and saved walks show an "estimated" badge; the walk dialog says the count was estimated.
+- [x] Tests: pipeline estimate tracking/preservation/midnight reset, CSV round-trip/legacy/impossible-row,
+      localization parity for the new EN+AR strings.
+
+### D2. Health Connect read-only tier (#2 approval)
+- [x] Platform reader \`HealthConnect.kt\`: availability (provider installed/version), \`READ_STEPS\` permission
+      check, settings intent; \`readToday\` aggregates \`StepsRecord.COUNT_TOTAL\` for the local day.
+- [x] Manifest: \`android.permission.health.READ_STEPS\`, provider \`<queries>\`, \`ACTION_HEALTH_CONNECT_SETTINGS\`,
+      and the exported \`VIEW_PERMISSION_USAGE\` activity-alias; dependency
+      \`androidx.health.connect:connect-client:1.1.0\`.
+- [x] Policy: \`HEALTH_CONNECT\` between detector and estimate; availability-aware choose/fallback; sync label.
+- [x] Pipeline/repository: \`onExternalTotal\` absolute floor, day rollover, estimate portion preserved,
+      negative/duplicate reads ignored; \`recordExternalTotal\` writes the row.
+- [x] Service: readiness computed only when no counter/detector; polling every 2 min (5 s first); activation only
+      when the provider total is ahead; only a *rising* total refreshes liveness (so a static provider cannot
+      suppress the estimate watchdog); 30 min failed reads falls back; notification and Diagnostics copy.
+- [x] UI: Home sync note; Diagnostics "Health Connect (synced)" source + "Last sync" row; Settings opt-in card
+      (connect/manage, read-only note) shown only on phones with no measured step sensor; view-model status gates
+      accept Health Connect-ready phones.
+- [x] Tests: policy ordering/fallbacks/flags, external-total floor/day-rollover/negative cases.
+
+### D3. Verification, docs and owner gaps
+- [x] \`testDebugUnitTest assembleDebug lintDebug\` green after the changes: 121/121 tests in 11 suites, lint
+      0 errors / 44 warnings / 1 hint; `assembleRelease` + `bundleRelease` rebuilt 2026-11-21 22:44 and the
+      signed artifacts re-measured (APK 1,861,838 B, AAB 3,977,681 B; same upload key; `apksigner`,
+      `jarsigner`, `zipalign -c -P 16` OK).
+- [x] Spec, README, brief, Play compliance checklist, privacy policy, claims audit, blockers and hardware
+      checklist updated for the new permission/data flow/CSV column; claims audit §8, release sign-off and
+      evidence log §8 now carry the 2026-11-21 measurements. The privacy-site HTML still needs regeneration
+      from the v1.1 Markdown (owner, B1).
+- [ ] **Owner/Play:** health declaration + Health Connect data-type declaration, Data safety answer for the
+      on-device Health Connect read, hosted privacy policy regeneration (docs/privacy-site), and a real
+      no-sensor phone with Health Connect steps to verify the read/floor/revoke paths. The emulator pass on
+      2026-11-21 shows the opt-in card and Health Connect's own read-only Steps permission screen, but the image
+      has no steps to read, so the read/floor/revoke paths stay hardware/owner-blocked.
+- [ ] **Owner:** decide whether the Health Connect tier should also run on phones that *do* have a step sensor
+      (currently never, to avoid double counting); that needs a merge design before it is enabled.
+
 ### Post-plan closure (2026-11-19 evening, after the first owner report)
 - [x] Found and fixed a truth gap: walk sessions used the ladder but showed the estimated count unmarked. Live walk,
       saved summary and walk notification now say "estimated"; no schema change. QA dumps: \`qa-17\`, \`qa-18\`.
 - [x] Rebuilt \`assembleRelease\` + \`bundleRelease\` from the current tree (2026-11-19 20:11), verified
       \`apksigner\` (v2), \`jarsigner\` (AAB), \`zipalign -c -P 16\`, permissions and manifest, and regenerated
       \`dist/SHA256SUMS.txt\`. \`docs/legal/release-signoff.md\` and \`CLAIMS-AUDIT.md\` §6.1 now carry the new values.
+- [x] Emulator pass on 2026-11-21 (release APK over the previous release install, Room v1->v2, old rows
+      preserved; Health Connect card + read-only Steps permission screen; EN + AR estimate labels;
+      synthetic-input estimated walk rendered live/summary/History/dialog; crash buffer empty) recorded in
+      [docs/review/2026-11-21/health-connect/EVIDENCE.md](../../review/2026-11-21/health-connect/EVIDENCE.md).
 - [x] Wrote [docs/legal/HARDWARE-QA-CHECKLIST.md](../../legal/HARDWARE-QA-CHECKLIST.md): counter-phone, detector-only,
       estimate-tier, stall/battery and midnight rows with commands and a results header, so the owner can run B7
       without project context.
@@ -322,8 +385,9 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 ## Owner decisions / gaps to raise (not silently decided)
 
 1. **Estimate counts toward goal/streak** - currently yes (recommended), always marked. Reversible.
-2. **Health Connect** stays suspended until the owner approves dependency + \`READ_STEPS\` + Play health declaration;
-   it is the only way to recover steps from another app/wearable.
+2. **Health Connect** - **APPROVED 2026-11-21** (dependency + read-only \`READ_STEPS\` + health declaration) and
+   implemented as the D13 floor tier. Still owner-blocked: Play Console health declaration/Data safety, hosted
+   policy, and a real no-sensor phone to verify the read/revoke paths.
 3. **Physical-device validation** remains owner-blocked; the measured ladder needs a real counter phone and a real
    detector-only phone before Play submission. Emulator only proves the estimate path.
 4. **Arabic copy** for the new estimate/fallback strings needs native review (same status as the existing copy).
@@ -333,12 +397,12 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
    probes run for 5 s after 10 min of silence and back off exponentially (2, 4, 8 ... up to 30 min) while the phone
    stays still, so an overnight-still phone is not probed every minute. Revisit with a real detector-only phone if
    drain is measurable.
-7. **CSV and saved-walk rows do not carry the estimate flag.** The walk screen, summary and notification say
-   "estimated", but a walk exported to CSV (or a daily total copied out) has no source marker. Adding one means a
-   schema/CSV-format change; current default is to leave the label in-app only. Raise before any data-format work.
+7. **Estimate marker in data** - **RESOLVED 2026-11-21** (owner approved #3): \`daily_steps.estimatedSteps\`,
+   \`walks.estimated\` and the CSV \`estimated_steps\` column now carry it; legacy CSV still imports. The DB is v2
+   and the v1->v2 migration is additive.
 8. **versionCode before Play upload.** The current signed artifacts are versionCode 1 / versionName 1.0.0 (rebuilt
-   2026-11-19). Any upload after an existing track entry needs a higher versionCode, so rebuild, re-verify and
-   re-hash immediately before uploading; do not reuse the 2026-11-19 files if a build was already uploaded.
+   2026-11-21). Any upload after an existing track entry needs a higher versionCode, so rebuild, re-verify and
+   re-hash immediately before uploading; do not reuse the 2026-11-21 files if a build was already uploaded.
 
 ## Task order and write scopes
 
@@ -352,3 +416,6 @@ accelerometer; it is the natural estimate-tier test bed. \`adb\` = \`C:/Android/
 | 6 | B1+B2 (estimate + walks) | service/StepCounterService.kt, service/WalkTrackingService.kt, strings, UI estimate marker |
 | 7 | B3 verify+commit | - |
 | 8 | C1+C2 (QA, evidence, docs, final verify) | docs/**, README.md |
+| 9 | D1 estimate marker (Room v2, pipeline, walk flag, CSV, History) | data/db, domain/StepPipeline.kt, data/repo/StepsRepository.kt, data/export/CsvCodec.kt, service/WalkTrackingService.kt, ui/screens/HistoryScreen.kt, tests |
+| 10 | D2 Health Connect tier (platform reader, manifest, dependency, policy, pipeline floor, service poll, UI) | platform/HealthConnect.kt, AndroidManifest.xml, app/build.gradle.kts, domain/StepSource.kt, domain/StepPipeline.kt, data/repo/StepsRepository.kt, service/StepCounterService.kt, ui/screens, res/values* |
+| 11 | D3 docs + final verification | docs/, README.md |

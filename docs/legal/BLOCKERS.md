@@ -1,7 +1,7 @@
 # Release blockers — Sabeel v1.0
 
 Items that **cannot be closed by code**. Each has an owner action, an acceptance
-test, and what it blocks. Status as of 2026-11-17.
+test, and what it blocks. Status as of 2026-11-21 (v1.1 Health Connect + estimate-marker additions).
 
 Legend: **OPEN** = blocks release · **PARTIAL** = code side ready, owner action
 pending · **CLOSED** = evidence recorded.
@@ -27,6 +27,9 @@ Replace **every** placeholder (English and Arabic copies):
 | `[CONTACT EMAIL]` | `[البريد الإلكتروني للتواصل]` | A monitored support email (same as Play listing) |
 | `[POSTAL ADDRESS]` | `[العنوان البريدي]` | A real contact address |
 | `[DATE OF FIRST PUBLICATION]` | `[تاريخ أول نشر]` | Effective date of the hosted policy |
+
+The policy source was updated to v1.1 on 2026-11-21 (read-only Health Connect step read); regenerate
+`docs/privacy-site/index.html` from it before hosting (the checked-in HTML still carries the v1.0 text).
 
 Then host **only** `docs/privacy-site/` on a public HTTPS host (GitHub Pages,
 Cloudflare Pages, Netlify or equivalent), verify the URL in a clean browser,
@@ -77,9 +80,10 @@ The account owner must, in the Play Console:
    production access. Plan 2–3 weeks.
 3. Complete App content: privacy policy URL, app access (no login), ads (none),
    content rating (IARC), target audience, Data safety (**no data collected or
-   shared**; on-device processing only), **Health apps declaration**, and the
-   **foreground-service declarations** for `health` and `location` (with demo
-   videos if the console asks).
+   shared**; on-device processing only, including the opt-in Health Connect read),
+   **Health apps declaration** (Activity and Fitness + Health Connect Steps **read**),
+   and the **foreground-service declarations** for `health` and `location` (with
+   demo videos if the console asks).
 4. Enrol in **Play App Signing** and upload the upload certificate
    `docs/release/upload-certificate.pem`; confirm the SHA-256 fingerprint in
    docs/release/KEYSTORE.md.
@@ -154,7 +158,11 @@ physical devices (API 26–30 and API 33+), run the manual smoke list
 CSV, delete-all, language switch, reboot re-arm), and record results with the
 artifact SHA-256. The source ladder adds device-specific rows: a counter phone
 must be measured (no "≈", Diagnostics names the counter) and a detector-only
-phone must count through the detector. Do not reuse earlier emulator evidence;
+phone must count through the detector. The v1.1 Health Connect tier adds a **third**
+device row: a phone with no counter/detector, Health Connect installed and a watch/app
+writing steps — verify the opt-in card, the `READ_STEPS` dialog, the synced total/floor,
+revocation falling back to the labelled estimate, and that nothing is written back to
+Health Connect (see [HARDWARE-QA-CHECKLIST.md](HARDWARE-QA-CHECKLIST.md) §4). Do not reuse earlier emulator evidence;
 it was labelled NOT VERIFIED — EMULATOR-ATTEMPTED and includes black
 screenshots/0-byte video, and the 2026-11-19 emulator run covers only the
 labelled estimate tier. A command-level checklist to run and paste back is
@@ -164,6 +172,27 @@ labelled estimate tier. A command-level checklist to run and paste back is
 **Owner:** engineering/owner.
 
 ---
+
+## B8 — Health Connect declarations and hardware verification — PARTIAL (code ready, owner actions)
+
+**Blocks:** shipping the v1.1 Health Connect tier; the rest of the app is unaffected if the tier stays
+invisible (it is opt-in and only offered on phones with no counter/detector).
+
+Code side is complete (2026-11-21): `READ_STEPS` only, read-only `StepsRecord.COUNT_TOTAL`, absolute floor,
+Settings opt-in, revocation fallback, no write permission. Remaining:
+
+1. Play Console: add Health Connect to the **Health apps declaration** (Activity and Fitness; Steps data type
+   = read) and complete the Health Connect permissions form; keep Data safety consistent (on-device only,
+   no collection, no sharing).
+2. Regenerate and host the v1.1 privacy policy (see B1) and link it in the listing and in-app.
+3. Run the Health Connect rows of the hardware checklist on a real no-sensor phone with a watch/app source;
+   record the artifact SHA-256 and the observed source/last-sync/floor/revoke behaviour in
+   `docs/legal/release-evidence-log.md`.
+4. Do **not** enable the tier on phones that have a hardware step sensor until a merge design is approved
+   (double-count risk); the current rule keeps it off there.
+
+**Acceptance:** declaration complete + hosted policy + device evidence entries.
+**Owner:** account owner/engineering.
 
 ## Blockers that are already closed by code (for reference)
 

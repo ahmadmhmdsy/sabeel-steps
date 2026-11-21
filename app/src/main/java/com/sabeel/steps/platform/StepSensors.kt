@@ -32,6 +32,7 @@ object StepSensors {
     fun labelRes(source: StepSource): Int = when (source) {
         StepSource.COUNTER -> R.string.diagnostics_source_counter
         StepSource.DETECTOR -> R.string.diagnostics_source_detector
+        StepSource.HEALTH_CONNECT -> R.string.diagnostics_source_health_connect
         StepSource.MOTION_ESTIMATE -> R.string.diagnostics_source_estimate
         StepSource.NONE -> R.string.diagnostics_source_none
     }

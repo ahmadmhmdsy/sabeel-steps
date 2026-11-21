@@ -95,6 +95,9 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
     @Volatile private var distanceMeters = 0.0
     @Volatile private var steps = 0
     @Volatile private var lastRaw = Float.NaN
+
+    /** Sticky: once any step in this walk came from the labelled estimate, the saved row says so. */
+    @Volatile private var estimatedUsed = false
     private var detectorCumulative = 0f
     private val motionDetector = MotionStepDetector()
     @Volatile private var lastLocation: Location? = null
@@ -178,6 +181,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
             lastRaw = checkpoint.lastRaw
             lastLocation = checkpoint.lastLocation
             route = checkpoint.points
+            estimatedUsed = checkpoint.estimatedUsed
         } else {
             WalkTracker.deleteCheckpoint(this)
             startedAt = System.currentTimeMillis()
@@ -186,6 +190,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
             lastRaw = Float.NaN
             lastLocation = null
             route = emptyList()
+            estimatedUsed = false
         }
         running = true
         gpsActive = startLocationUpdates()
@@ -258,6 +263,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 distanceMeters = finalDistance,
                 secondsPerKm = pace,
                 route = finalRoute,
+                estimated = estimatedUsed || stepSource == StepSource.MOTION_ESTIMATE,
             )
             val id = runCatching { app.container.walks.save(walk) }.getOrNull()
             if (id == null) {
@@ -441,6 +447,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 val detected = motionDetector.onSample(magnitude, android.os.SystemClock.elapsedRealtime())
                 if (detected <= 0) return
                 steps += detected
+                estimatedUsed = true
                 publishLive()
             }
             else -> Unit
@@ -479,7 +486,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 elapsedSec = elapsedSec(),
                 distanceMeters = distanceMeters,
                 steps = steps,
-                estimated = stepSource == StepSource.MOTION_ESTIMATE,
+                estimated = estimatedUsed || stepSource == StepSource.MOTION_ESTIMATE,
                 secondsPerKm = paceSecPerKm(),
                 route = route,
                 gpsActive = gpsActive,
@@ -585,6 +592,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 .put("distanceMeters", distanceMeters)
                 .put("steps", steps)
                 .put("lastRaw", if (lastRaw.isNaN()) JSONObject.NULL else lastRaw.toDouble())
+                .put("estimatedUsed", estimatedUsed)
                 .put("lastLat", lastLocation?.let { it.latitude } ?: JSONObject.NULL)
                 .put("lastLng", lastLocation?.let { it.longitude } ?: JSONObject.NULL)
                 .put("lastTime", lastLocation?.time ?: 0L)
@@ -634,6 +642,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
                 lastRaw = if (payload.isNull("lastRaw")) Float.NaN else payload.optDouble("lastRaw", Double.NaN).toFloat(),
                 lastLocation = savedLocation,
                 points = points,
+                estimatedUsed = payload.optBoolean("estimatedUsed", false),
             )
         }.getOrNull()
     }
@@ -645,6 +654,7 @@ class WalkTrackingService : Service(), SensorEventListener, LocationListener {
         val lastRaw: Float,
         val lastLocation: Location?,
         val points: List<RoutePoint>,
+        val estimatedUsed: Boolean,
     )
 
     // endregion

@@ -44,7 +44,13 @@ F8 Settings: goal, units, reminder on/off + time, language switch (in-app, no sy
    data export (CSV via SAF) and delete-all-data, privacy policy screen, about.
 F9 Accessibility: content descriptions, 48dp targets, contrast, TalkBack order, font scaling.
 
-Explicitly out of v1: accounts, cloud sync, ads, subscriptions, social, Health Connect,
+Step source (v1.1 owner-approved addition): measured-first ladder
+`TYPE_STEP_COUNTER` -> `TYPE_STEP_DETECTOR` -> read-only Health Connect daily total (opt-in, only on
+phones with no hardware step sensor) -> labelled accelerometer estimate -> none. The estimate portion is
+persisted and marked in History and the CSV export. Health Connect is read-only (never written) and stays
+on-device.
+
+Explicitly out of v1: accounts, cloud sync, ads, subscriptions, social, Health Connect write/export,
 wearables, maps/tiles, INTERNET permission, analytics.
 
 ## 5. Tech stack (fixed, buildsmith owns the build files)

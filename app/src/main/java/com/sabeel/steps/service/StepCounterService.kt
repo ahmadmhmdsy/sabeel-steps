@@ -21,6 +21,7 @@ import com.sabeel.steps.domain.SourceAvailability
 import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.domain.StepSourceHealth
 import com.sabeel.steps.domain.StepSourcePolicy
+import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.Reminders
@@ -102,6 +103,13 @@ class StepCounterService : Service(), SensorEventListener {
     private var blocked = false
     private var writeJob: Job? = null
     private var heartbeatJob: Job? = null
+    private var hcPollJob: Job? = null
+
+    /** Provider usable + grant + no hardware step sensor; polls keep watching even while estimating. */
+    private var healthConnectReady = false
+
+    /** Last absolute total seen from Health Connect (-1 = never), used to detect real progress. */
+    private var hcLastTotal = -1
     private var mode = Mode.COUNTING
 
     @Volatile private var activeSource = StepSource.NONE
@@ -149,10 +157,18 @@ class StepCounterService : Service(), SensorEventListener {
         counterSensor = manager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         detectorSensor = manager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
         accelerometerSensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        // Health Connect is only a counting source when no hardware step sensor exists; with a real
+        // counter/detector it would mix two origins and risk double counting for no benefit.
+        healthConnectReady = runCatching { HealthConnect.isReady(this) }.getOrDefault(false) &&
+            counterSensor == null && detectorSensor == null
         availability = SourceAvailability(
             counter = counterSensor != null,
             detector = detectorSensor != null,
             accelerometer = accelerometerSensor != null,
+            // Prefer a live estimate at startup when the accelerometer exists: Health Connect can be
+            // silent for hours, and a zero synced total must not stop real phone counting. The first
+            // poll that reports steps above the current total promotes Health Connect.
+            healthConnect = healthConnectReady && accelerometerSensor == null,
         )
         if (!availability.any) {
             block(Mode.NO_SENSOR)
@@ -182,6 +198,7 @@ class StepCounterService : Service(), SensorEventListener {
             withContext(Dispatchers.Main) { startPrimarySource() }
             startWriter()
             startHeartbeat()
+            startHealthConnectPolling()
         }
         // Keep the daily goal in memory so the goal notification needs no extra read per event.
         scope.launch {
@@ -285,6 +302,7 @@ class StepCounterService : Service(), SensorEventListener {
             availability = when (target) {
                 StepSource.COUNTER -> availability.copy(counter = false)
                 StepSource.DETECTOR -> availability.copy(detector = false)
+                StepSource.HEALTH_CONNECT -> availability.copy(healthConnect = false)
                 StepSource.MOTION_ESTIMATE -> availability.copy(accelerometer = false)
                 StepSource.NONE -> availability
             }
@@ -344,6 +362,8 @@ class StepCounterService : Service(), SensorEventListener {
     }
 
     private fun ensureRegistrations(target: StepSource): Boolean {
+        // Synced source: nothing to register. Polls write the absolute total directly.
+        if (target == StepSource.HEALTH_CONNECT) return true
         if (sensorManager == null) return false
         if (availability.counter && !counterRegistered) {
             val sensor = counterSensor
@@ -522,6 +542,79 @@ class StepCounterService : Service(), SensorEventListener {
         }
     }
 
+    /**
+     * Polls Health Connect while it is the only real source this phone has. The poll is cheap and
+     * local (the provider serves the aggregate; Sabeel itself never touches the network).
+     *
+     * The absolute total is applied as a floor: each successful read raises the day to at least the
+     * provider's "steps since midnight" number and never adds a delta, so a repeated/late poll
+     * cannot double count. The estimate may keep counting between polls; the floor only ever takes
+     * the larger of the two.
+     */
+    private fun startHealthConnectPolling() {
+        if (!healthConnectReady) return
+        if (hcPollJob?.isActive == true) return
+        hcPollJob = scope.launch {
+            delay(HC_FIRST_POLL_MS)
+            while (isActive) {
+                if (!eraseInProgress && mode == Mode.COUNTING) {
+                    pollHealthConnect()
+                }
+                delay(HC_POLL_MS)
+            }
+        }
+    }
+
+    private suspend fun pollHealthConnect() {
+        if (activeSource == StepSource.COUNTER || activeSource == StepSource.DETECTOR) return
+        val now = System.currentTimeMillis()
+        val snapshot = HealthConnect.readToday(this, now)
+        if (snapshot == null) {
+            // The provider/read failed. If Health Connect was the live source and nothing has
+            // arrived for a long time, fall back to the next tier (the estimate) instead of
+            // pretending the stale total is current.
+            if (activeSource == StepSource.HEALTH_CONNECT && now - lastEventAt > HC_STALE_MS) {
+                withContext(Dispatchers.Main) { switchFallback() }
+            }
+            return
+        }
+        // A zero total is a legitimate quiet morning: never let it displace a working estimate.
+        if (snapshot.steps <= 0 && activeSource != StepSource.HEALTH_CONNECT) return
+        if (activeSource == StepSource.MOTION_ESTIMATE) {
+            // Only hand over to Health Connect when it is actually ahead of what the estimate has
+            // already counted; otherwise the estimate remains the more informative live source.
+            val current = runCatching { app.container.steps.todayFlow().first()?.steps ?: 0 }
+                .getOrDefault(0)
+            if (snapshot.steps <= current) return
+        }
+        if (activeSource != StepSource.HEALTH_CONNECT) {
+            availability = availability.copy(healthConnect = true)
+            withContext(Dispatchers.Main) { activate(StepSource.HEALTH_CONNECT) }
+            if (activeSource != StepSource.HEALTH_CONNECT) return
+        }
+        val today = DateKey.today(now)
+        val active = cadence.activeMinutesFor(today)
+        val row = runCatching {
+            app.container.steps.recordExternalTotal(
+                totalSteps = snapshot.steps,
+                now = now,
+                activeMinutesToday = active,
+                source = StepSource.HEALTH_CONNECT,
+            )
+        }.getOrNull() ?: return
+        // Only a rising total proves the sync is alive. A repeated read of yesterday's/morning's
+        // number must not keep the watchdog asleep forever, or the live estimate would never resume.
+        val increased = snapshot.steps > hcLastTotal
+        hcLastTotal = maxOf(hcLastTotal, snapshot.steps)
+        if (increased) {
+            lastEventAt = now
+            health.onEvent(now)
+        }
+        markSourceStatus(force = true)
+        updateNotification()
+        maybeNotifyGoal(row.steps)
+    }
+
     private fun markAlive(force: Boolean = false) {
         val now = System.currentTimeMillis()
         if (!force && now - lastStatusMarkAt < STATUS_HEARTBEAT_MS) return
@@ -623,6 +716,9 @@ class StepCounterService : Service(), SensorEventListener {
                 localized.getString(R.string.sensor_notif_permission_text)
             mode == Mode.NO_SENSOR -> localized.getString(R.string.sensor_notif_no_sensor_title) to
                 localized.getString(R.string.sensor_notif_no_sensor_text)
+            activeSource == StepSource.HEALTH_CONNECT ->
+                localized.getString(R.string.sensor_notif_health_connect_title) to
+                    localized.getString(R.string.sensor_notif_health_connect_text)
             activeSource == StepSource.MOTION_ESTIMATE ->
                 localized.getString(R.string.sensor_notif_estimate_title) to
                     localized.getString(R.string.sensor_notif_estimate_text)
@@ -641,6 +737,9 @@ class StepCounterService : Service(), SensorEventListener {
         private const val PROBE_WINDOW_MS = 5_000L
         private const val PROBE_MIN_STEPS = 3
         private const val MAX_BATCH_US = 20_000_000
+        private const val HC_FIRST_POLL_MS = 5_000L
+        private const val HC_POLL_MS = 120_000L
+        private const val HC_STALE_MS = 30 * 60_000L
 
         /**
          * True while delete-all is suppressing service writes. Volatile because a service instance
@@ -661,7 +760,7 @@ class StepCounterService : Service(), SensorEventListener {
                 StatusStore.mark(appContext, StepServiceStatus.NO_PERMISSION)
                 return false
             }
-            if (!StepSensors.hasAny(appContext)) {
+            if (!StepSensors.hasAny(appContext) && !HealthConnect.isReady(appContext)) {
                 StatusStore.mark(appContext, StepServiceStatus.NO_SENSOR)
                 return false
             }

@@ -120,3 +120,25 @@ Independent verification batch: **C:/dl/legal-evidence/final-20261117-000050** (
 ## 7. Sufficiency statement
 
 The folder is **enough** to close the independent static gate: artifact identity reproduced, C2/C4/C5/C6(debug)/C8/C9/C10-S PASS, C12 by design, folder hygiene clean. It is **not enough** to support Play submission on its own and does **not** close: the release-artifact gate (no release AAB/merged manifest); FGS declaration + demo video; visual evidence (black screenshots); real runtime coverage of FGS, notifications, reminder scheduling and the walk flow; hardware step/GPS accuracy; a signed release artifact with C12 re-run. Those are recorded as OPEN above, not as failures of the app.
+
+---
+
+## 8. Addendum — v1.1 Health Connect / provenance verification (2026-11-21 22:44 +03:00)
+
+This is a **self-verification** by the building agent, not a new independent batch. Sections 1–7
+remain the dated 2026-11-17 record.
+
+| Item | Measurement | Status |
+|---|---|---|
+| Release artifacts | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL 2026-11-21 22:44. APK 1,861,838 B / `C5BD200DA95D3FD1F1C417FB6C11FBE8E06700CB6A75C07E5CA793F1A1DC4958`; AAB 3,977,681 B / `7A2FD53AA12603127403D852A35C168325A9AD4FA7F5843CD9782819EA06BC77`; debug APK 15,188,660 B / `72D97C3B…B238` | **PASS (self-measured)** |
+| Signing | Upload cert SHA-256 `7b12ad…6152d` (same key as v1.0); `apksigner verify` OK (v2); `jarsigner -verify` on the AAB "jar verified"; `zipalign -c -P 16 4` exit 0 | **PASS (self-measured)** |
+| Permissions (release APK) | 11 uses-permissions: the v1.0 ten plus `android.permission.health.READ_STEPS`. No INTERNET, ACCESS_NETWORK_STATE, AD_ID or ACCESS_BACKGROUND_LOCATION | **PASS** |
+| Gates | `testDebugUnitTest` 121/121 in 11 suites (0 failures/errors/skips); `assembleDebug`; `lintDebug` exit 0 (0 errors, 44 warnings, 1 hint); `lintVitalRelease` passed inside the release build | **PASS** |
+| Room upgrade | Release APK installed with `adb install -r` over the previous release-signed install (same signature, data kept); after launch the old 19 Nov rows (40 steps) still render in History/Insights; no crash; crash buffer empty | **PASS (emulator upgrade)** |
+| Health Connect UI | Settings card gated on no hardware sensor; tapping Connect opens Health Connect's read-only permission screen for Sabeel with **Steps** as the only data type; declining leaves the app on the labelled estimate. Emulator pass in EN and AR; a synthetic-input estimated walk rendered live → summary → History badge → saved-walk dialog | **PASS (emulator, read-only contract + estimate walk)** |
+| Health Connect data path | The grant was not completed on the emulator and no app/watch writes steps there, so synced reads, the floor reconciliation, the synced notification and the 30-minute fallback remain unexercised | **OPEN — DEVICE / OWNER** (HARDWARE-QA-CHECKLIST §5b) |
+| Privacy / Play declarations | v1.1 docs updated (privacy policy, Play compliance checklist, submission checklist §4.7/4.8/4.12/4.13, BLOCKERS B8); console declarations and the Health Connect data-access form are not submitted, and the v1.1 HTML site still needs regeneration and hosting | **OPEN — OWNER** |
+
+Evidence folder: [docs/review/2026-11-21/health-connect/](../review/2026-11-21/health-connect/EVIDENCE.md).
+Claim-by-claim audit: [CLAIMS-AUDIT.md §8](../release/CLAIMS-AUDIT.md).
+

@@ -58,6 +58,7 @@ data class SavedWalkUi(
     val distanceMeters: Double,
     val secondsPerKm: Int,
     val route: List<RoutePoint>,
+    val estimated: Boolean = false,
 )
 
 @Composable
@@ -148,6 +149,13 @@ fun HistoryScreen() {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (day.estimatedSteps > 0) {
+                                Text(
+                                    text = stringResource(R.string.history_estimated_badge),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                )
+                            }
                         }
                         Spacer(Modifier.width(12.dp))
                         Text(
@@ -194,6 +202,13 @@ fun HistoryScreen() {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (walk.estimated) {
+                                Text(
+                                    text = stringResource(R.string.history_estimated_badge),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                )
+                            }
                         }
                         Spacer(Modifier.width(12.dp))
                         Text(
@@ -250,6 +265,13 @@ private fun SavedWalkDialog(
                     label = stringResource(R.string.walk_live_pace),
                     value = paceText(walk.secondsPerKm, units),
                 )
+                if (walk.estimated) {
+                    Text(
+                        text = stringResource(R.string.walk_estimated_saved_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
                 if (walk.route.isNotEmpty()) {
                     RouteSketch(
                         route = walk.route,

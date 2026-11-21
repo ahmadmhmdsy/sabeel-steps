@@ -16,6 +16,7 @@ data class DailyStepEntity(
     val calories: Double,
     val activeMinutes: Int,
     val updatedAt: Long,
+    val estimatedSteps: Int,
 )
 
 @Entity(tableName = "walks")
@@ -28,6 +29,7 @@ data class WalkEntity(
     val distanceMeters: Double,
     val secondsPerKm: Int,
     val routeJson: String,
+    val estimated: Boolean,
 )
 
 fun DailyStepEntity.toDomain() = DailyStep(
@@ -37,6 +39,7 @@ fun DailyStepEntity.toDomain() = DailyStep(
     calories = calories,
     activeMinutes = activeMinutes,
     updatedAt = updatedAt,
+    estimatedSteps = estimatedSteps,
 )
 
 fun DailyStep.toEntity() = DailyStepEntity(
@@ -46,6 +49,7 @@ fun DailyStep.toEntity() = DailyStepEntity(
     calories = calories,
     activeMinutes = activeMinutes,
     updatedAt = updatedAt,
+    estimatedSteps = estimatedSteps,
 )
 
 fun WalkEntity.toDomain() = Walk(
@@ -57,6 +61,7 @@ fun WalkEntity.toDomain() = Walk(
     distanceMeters = distanceMeters,
     secondsPerKm = secondsPerKm,
     route = parseRoute(routeJson),
+    estimated = estimated,
 )
 
 fun Walk.toEntity() = WalkEntity(
@@ -68,6 +73,7 @@ fun Walk.toEntity() = WalkEntity(
     distanceMeters = distanceMeters,
     secondsPerKm = secondsPerKm,
     routeJson = encodeRoute(route),
+    estimated = estimated,
 )
 
 fun encodeRoute(points: List<RoutePoint>): String {

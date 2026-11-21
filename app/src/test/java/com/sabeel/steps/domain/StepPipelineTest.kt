@@ -254,4 +254,149 @@ class StepPipelineTest {
         val update = StepPipeline.onSensor(state, raw = 10_100f, today = today, nowMillis = 2_000L)
         assertEquals(10_000, update.todaySteps)
     }
+
+    @Test
+    fun estimatedStepsAreTrackedOnlyForTheEstimateSource() {
+        val measured = StepState(
+            baselineRaw = 100f,
+            todaySteps = 500,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.DETECTOR,
+            lastRawAt = 1_000L,
+        )
+        // 4 steps in 1 s stays inside the plausibility clamp; the measured tier never marks estimate.
+        val measuredUpdate = StepPipeline.onSensor(measured, raw = 104f, today = today, nowMillis = 2_000L)
+        assertEquals(504, measuredUpdate.todaySteps)
+        assertEquals(0, measuredUpdate.state.estimatedStepsToday)
+
+        val estimating = measuredUpdate.state.copy(source = StepSource.MOTION_ESTIMATE)
+        val firstEstimates = StepPipeline.onSensor(estimating, raw = 10f, today = today, nowMillis = 3_000L)
+        val secondEstimates = StepPipeline.onSensor(firstEstimates.state, raw = 15f, today = today, nowMillis = 60_000L)
+        assertEquals(509, secondEstimates.todaySteps)
+        assertEquals(5, secondEstimates.state.estimatedStepsToday)
+    }
+
+    @Test
+    fun switchingBackToARealSensorKeepsTheEstimatedPortion() {
+        val estimating = StepState(
+            baselineRaw = 10f,
+            todaySteps = 1_000,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.MOTION_ESTIMATE,
+            lastRawAt = 1_000L,
+            estimatedStepsToday = 400,
+        )
+        val update = StepPipeline.onSensor(
+            estimating,
+            raw = 700f,
+            today = today,
+            source = StepSource.COUNTER,
+            nowMillis = 2_000L,
+        )
+        assertEquals(1_000, update.todaySteps)
+        assertEquals(400, update.state.estimatedStepsToday)
+    }
+
+    @Test
+    fun midnightResetsTheEstimatedPortion() {
+        val estimating = StepState(
+            baselineRaw = 10f,
+            todaySteps = 900,
+            baselineDate = yesterday,
+            initialized = true,
+            source = StepSource.MOTION_ESTIMATE,
+            lastRawAt = 1_000L,
+            estimatedStepsToday = 300,
+        )
+        val update = StepPipeline.onSensor(estimating, raw = 12f, today = today, nowMillis = 2_000L)
+        assertTrue(update.rolledOver)
+        assertEquals(0, update.todaySteps)
+        assertEquals(0, update.state.estimatedStepsToday)
+    }
+
+    @Test
+    fun trustedExternalTotalSkipsThePlausibilityClamp() {
+        // A Health Connect aggregate can legitimately jump by thousands between two polls; only the
+        // untrusted raw-sensor path is rate-clamped.
+        val state = StepState(
+            baselineRaw = 100f,
+            todaySteps = 500,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        val clamped = StepPipeline.onSensor(state, raw = 10_100f, today = today, nowMillis = 2_000L)
+        assertEquals(507, clamped.todaySteps)
+
+        val trusted = StepPipeline.onSensor(
+            state,
+            raw = 10_100f,
+            today = today,
+            source = StepSource.COUNTER,
+            nowMillis = 2_000L,
+            trusted = true,
+        )
+        assertEquals(10_500, trusted.todaySteps)
+        assertEquals(0, trusted.state.estimatedStepsToday)
+    }
+
+    @Test
+    fun externalTotalIsAFloorNeverAnAdditiveDelta() {
+        val state = StepState(
+            baselineRaw = 0f,
+            todaySteps = 500,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.MOTION_ESTIMATE,
+            lastRawAt = 1_000L,
+            estimatedStepsToday = 500,
+        )
+        val first = StepPipeline.onExternalTotal(state, totalSteps = 3_000, today = today, nowMillis = 2_000L)
+        assertEquals(3_000, first.todaySteps)
+        assertEquals(StepSource.HEALTH_CONNECT, first.state.source)
+        assertEquals(500, first.state.estimatedStepsToday)
+
+        // A later, lower read (or a repeated one) must not lower the day or add the total again.
+        val repeated = StepPipeline.onExternalTotal(first.state, totalSteps = 2_800, today = today, nowMillis = 3_000L)
+        assertEquals(3_000, repeated.todaySteps)
+        val higher = StepPipeline.onExternalTotal(repeated.state, totalSteps = 3_400, today = today, nowMillis = 4_000L)
+        assertEquals(3_400, higher.todaySteps)
+        assertEquals(3_400, higher.state.todaySteps)
+    }
+
+    @Test
+    fun externalTotalStartsANewDayFromTheProviderTotal() {
+        val yesterdayState = StepState(
+            baselineRaw = 0f,
+            todaySteps = 9_000,
+            baselineDate = yesterday,
+            initialized = true,
+            source = StepSource.HEALTH_CONNECT,
+            lastRawAt = 1_000L,
+            estimatedStepsToday = 100,
+        )
+        val update = StepPipeline.onExternalTotal(yesterdayState, totalSteps = 250, today = today, nowMillis = 2_000L)
+        assertTrue(update.rolledOver)
+        assertEquals(250, update.todaySteps)
+        assertEquals(today, update.state.baselineDate)
+        assertEquals(0, update.state.estimatedStepsToday)
+    }
+
+    @Test
+    fun negativeExternalTotalIsIgnored() {
+        val state = StepState(
+            baselineRaw = 0f,
+            todaySteps = 700,
+            baselineDate = today,
+            initialized = true,
+            source = StepSource.COUNTER,
+            lastRawAt = 1_000L,
+        )
+        val update = StepPipeline.onExternalTotal(state, totalSteps = -1, today = today, nowMillis = 2_000L)
+        assertEquals(700, update.todaySteps)
+        assertEquals(StepSource.COUNTER, update.state.source)
+    }
 }

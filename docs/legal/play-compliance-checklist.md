@@ -74,7 +74,7 @@ These are not "nice to have". The target API gate is now resolved (B1/B2); the p
 | App access | **All functionality available without special access** (no login, no account, no invite). | Reviewers must be able to test everything. | [ ] |
 | Target audience | **13+** (not directed to children; no Families programme). Answer "is the app designed for children?" honestly = No. | Families policy only applies if target audience includes children; health data + ads rules differ. | [ ] |
 | Content rating (IARC) | Complete the questionnaire honestly: health/fitness content, no violence/sex/drugs/gambling, no user-generated content, no ads. Expect a low rating (e.g. Everyone/PEGI 3) — do not pre-claim; use the issued rating. Re-do if content changes. | "All apps must have a content rating from the IARC." | [ ] |
-| Health apps declaration | **All developers with a published app must complete it**, including closed/open/production. Ours: **Activity and Fitness** (activity tracker). Not a medical device, no diagnosis/treatment, no Health Connect, no research, no nutrition/weight-management feature unless v1 includes weight goals (it does not). | Health Content and Services; Health apps declaration form. | [ ] |
+| Health apps declaration | **All developers with a published app must complete it**, including closed/open/production. Ours: **Activity and Fitness** (activity tracker). Not a medical device, no diagnosis/treatment, no research, no nutrition/weight-management feature unless v1 includes weight goals (it does not). The app now **reads** `StepsRecord` from Health Connect on phones with no hardware step sensor (owner-approved 2026-11-21, opt-in); declare that read in the health form and in the Health Connect permissions section of Play Console. | Health Content and Services; Health apps declaration form; Health Connect data types. | [ ] |
 | Foreground service declaration | Declare each type used (health; location). For each: description of functionality; user impact if deferred; user impact if interrupted; link to a **demo video** showing the user steps that trigger it. The demo video requires a device/emulator + screen recording (§10.1). | Play FGS requirement (Android 14+). Missing declaration = review/rejection risk. | [ ] |
 | Permissions declaration | Not required for our permissions (the restricted-permissions declaration covers SMS/Call Log/All files etc.). Health permissions still need prominent disclosure (§6.3). | Play permissions policy. | [ ] |
 | Other declarations | News: No. COVID-19: No. Financial features: No. Government: No. VPN: No. AI-generated content: No (no generative AI in-app). Data deletion: no account, so account-deletion requirement N/A; app-level delete-all provided. | App content forms. | [ ] |
@@ -88,7 +88,7 @@ These are not "nice to have". The target API gate is now resolved (B1/B2); the p
 | Form question | Answer | Basis |
 |---|---|---|
 | Does your app collect or share any of the required user data types? | **No** | No data is transmitted off-device. "Data is generally considered 'collected' when the developer uses their app to retrieve data off your device." On-device-only processing is explicitly not in scope for collection. |
-| Data types accessed on-device (for the policy, not the form) | Health and fitness (steps, active minutes, calorie estimate, walk history); Location (route, only while a walk is tracked); preferences/reminders | Processed locally in Room/DataStore; never transmitted. |
+| Data types accessed on-device (for the policy, not the form) | Health and fitness (steps, active minutes, calorie estimate, walk history); Location (route, only while a walk is tracked); preferences/reminders. On opt-in only: **today's step total read from Health Connect** (`StepsRecord.COUNT_TOTAL`, read-only) | Processed locally in Room/DataStore; never transmitted; nothing is written back to Health Connect. |
 | Data shared with third parties? | **No** | No SDKs, no servers, no analytics/ads/crash reporting; CSV export is user-initiated to a destination the user picks (SAF) — "user-initiated action" exception. |
 | Is all data encrypted in transit? | **Not applicable** — no data leaves the device | If the form allows "no data collected", this question is skipped. |
 | Data deletion | In-app "Delete all data" (Room + DataStore + files); uninstall removes everything. No account → account-deletion request flow not applicable. | User Data policy account-deletion requirement applies only where accounts exist. |
@@ -125,7 +125,7 @@ If any future SDK transmits data (ads, analytics, crash reporting, remote config
 ### 5.2 Required contents (User Data policy + health policy)
 
 - [ ] Developer identity, address/contact, privacy point of contact.
-- [ ] What the app accesses: step counter sensor (ACTIVITY_RECOGNITION), location while tracking, notifications, local storage; that body/health data is **on-device only**.
+- [ ] What the app accesses: step counter sensor (ACTIVITY_RECOGNITION), location while tracking, notifications, local storage; **Health Connect** step total only if the user opts in on a phone with no hardware step sensor (read-only, revoked in Health Connect settings); that body/health data is **on-device only**.
 - [ ] Purpose of each access, tied to the visible feature (steps, walk route, reminders, history, export).
 - [ ] **No collection, no transmission, no sale, no sharing** with third parties; no analytics/ads/crash SDKs; no account.
 - [ ] Retention: until the user deletes it; deletion via in-app "Delete all data" and uninstall.
@@ -148,6 +148,7 @@ If any future SDK transmits data (ads, analytics, crash reporting, remote config
 
 | Permission | Type | Why | User-facing requirement | Status |
 |---|---|---|---|---|
+| android.permission.health.READ_STEPS | Runtime health permission (Health Connect) | Read today's `StepsRecord` total when the phone has no hardware step sensor and the user opts in. Read-only; declared only for Health Connect-capable builds. | Health apps declaration + Health Connect permissions declaration; prominent disclosure in the Settings card before the system dialog; revocable in Health Connect settings. | [ ] |
 | android.permission.ACTIVITY_RECOGNITION | Runtime (API 29+) | Read TYPE_STEP_COUNTER / step detector. On API 26–28 no runtime permission is needed for the built-in step counter, but declaring it is harmless and future-proof. | **Prominent disclosure immediately before the system prompt**, affirmative consent, explain data stays on device. Health policy in scope. | [ ] |
 | android.permission.ACCESS_FINE_LOCATION | Runtime | Draw the walk route on our own Canvas while the user tracks a walk. Optional feature. | Prominent disclosure before the prompt, at the point the user starts a walk; no ACCESS_BACKGROUND_LOCATION; if denied, app still works (steps only). | [ ] |
 | android.permission.POST_NOTIFICATIONS | Runtime (API 33+) | Reminders and the foreground-service notification. | Contextual request when the user enables reminders; denial must not crash; explain FGS notification; deep-link to settings. | [ ] |
@@ -176,8 +177,19 @@ If any future SDK transmits data (ads, analytics, crash reporting, remote config
 - [ ] States **what** is accessed (step sensor; location), **why** (count steps, draw route), **how it is used** (locally to show progress/history), and that **no data is shared**.
 - [ ] Appears immediately before the runtime permission request; the user takes an affirmative action (button) — no pre-checked consent.
 - [ ] Separate disclosure for location before the first walk; separate for notifications when reminders are enabled; separate for activity recognition at onboarding.
+- [ ] Separate disclosure for Health Connect `READ_STEPS` in the Settings card (what is read, that it is read-only and on-device, what happens if declined) **before** the Health Connect permission screen opens.
 - [ ] Arabic and English; privacy-policy link available from the disclosure screen.
 - [ ] If the user declines, show a non-blocking explanation and continue with degraded features; do not re-prompt aggressively ("user fatigue" guidance).
+
+### 6.3b Health Connect policy requirements (read-only integration)
+
+- [ ] Health Connect is optional and off by default; the opt-in card appears only on a phone with no counter/detector and only when Health Connect is installed.
+- [ ] Only `READ_STEPS` is requested; the app **never writes** to Health Connect (no `StepsRecord` insert/update), so no write permissions are declared.
+- [ ] The read is used only to show today's step total locally; no transmission, no sharing, no ads/analytics use (the app has no INTERNET permission at all).
+- [ ] Permission is checkable/revocable in Health Connect settings and in Android Settings; the app re-checks on every resume and degrades to the labelled estimate when revoked.
+- [ ] Health Connect app declaration in Play Console: reason = fallback counting for phones without a hardware step sensor; data types = Steps (read).
+- [ ] The declared manifest includes the `VIEW_PERMISSION_USAGE` activity alias, the `ACTION_HEALTH_CONNECT_SETTINGS` query, and the `READ_STEPS` permission; the privacy policy names the Health Connect read.
+- [ ] If Health Connect is later used on phones *with* a step sensor, re-open this checklist: double-count policy and prominent-disclosure placement must be re-reviewed (current rule: never active alongside a hardware sensor).
 
 ### 6.4 Decision requested: ACCESS_NETWORK_STATE
 
@@ -232,7 +244,7 @@ Suggested plain-language disclaimer (to be reviewed by counsel/scholar, not fina
 | T2 | AGP/Gradle | AGP 8.10.x, Gradle 8.11.1 | C1 (build passes) | [!] |
 | T3 | allowBackup | false in merged manifest | C6 | [!] |
 | T4 | No INTERNET | Not in merged manifest or APK/AAB | C4, C5 | [ ] |
-| T5 | Permission surface | Exactly the set in §6.1; no background location, no body sensors, no exact alarms, no storage permissions | C4 | [ ] |
+| T5 | Permission surface | Exactly the set in §6.1 (including `health.READ_STEPS` only for the opt-in Health Connect read); no background location, no body sensors, no exact alarms, no storage permissions | C4 | [ ] |
 | T6 | SDK audit | No ads/analytics/crash/remote-config/push SDKs; dependencies are AndroidX/Compose/Room/DataStore/WorkManager/coroutines only | C8 | [ ] |
 | T7 | FGS types | health + location declared; permissions present; notification; start rules | C5, C7, manual test | [ ] |
 | T8 | Runtime permissions | ACTIVITY_RECOGNITION, ACCESS_FINE_LOCATION, POST_NOTIFICATIONS on API 29/33+; denial paths; settings links | C11 (device tests) | [ ] |

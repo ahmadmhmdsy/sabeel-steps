@@ -270,7 +270,9 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_health_connect_row_title),
                         subtitle = stringResource(R.string.settings_health_connect_desc),
                         value = stringResource(R.string.settings_health_connect_connect),
-                        onClick = { healthConnectLauncher.launch(HealthConnect.readPermissions) },
+                        onClick = {
+                            healthConnectLauncher.launch(HealthConnect.requiredPermissions(context))
+                        },
                         stacked = stackedRows,
                     )
                 }

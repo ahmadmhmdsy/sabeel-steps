@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateRequest
@@ -12,6 +13,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Thin, read-only adapter over the Health Connect client.
@@ -34,8 +36,39 @@ object HealthConnect {
     /** Manifest permission the user grants inside Health Connect. */
     const val READ_STEPS_PERMISSION = "android.permission.health.READ_STEPS"
 
-    /** The permission set the rationale/request flows ask for. */
+    /** The permission every counting read needs. */
     val readPermissions: Set<String> = setOf(HealthPermission.getReadPermission(StepsRecord::class))
+
+    /** A hung provider must never block the poll loop; after this the floor is simply not updated. */
+    const val READ_TIMEOUT_MS = 8_000L
+
+    /**
+     * The permission set the rationale/request flows ask for. The background-read grant is added only
+     * when the provider advertises [HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND]:
+     * requesting a permission the installed provider does not know can make the whole request fail.
+     */
+    fun requiredPermissions(context: Context): Set<String> {
+        val base = readPermissions
+        return if (supportsBackgroundRead(context)) {
+            base + HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+        } else {
+            base
+        }
+    }
+
+    /** Whether this provider supports Health Connect reads while the app is in the background. */
+    fun supportsBackgroundRead(context: Context): Boolean = runCatching {
+        val client = HealthConnectClient.getOrCreate(context)
+        client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+            HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+    }.getOrDefault(false)
+
+    fun hasBackgroundReadPermission(context: Context): Boolean = runCatching {
+        ContextCompat.checkSelfPermission(
+            context,
+            HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+        ) == PackageManager.PERMISSION_GRANTED
+    }.getOrDefault(false)
 
     enum class Availability {
         /** The provider is missing or needs an update; no Health Connect UI makes sense. */
@@ -76,21 +109,27 @@ object HealthConnect {
     fun settingsIntent(context: Context): Intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-    /** Reads today's absolute total, or null when the read genuinely failed (caller keeps its floor). */
+    /**
+     * Reads today's absolute total, or null when the read genuinely failed or timed out (the caller
+     * keeps its existing floor; it never lowers the day). The timeout protects the poll loop from a
+     * hung provider binder: a cancelled aggregate simply returns null and the next poll tries again.
+     */
     suspend fun readToday(context: Context, nowMillis: Long = System.currentTimeMillis()): Today? =
         runCatching {
-            val client = HealthConnectClient.getOrCreate(context)
-            val zone = ZoneId.systemDefault()
-            val startOfDay = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
-            val response = client.aggregate(
-                AggregateRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter = TimeRangeFilter.between(
-                        Instant.ofEpochMilli(startOfDay),
-                        Instant.ofEpochMilli(nowMillis),
+            withTimeoutOrNull(READ_TIMEOUT_MS) {
+                val client = HealthConnectClient.getOrCreate(context)
+                val zone = ZoneId.systemDefault()
+                val startOfDay = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+                val response = client.aggregate(
+                    AggregateRequest(
+                        metrics = setOf(StepsRecord.COUNT_TOTAL),
+                        timeRangeFilter = TimeRangeFilter.between(
+                            Instant.ofEpochMilli(startOfDay),
+                            Instant.ofEpochMilli(nowMillis),
+                        ),
                     ),
-                ),
-            )
-            Today(steps = (response[StepsRecord.COUNT_TOTAL] ?: 0L).coerceAtLeast(0L).toInt())
+                )
+                Today(steps = (response[StepsRecord.COUNT_TOTAL] ?: 0L).coerceAtLeast(0L).toInt())
+            }
         }.getOrNull()
 }

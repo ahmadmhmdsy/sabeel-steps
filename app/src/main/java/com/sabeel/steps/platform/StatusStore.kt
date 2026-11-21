@@ -43,6 +43,8 @@ object StatusStore {
     private const val KEY_SOURCE_EVENT = "source_last_event_ms"
     private const val KEY_SOURCE_SWITCHES = "source_switches"
     private const val KEY_SOURCE_DAY = "source_day"
+    private const val KEY_STORAGE_FAULT = "storage_fault"
+    private const val KEY_STORAGE_FAULT_AT = "storage_fault_at"
 
     /** How long a mark stays trustworthy without a heartbeat. */
     const val STALE_AFTER_MS = 120_000L
@@ -92,6 +94,25 @@ object StatusStore {
             lastEventAt = prefs.getLong(KEY_SOURCE_EVENT, 0L),
             switches = switches,
         )
+    }
+
+    /**
+     * A failed persistence write is data loss in progress. The service sets this on the first failed
+     * write and clears it on the next success, so Diagnostics can show "storage failing" instead of
+     * the app pretending the day is saved.
+     */
+    fun markStorageFault(context: Context, failing: Boolean) {
+        prefs(context).edit()
+            .putBoolean(KEY_STORAGE_FAULT, failing)
+            .putLong(KEY_STORAGE_FAULT_AT, System.currentTimeMillis())
+            .apply()
+    }
+
+    /** Null when writes are healthy, otherwise the wall-clock time the fault was last observed. */
+    fun readStorageFault(context: Context): Long? {
+        val prefs = prefs(context)
+        if (!prefs.getBoolean(KEY_STORAGE_FAULT, false)) return null
+        return prefs.getLong(KEY_STORAGE_FAULT_AT, 0L)
     }
 
     /** Delete-all: the whole status file, so the next launch starts from a clean slate. */

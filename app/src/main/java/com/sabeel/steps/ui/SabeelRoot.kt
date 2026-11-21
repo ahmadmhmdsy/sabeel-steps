@@ -91,6 +91,9 @@ fun SabeelRoot(container: AppContainer) {
     LifecycleResumeEffect(appState.onboardingDone) {
         if (appState.onboardingDone) {
             StepCounterService.ensureStarted(app)
+            // Flush the hardware FIFO and the pending snapshot now: the app being open is the one
+            // moment where a delayed sensor delivery can be recovered without guessing.
+            if (StepCounterService.runningInstance) StepCounterService.requestFlush(app)
             Notifications.ensureChannels(AppLocale.wrap(context))
         }
         onPauseOrDispose { }

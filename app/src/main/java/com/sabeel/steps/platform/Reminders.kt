@@ -9,8 +9,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.data.repo.StepSnapshot
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.UserSettings
+import com.sabeel.steps.service.StepCounterService
 import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalTime
@@ -128,12 +130,44 @@ class ReconcileWorker(
         // 1. Midnight rollover and process-death restore: never double count.
         runCatching { container.steps.reconcile() }
 
-        // 2. Goal catch-up (the flag guarantees at most one notification per local day, and the
+        // 2. Health Connect floor while the service cannot run. A background read needs the
+        //    provider's background-read grant; when it is missing the read simply fails and the
+        //    already-stored day is left untouched (no invented total).
+        var todayRow = runCatching { container.steps.todayFlow().first() }.getOrNull()
+        if (HealthConnect.isReady(context)) {
+            val read = runCatching { HealthConnect.readToday(context) }.getOrNull()
+            if (read != null && read.steps > 0) {
+                todayRow = runCatching {
+                    container.steps.record(StepSnapshot(hcTotal = read.steps))
+                }.getOrNull() ?: todayRow
+            }
+        }
+
+        // 3. Goal catch-up (the flag guarantees at most one notification per local day, and the
         //    post itself is permission-gated).
         runCatching {
-            val todayRow = container.steps.todayFlow().first()
-            if (todayRow != null && todayRow.date == DateKey.today()) {
-                Notifications.notifyGoalReached(context, todayRow.steps, settings.goalSteps)
+            val row = todayRow
+            if (row != null && row.date == DateKey.today()) {
+                Notifications.notifyGoalReached(
+                    context,
+                    row.steps,
+                    settings.goalSteps,
+                    estimated = row.estimatedSteps > 0,
+                )
+            }
+        }
+
+        // 4. Honest recovery nudge: counting heartbeat is stale while this device can count. The
+        //    worker never starts the foreground service (Android 12+ forbids it from background);
+        //    it asks the user to reopen the app, at most once per 12 h.
+        runCatching {
+            val canCount = Permissions.hasActivityRecognition(context) &&
+                (StepSensors.hasAny(context) || HealthConnect.isReady(context))
+            if (canCount &&
+                !StepCounterService.runningInstance &&
+                StatusStore.read(context) == StepServiceStatus.STOPPED
+            ) {
+                Notifications.notifyCountingPaused(context)
             }
         }
         return Result.success()

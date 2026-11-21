@@ -10,7 +10,6 @@ import com.sabeel.steps.domain.DailyStep
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.StepPipeline
-import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.domain.StepState
 import com.sabeel.steps.domain.UserSettings
 import kotlinx.coroutines.delay
@@ -45,15 +44,34 @@ data class RestoreSummary(
 }
 
 /**
- * Owns the step pipeline and the daily aggregates. The foreground service is the only writer of
- * raw sensor events; UI only observes flows.
+ * One coalesced observation from the counting layer: the newest cumulative counter value, the
+ * detector steps seen since the last write, the estimated steps seen since the last write and/or
+ * the absolute Health Connect floor. All fields optional; the service sends one snapshot per second.
+ */
+data class StepSnapshot(
+    val counterRaw: Float? = null,
+    val counterEventNanos: Long = 0L,
+    val detectorSteps: Int = 0,
+    val detectorEventNanos: Long = 0L,
+    val estimateSteps: Int = 0,
+    val hcTotal: Int? = null,
+) {
+    val isEmpty: Boolean
+        get() = counterRaw == null && detectorSteps <= 0 && estimateSteps <= 0 && hcTotal == null
+}
+
+/**
+ * Owns the step manifold and the daily aggregates. The foreground service is the only writer; UI
+ * only observes flows.
  *
  * Invariants:
+ *  - the state is persisted before the row, so a process death between the two writes is healed by
+ *    max(state, row) on the next observation;
  *  - a day's stored total never decreases (the database is the durable record);
- *  - the pipeline state is persisted before the row, so a process death between the two writes is
- *    healed by max(state, row) on the next event;
- *  - the state machine is day-aware: moving to any different date drops the unattributable delta.
+ *  - the estimated marker is derived from the fused state, never accumulated as a second count;
+ *  - every source is applied under one mutex, so the writer and the Health Connect poll cannot race.
  */
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class StepsRepository(
     private val database: AppDatabase,
     private val dao: DailyStepsDao,
@@ -89,96 +107,125 @@ class StepsRepository(
     }
 
     /**
-     * Called by StepCounterService for every sensor event.
-     * @param activeMinutesToday current active-minute count maintained by the service, or -1 to keep.
-     * @return the updated day row, or null when the first baseline sample produced nothing worth
-     * persisting (a fresh install must not create a zero-step day row).
+     * Applies one coalesced observation. Returns the updated day row, or null when there is nothing
+     * worth writing (a zero-step day never creates a row).
      */
-    suspend fun recordRawStep(
-        raw: Float,
+    suspend fun record(
+        snapshot: StepSnapshot,
         now: Long = System.currentTimeMillis(),
         activeMinutesToday: Int = -1,
-        source: StepSource = StepSource.COUNTER,
     ): DailyStep? = mutex.withLock {
+        if (snapshot.isEmpty) return@withLock null
         val today = DateKey.today(now)
-        val state = settings.readStepState(today)
-        val update = StepPipeline.onSensor(state, raw, today, source = source, nowMillis = now)
-        val existing = dao.today(today)?.toDomain()
-        val steps = StepPipeline.resolveTodaySteps(update.state, existing?.steps)
-        val estimatedSteps = resolveEstimatedSteps(update.state.estimatedStepsToday, existing, steps)
-        settings.writeStepState(
-            update.state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps),
-        )
-        if (!state.initialized && steps == 0 && existing == null) return@withLock null
-        val user = settings.current()
-        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
-        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
-    }
-
-    /** Writes the current step total (used on service start / reconcile after boot). */
-    suspend fun reconcile(
-        now: Long = System.currentTimeMillis(),
-        raw: Float? = null,
-        activeMinutesToday: Int = -1,
-        source: StepSource = StepSource.COUNTER,
-    ): DailyStep? = mutex.withLock {
-        val today = DateKey.today(now)
+        val legacyUpgrade = !settings.isManifoldSchema()
         var state = settings.readStepState(today)
-        if (raw != null) {
-            state = StepPipeline.onSensor(state, raw, today, source = source, nowMillis = now).state
-        } else if (state.baselineDate != today) {
-            // No sensor reading yet on the new day: forget the old baseline and re-seed on the next
-            // event, but keep the existing day row (max rule below).
-            state = StepState(
-                baselineRaw = 0f,
-                todaySteps = 0,
-                baselineDate = today,
-                initialized = false,
-                source = state.source,
-                lastRawAt = 0L,
+        var rolled = false
+
+        snapshot.counterRaw?.let { raw ->
+            val update = StepPipeline.onCounter(
+                state,
+                raw = raw,
+                today = today,
+                eventNanos = snapshot.counterEventNanos,
+                nowMillis = now,
             )
+            state = update.state
+            rolled = rolled || update.rolledOver
         }
+        if (snapshot.detectorSteps > 0) {
+            val update = StepPipeline.onDetector(
+                state,
+                steps = snapshot.detectorSteps,
+                today = today,
+                eventNanos = snapshot.detectorEventNanos,
+                nowMillis = now,
+            )
+            state = update.state
+            rolled = rolled || update.rolledOver
+        }
+        if (snapshot.estimateSteps > 0) {
+            val update = StepPipeline.onEstimate(state, steps = snapshot.estimateSteps, today = today, nowMillis = now)
+            state = update.state
+            rolled = rolled || update.rolledOver
+        }
+        snapshot.hcTotal?.let { total ->
+            val update = StepPipeline.onExternalTotal(state, totalSteps = total, today = today, nowMillis = now)
+            state = update.state
+            rolled = rolled || update.rolledOver
+        }
+        if (rolled) {
+            // The day changed mid-snapshot: re-read the new day's row so both ledgers agree.
+            val existingRolled = dao.today(today)?.toDomain()
+            val resolved = StepPipeline.resolveTodaySteps(state, existingRolled?.steps)
+            state = state.copy(total = resolved)
+        }
+
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(state, existing?.steps)
-        val estimatedSteps = resolveEstimatedSteps(state.estimatedStepsToday, existing, steps)
-        settings.writeStepState(state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps))
-        if (steps == 0 && existing == null) return@withLock null
+        val rowIsAhead = existing != null && existing.steps > state.total
+        var estimated = StepPipeline.resolveEstimatedSteps(state.estimated, existing?.estimatedSteps, rowIsAhead)
+        if (legacyUpgrade) {
+            estimated = StepPipeline.preserveLegacyMarker(
+                estimated,
+                steps,
+                existing?.steps,
+                existing?.estimatedSteps,
+            )
+        }
+        val adjusted = state.copy(
+            total = steps,
+            confirmed = maxOf(state.confirmed, steps - estimated),
+            updatedAt = now,
+        )
+        settings.writeStepState(adjusted)
+        if (steps <= 0 && existing == null) return@withLock null
         val user = settings.current()
-        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
-        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+        upsertDay(today, steps, estimated, user, now, activeMinutesToday, existing)
+        dayRow(today, steps, estimated, user, now, activeMinutesToday, existing)
     }
 
     /**
-     * Called by StepCounterService when a synced source (Health Connect) reports the absolute daily
-     * total. The pipeline floor rule raises the day to that total and never lowers it, so repeated
-     * polls cannot double count; the day row stays the durable record.
+     * Writes the current stepped day without new sensor evidence (service start, boot, midnight and
+     * the 15-minute reconcile). The row and the in-memory state are reconciled by max, so this never
+     * lowers a day.
      */
-    suspend fun recordExternalTotal(
-        totalSteps: Int,
+    suspend fun reconcile(
         now: Long = System.currentTimeMillis(),
         activeMinutesToday: Int = -1,
-        source: StepSource = StepSource.HEALTH_CONNECT,
     ): DailyStep? = mutex.withLock {
         val today = DateKey.today(now)
-        val state = settings.readStepState(today)
-        val update = StepPipeline.onExternalTotal(state, totalSteps, today, source = source, nowMillis = now)
+        val legacyUpgrade = !settings.isManifoldSchema()
+        val prior = settings.readStepState(today)
+        val update = StepPipeline.reconcile(prior, today, now)
+        var state = update.state
         val existing = dao.today(today)?.toDomain()
-        val steps = StepPipeline.resolveTodaySteps(update.state, existing?.steps)
-        val estimatedSteps = resolveEstimatedSteps(update.state.estimatedStepsToday, existing, steps)
-        settings.writeStepState(
-            update.state.copy(todaySteps = steps, estimatedStepsToday = estimatedSteps),
+        val steps = StepPipeline.resolveTodaySteps(state, existing?.steps)
+        val rowIsAhead = existing != null && existing.steps > state.total
+        var estimated = StepPipeline.resolveEstimatedSteps(state.estimated, existing?.estimatedSteps, rowIsAhead)
+        if (legacyUpgrade) {
+            estimated = StepPipeline.preserveLegacyMarker(
+                estimated,
+                steps,
+                existing?.steps,
+                existing?.estimatedSteps,
+            )
+        }
+        state = state.copy(
+            total = steps,
+            confirmed = maxOf(state.confirmed, steps - estimated),
+            updatedAt = now,
         )
-        if (steps == 0 && existing == null) return@withLock null
+        settings.writeStepState(state)
+        if (steps <= 0 && existing == null) return@withLock null
         val user = settings.current()
-        upsertDay(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
-        dayRow(today, steps, estimatedSteps, user, now, activeMinutesToday, existing)
+        upsertDay(today, steps, estimated, user, now, activeMinutesToday, existing)
+        dayRow(today, steps, estimated, user, now, activeMinutesToday, existing)
     }
 
     /**
      * Restores daily aggregates from a CSV backup in one transaction. Existing days are never
-     * lowered: the larger total wins. Today's pipeline state is re-seeded from the durable row so
-     * the first sensor event after the import continues from the restored total instead of
-     * overwriting it.
+     * lowered: the larger total wins. Today's manifold state is re-seeded from the durable row so a
+     * restored marker survives and the next counter sample adds only its real delta.
      */
     suspend fun restore(rows: List<DailyStep>): RestoreSummary = mutex.withLock {
         var inserted = 0
@@ -203,14 +250,37 @@ class StepsRepository(
         val today = DateKey.today()
         val todayRow = dao.today(today)?.toDomain()
         if (todayRow != null) {
-            val state = settings.readStepState(today)
-            if (todayRow.steps >= state.todaySteps) {
-                settings.writeStepState(
-                    state.copy(todaySteps = todayRow.steps, baselineDate = today, initialized = false),
+            var state = settings.readStepState(today)
+            if (todayRow.steps >= state.total) {
+                val marker = todayRow.estimatedSteps.coerceIn(0, todayRow.steps)
+                val priorConfirmed = maxOf(state.confirmed, todayRow.steps - marker)
+                state = state.copy(
+                    day = today,
+                    total = todayRow.steps,
+                    confirmed = priorConfirmed,
+                    estimateToday = maxOf(state.estimateToday, todayRow.steps),
+                    updatedAt = System.currentTimeMillis(),
                 )
+                settings.writeStepState(state)
             }
         }
         RestoreSummary(inserted = inserted, updated = updated, kept = kept)
+    }
+
+    /**
+     * Persists only the active-minute counter after the cadence closes a minute. Written separately
+     * so the writer does not have to re-send sensor evidence just to record a finished minute.
+     */
+    suspend fun updateActiveMinutes(
+        activeMinutes: Int,
+        now: Long = System.currentTimeMillis(),
+    ): DailyStep? = mutex.withLock {
+        val today = DateKey.today(now)
+        val existing = dao.today(today)?.toDomain() ?: return@withLock null
+        val user = settings.current()
+        val row = dayRow(today, existing.steps, existing.estimatedSteps, user, now, activeMinutes, existing)
+        dao.upsert(row.toEntity())
+        row
     }
 
     private suspend fun upsertDay(
@@ -240,15 +310,8 @@ class StepsRepository(
         calories = StepMath.calories(steps, user.weightKg),
         activeMinutes = resolveActiveMinutes(activeMinutes, existing),
         updatedAt = now,
-        estimatedSteps = estimatedSteps.coerceIn(0, steps),
+        estimatedSteps = estimatedSteps.coerceIn(0, steps.coerceAtLeast(0)),
     )
-
-    /**
-     * The marker never decreases (the database is the durable record) and never exceeds the day's
-     * total; a row written before the marker existed contributes 0.
-     */
-    private fun resolveEstimatedSteps(stateEstimated: Int, existing: DailyStep?, steps: Int): Int =
-        maxOf(stateEstimated, existing?.estimatedSteps ?: 0).coerceIn(0, steps.coerceAtLeast(0))
 
     /**
      * Active minutes are measured by the service's cadence. There is deliberately no synthetic

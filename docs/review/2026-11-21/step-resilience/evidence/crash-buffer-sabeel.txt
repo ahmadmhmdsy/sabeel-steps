@@ -1,0 +1,9 @@
+# Crash buffer dump (2026-11-21, emulator-5554, API 36 ATD)
+
+Command:
+
+    adb -s emulator-5554 logcat -b crash -d
+
+Result: 0 lines (empty); no `com.sabeel.steps` entry. The buffer was read after the
+install/onboarding/estimate/force-stop/delete-all/boot sequence described in
+../EVIDENCE.md.

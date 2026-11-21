@@ -18,6 +18,8 @@
     <string name="sensor_notif_estimate_title">Sabeel is estimating your steps</string>
     <string name="sensor_notif_estimate_text">No step counter is reporting, so this number comes from phone motion. Your steps stay on this phone.</string>
     <string name="sensor_notif_no_sensor_title">Step sensor not available</string>
+    <string name="sensor_notif_paused_title">Step counting is paused</string>
+    <string name="sensor_notif_paused_text">Tap to reopen Sabeel and resume counting. Your saved day is safe.</string>
     <string name="sensor_notif_no_sensor_text">This device reports no step counter, step detector or motion sensor. Walks are still saved.</string>
 
     <string name="sensor_notif_walk_title">Walk in progress</string>

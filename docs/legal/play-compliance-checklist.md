@@ -148,7 +148,8 @@ If any future SDK transmits data (ads, analytics, crash reporting, remote config
 
 | Permission | Type | Why | User-facing requirement | Status |
 |---|---|---|---|---|
-| android.permission.health.READ_STEPS | Runtime health permission (Health Connect) | Read today's `StepsRecord` total when the phone has no hardware step sensor and the user opts in. Read-only; declared only for Health Connect-capable builds. | Health apps declaration + Health Connect permissions declaration; prominent disclosure in the Settings card before the system dialog; revocable in Health Connect settings. | [ ] |
+| android.permission.health.READ_STEPS | Runtime health permission (Health Connect) | Read today's `StepsRecord` total when the user opts in. Read-only; the total is used as a floor, never added. Declared only for Health Connect-capable builds. | Health apps declaration + Health Connect permissions declaration; prominent disclosure in the Settings card before the system dialog; revocable in Health Connect settings. | [ ] |
+| android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND | Runtime health permission (Health Connect, feature-gated) | Let the counting foreground service keep reading today's `StepsRecord` floor while the app is closed, so a watch-synced day is not missed. Requested only when `HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND` reports available; optional, counting works without it. | Same Health apps/Health Connect declarations; the same Settings card disclosure must state that the read may happen in the background; revocable in Health Connect settings. | [ ] |
 | android.permission.ACTIVITY_RECOGNITION | Runtime (API 29+) | Read TYPE_STEP_COUNTER / step detector. On API 26–28 no runtime permission is needed for the built-in step counter, but declaring it is harmless and future-proof. | **Prominent disclosure immediately before the system prompt**, affirmative consent, explain data stays on device. Health policy in scope. | [ ] |
 | android.permission.ACCESS_FINE_LOCATION | Runtime | Draw the walk route on our own Canvas while the user tracks a walk. Optional feature. | Prominent disclosure before the prompt, at the point the user starts a walk; no ACCESS_BACKGROUND_LOCATION; if denied, app still works (steps only). | [ ] |
 | android.permission.POST_NOTIFICATIONS | Runtime (API 33+) | Reminders and the foreground-service notification. | Contextual request when the user enables reminders; denial must not crash; explain FGS notification; deep-link to settings. | [ ] |
@@ -178,18 +179,19 @@ If any future SDK transmits data (ads, analytics, crash reporting, remote config
 - [ ] Appears immediately before the runtime permission request; the user takes an affirmative action (button) — no pre-checked consent.
 - [ ] Separate disclosure for location before the first walk; separate for notifications when reminders are enabled; separate for activity recognition at onboarding.
 - [ ] Separate disclosure for Health Connect `READ_STEPS` in the Settings card (what is read, that it is read-only and on-device, what happens if declined) **before** the Health Connect permission screen opens.
+- [ ] The same disclosure names the optional background read (that the counting service may read the same today total while the app is closed) when the device supports `READ_HEALTH_DATA_IN_BACKGROUND`; declining it must leave foreground counting and synced-total reading unaffected.
 - [ ] Arabic and English; privacy-policy link available from the disclosure screen.
 - [ ] If the user declines, show a non-blocking explanation and continue with degraded features; do not re-prompt aggressively ("user fatigue" guidance).
 
 ### 6.3b Health Connect policy requirements (read-only integration)
 
-- [ ] Health Connect is optional and off by default; the opt-in card appears only on a phone with no counter/detector and only when Health Connect is installed.
-- [ ] Only `READ_STEPS` is requested; the app **never writes** to Health Connect (no `StepsRecord` insert/update), so no write permissions are declared.
+- [ ] Health Connect is optional and off by default; the opt-in card appears only when Health Connect is installed, and the grant is never a prerequisite for step counting.
+- [ ] Only `READ_STEPS` and the optional feature-gated `READ_HEALTH_DATA_IN_BACKGROUND` are requested; the app **never writes** to Health Connect (no `StepsRecord` insert/update), so no write permissions are declared.
 - [ ] The read is used only to show today's step total locally; no transmission, no sharing, no ads/analytics use (the app has no INTERNET permission at all).
 - [ ] Permission is checkable/revocable in Health Connect settings and in Android Settings; the app re-checks on every resume and degrades to the labelled estimate when revoked.
 - [ ] Health Connect app declaration in Play Console: reason = fallback counting for phones without a hardware step sensor; data types = Steps (read).
-- [ ] The declared manifest includes the `VIEW_PERMISSION_USAGE` activity alias, the `ACTION_HEALTH_CONNECT_SETTINGS` query, and the `READ_STEPS` permission; the privacy policy names the Health Connect read.
-- [ ] If Health Connect is later used on phones *with* a step sensor, re-open this checklist: double-count policy and prominent-disclosure placement must be re-reviewed (current rule: never active alongside a hardware sensor).
+- [ ] The declared manifest includes the `VIEW_PERMISSION_USAGE` activity alias, the `ACTION_HEALTH_CONNECT_SETTINGS` query, and the `READ_STEPS` permission (plus `READ_HEALTH_DATA_IN_BACKGROUND`); the privacy policy names the Health Connect read and the optional background read.
+- [ ] v1.2 runs Health Connect as an absolute floor alongside the counter/detector when granted; re-open this checklist if the floor fusion or disclosure placement changes, and keep the "never added, never lowered" rule in the store copy.
 
 ### 6.4 Decision requested: ACCESS_NETWORK_STATE
 
@@ -442,42 +444,3 @@ Expected: targetSdkVersion 36, allowBackup false, no INTERNET. **Owner action:**
 - SANITISE research notes to facts + ≤5-line attributed quotes; strip full listing/policy text.
 - SEAL raw listing HTML (tmp/research/) as internal-only, never a build input; remove it from the repo before any public release of the repo.
 - NEVER create "inspired-by" assets traced from a target; redo from our own spec if a similarity is found.
-- Keep our own original-source evidence (design notes, icon sources, string authorship) for the originality review.
-
----
-
-## 12. Sources
-
-All fetched 2026-11-16; snapshots in docs/legal/sources/.
-
-| Topic | URL |
-|---|---|
-| Target API level (Play) | https://support.google.com/googleplay/android-developer/answer/11926878 |
-| Target API level (Android) | https://developer.android.com/google/play/requirements/target-sdk |
-| Health Content and Services | https://support.google.com/googleplay/android-developer/answer/16679511 |
-| Health app categories | https://support.google.com/googleplay/android-developer/answer/13996367 |
-| Health apps declaration | https://support.google.com/googleplay/android-developer/answer/14738291 |
-| Android health permissions FAQ | https://support.google.com/googleplay/android-developer/answer/12991134 |
-| User Data policy | https://support.google.com/googleplay/android-developer/answer/10144311 |
-| Data safety form | https://support.google.com/googleplay/android-developer/answer/10787469 |
-| Data safety consumer page | https://support.google.com/googleplay/answer/11416267 |
-| Prominent disclosure | https://support.google.com/googleplay/android-developer/answer/11150561 |
-| FGS Play requirement | https://support.google.com/googleplay/android-developer/answer/13392821 |
-| FGS types (Android) | https://developer.android.com/develop/background-work/services/fgs/service-types |
-| Content ratings | https://support.google.com/googleplay/android-developer/answer/9898843 |
-| Metadata policy | https://support.google.com/googleplay/android-developer/answer/9898842 |
-| Ads policy | https://support.google.com/googleplay/android-developer/answer/9857753 |
-| Deceptive behavior | https://support.google.com/googleplay/android-developer/answer/17006354 |
-| App content / prepare for review | https://support.google.com/googleplay/android-developer/answer/9859455 |
-| Notification runtime permission | https://developer.android.com/develop/ui/compose/notifications/notification-permission |
-| Activity recognition (Android 10) | https://developer.android.com/about/versions/10/privacy/changes |
-| Step counter guide | https://developer.android.com/health-and-fitness/fitness/basic-app/read-step-count-data |
-| Android 16 behavior changes | https://developer.android.com/about/versions/16/behavior-changes-16 |
-| 16 KB page sizes | https://developer.android.com/guide/practices/page-sizes |
-| New personal account testing | https://support.google.com/googleplay/android-developer/answer/14151465 |
-| Get started / fee / cards | https://support.google.com/googleplay/android-developer/answer/6112435 |
-| Required account info | https://support.google.com/googleplay/android-developer/answer/13628312 |
-| Supported locations (Iraq row) | https://support.google.com/googleplay/android-developer/answer/9306917 |
-| AGP 8.7 release notes (max API 35) | https://developer.android.com/build/releases/past-releases/agp-8-7-0-release-notes |
-| AGP 8.10 release notes (max API 36, min Gradle 8.11.1) | https://developer.android.com/build/releases/past-releases/agp-8-10-0-release-notes |
-| Clean-room decision + target terms | docs/legal/clearance-memo.md |

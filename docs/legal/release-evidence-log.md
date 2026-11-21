@@ -142,3 +142,31 @@ remain the dated 2026-11-17 record.
 Evidence folder: [docs/review/2026-11-21/health-connect/](../review/2026-11-21/health-connect/EVIDENCE.md).
 Claim-by-claim audit: [CLAIMS-AUDIT.md §8](../release/CLAIMS-AUDIT.md).
 
+
+---
+
+## 9. Addendum — v1.2 step manifold resilience (2026-11-21 23:5x +03:00)
+
+This is a **self-verification** by the building agent, not a new independent batch. Sections 1–8
+remain dated records; §9 measures the v1.2 build (manifold fusion + crash/boot recovery + optional
+Health Connect background read), which supersedes the v1.1 artifacts in §8.
+
+| Item | Measurement | Status |
+|---|---|---|
+| Release artifacts | `assembleRelease` + `bundleRelease` BUILD SUCCESSFUL 2026-11-21. APK 1,864,306 B / `00088FDC172CFAFE17BC7AB90D112250D30EA2BAE5CA1EF3DE95F5CDBE518DE1`; AAB 3,992,650 B / `92D4E5DA2BB2054B8156B88A2B8FEE40335831E1ED0B0594F2ACA526982F33AB`; debug APK 13,581,629 B / `117B51FD7D120500EBCBAF5781B0E62446C7DA13EEFF432EB2AE9014B89714DC`; copies + `SHA256SUMS.txt` in `dist/` | **PASS (self-measured)** |
+| Version | `aapt2 badging`: versionCode **2**, versionName **1.1.0** (first bump; required before upload) | **PASS** |
+| Signing | Upload cert SHA-256 `7b12ad…6152d` (same key as v1.0/v1.1); `apksigner verify` OK (v1/v2); `jarsigner -verify` on the AAB exit 0; `zipalign -c -P 16 4` exit 0 | **PASS (self-measured)** |
+| Permissions (release APK) | 12 uses-permissions: the v1.1 eleven plus `android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND`. No INTERNET, ACCESS_NETWORK_STATE, AD_ID or ACCESS_BACKGROUND_LOCATION | **PASS** |
+| Gates | `testDebugUnitTest` **127/127 in 10 suites** (0 failures/errors/skips); `assembleDebug` BUILD SUCCESSFUL; `lintDebug` exit 0 (0 errors, 46 warnings, 1 hint); `lintVitalRelease` passed inside the release build | **PASS** |
+| Manifest | Merged debug manifest: `foregroundServiceType="health"`; BOOT_COMPLETED + MY_PACKAGE_REPLACED receivers; both Health Connect permissions; no INTERNET | **PASS** |
+| Counting manifold (emulator) | Fresh install → onboarding/permissions → FGS foreground (`isForeground=true`, `types=0x100`, id 4101) → stationary total stays 0 → synthetic 1.8 Hz walk ≈55 s yields **56 estimated steps** labelled in Home, Diagnostics and the notification | **PASS (estimate path plumbing; no counter/detector on the image)** |
+| Recovery (emulator) | After `am force-stop` and reopen the persisted 56 steps remain and the service restarts; a second synthetic walk adds to the restored total (Home distance 40 m → 54 m, ≈19 steps) instead of resetting it; second reboot (after onboarding) auto-starts the health FGS from `BOOT_COMPLETED` ("Background started FGS: Allowed"); crash buffer has no Sabeel entry throughout | **PASS (persistence/boot on emulator)** |
+| Delete-all (emulator) | Confirming "Delete all data" returns onboarding step 1/4, stops the service (dumpsys empty), leaves no crash record | **PASS** |
+| Counter/detector fusion, catch-up, reboot rebase, HC floor, storage fault, midnight | Not exercisable on this image (no step counter/detector, no HC step data, no disk-fault injection, no date change) — covered by unit tests and reviewed code only; the **physical Step Zero** test (hardware checklist §2) is still OPEN | **OPEN — HARDWARE / DEVICE** |
+| Device-time limits | Any aggressive power manager/OEM kill can stop counting until the next legal start; detector-only steps while the process is dead are lost by platform design; the app does not use a wakelock, WorkManager counting or an alarm restart (council ruling P2/A7) | **DISCLOSED, NOT DEFECT** |
+| Privacy / Play declarations | v1.2 docs updated: privacy policy (EN+AR background-read wording), Play compliance checklist §6.1/6.3/6.3b, submission checklist §4.12/4.13, release signoff G8, claims audit §9. Console forms, hosted policy regeneration and the health declaration are **still owner actions**; the Health Connect background permission widens the Play health-review scope | **OPEN — OWNER** |
+
+Evidence folder: [docs/review/2026-11-21/step-resilience/EVIDENCE.md](../review/2026-11-21/step-resilience/EVIDENCE.md).
+Research and council: [RESEARCH.md](../review/2026-11-21/step-resilience/RESEARCH.md),
+[COUNCIL.md](../review/2026-11-21/step-resilience/COUNCIL.md).
+Claim-by-claim audit: [CLAIMS-AUDIT.md §9](../release/CLAIMS-AUDIT.md).

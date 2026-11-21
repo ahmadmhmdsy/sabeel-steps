@@ -39,9 +39,12 @@ object Notifications {
     const val ID_WALK = 4102
     const val ID_GOAL = 4103
     const val ID_REMINDER = 4104
+    const val ID_COUNTING_PAUSED = 4105
 
     private const val PREFS = "sabeel_notifications"
     private const val KEY_GOAL_NOTIFIED_DATE = "goal_notified_date"
+    private const val KEY_PAUSED_NOTIFIED_AT = "paused_notified_at"
+    private const val PAUSED_REMINDER_INTERVAL_MS = 12 * 60 * 60 * 1000L
     private const val ACCENT_COLOR = 0xFF0F6B5C.toInt()
 
     /**
@@ -143,6 +146,7 @@ object Notifications {
      *
      * @return true when a notification was actually posted now.
      */
+    @Synchronized
     fun notifyGoalReached(
         context: Context,
         steps: Int,
@@ -178,6 +182,44 @@ object Notifications {
 
         val posted = post(context, ID_GOAL, notification)
         if (posted) prefs.edit().putString(KEY_GOAL_NOTIFIED_DATE, today).apply()
+        return posted
+    }
+
+    /**
+     * Nudges the user to reopen the app when the counting heartbeat went stale (OEM cleaner, process
+     * kill, force-stop). Deliberately only a notification: a WorkManager job cannot legally start a
+     * foreground service on Android 12+, and a silent "restart" would be a lie about what was lost.
+     *
+     * At most once per [PAUSED_REMINDER_INTERVAL_MS]; the timestamp is written only after a post that
+     * actually reached the notification manager.
+     *
+     * @return true when a notification was actually posted now.
+     */
+    @Synchronized
+    fun notifyCountingPaused(context: Context): Boolean {
+        if (!Permissions.hasNotifications(context)) return false
+        ensureChannels(context)
+        if (isChannelOff(context, CHANNEL_STEPS)) return false
+        val prefs = prefs(context)
+        val last = prefs.getLong(KEY_PAUSED_NOTIFIED_AT, 0L)
+        if (System.currentTimeMillis() - last < PAUSED_REMINDER_INTERVAL_MS) return false
+        val localized = AppLocale.wrap(context)
+        val notification = NotificationCompat.Builder(context, CHANNEL_STEPS)
+            .setSmallIcon(R.drawable.ic_stat_steps)
+            .setColor(ACCENT_COLOR)
+            .setContentTitle(localized.getString(R.string.sensor_notif_paused_title))
+            .setContentText(localized.getString(R.string.sensor_notif_paused_text))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(localized.getString(R.string.sensor_notif_paused_text)))
+            .setContentIntent(openAppIntent(context))
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        val posted = post(context, ID_COUNTING_PAUSED, notification)
+        if (posted) {
+            prefs.edit().putLong(KEY_PAUSED_NOTIFIED_AT, System.currentTimeMillis()).apply()
+        }
         return posted
     }
 

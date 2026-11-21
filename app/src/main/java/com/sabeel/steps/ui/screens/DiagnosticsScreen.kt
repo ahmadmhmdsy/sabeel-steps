@@ -42,6 +42,7 @@ import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.StepSensors
 import com.sabeel.steps.platform.StepServiceStatus
+import com.sabeel.steps.platform.StatusStore
 import com.sabeel.steps.ui.components.CountingStatusCard
 import com.sabeel.steps.ui.components.PermissionCard
 import com.sabeel.steps.ui.components.SabeelSecondaryButton
@@ -131,6 +132,14 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
     } else {
         stringResource(R.string.diagnostics_last_update_none)
     }
+    val storageFaultAt = remember(permissionEpoch, updatedAt) {
+        StatusStore.readStorageFault(context)
+    }
+    val storageText = if (storageFaultAt != null && storageFaultAt > 0L) {
+        stringResource(R.string.diagnostics_storage_failed, timeText(storageFaultAt))
+    } else {
+        stringResource(R.string.diagnostics_storage_ok)
+    }
 
     ScreenScaffold(title = stringResource(R.string.diagnostics_title), onBack = onBack) {
         Text(
@@ -191,6 +200,11 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                         if (hasActivityPermission) R.string.diagnostics_permission_granted
                         else R.string.diagnostics_permission_missing,
                     ),
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                InfoRow(
+                    label = stringResource(R.string.diagnostics_storage_label),
+                    value = storageText,
                 )
             }
         }

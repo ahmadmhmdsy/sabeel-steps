@@ -17,6 +17,8 @@
     <string name="sensor_notif_estimate_title">سبيل يقدّر خطواتك</string>
     <string name="sensor_notif_estimate_text">لا يرسل أي عدّاد خطوات، لذا يأتي هذا العدد من حركة الهاتف. خطواتك تبقى على هذا الهاتف.</string>
     <string name="sensor_notif_no_sensor_title">مستشعر الخطوات غير متاح</string>
+    <string name="sensor_notif_paused_title">عدّ الخطوات متوقف مؤقتًا</string>
+    <string name="sensor_notif_paused_text">اضغط لإعادة فتح سبيل ومتابعة العدّ. يومك المحفوظ آمن.</string>
     <string name="sensor_notif_no_sensor_text">هذا الجهاز لا يوفّر عدّاد خطوات ولا مستشعر اكتشاف خطوات ولا مستشعر حركة. تبقى المشيات محفوظة.</string>
 
     <string name="sensor_notif_walk_title">مشية قيد التتبع</string>

@@ -6,11 +6,11 @@ package com.sabeel.steps.domain
  * COUNTER        the hardware step counter (cumulative since boot, measured)
  * DETECTOR       the hardware step detector (one event per step, measured)
  * HEALTH_CONNECT an absolute daily total already held by Health Connect (synced, may lag)
- * MOTION_ESTIMATE an accelerometer estimate, only when no measured source can work; always labelled
+ * MOTION_ESTIMATE an accelerometer estimate, only the unconfirmed remainder of a day; always labelled
  * NONE           nothing can count on this phone (still handled honestly by the UI)
  *
- * The pipeline records which source produced the current total so a switch can rebase instead of
- * treating a different sensor's raw scale as the same counter.
+ * In the manifold all measured/synced sources accumulate in parallel; this enum only names the
+ * strongest contributor for display. It is not used to select or rebase a counting source anymore.
  */
 enum class StepSource {
     COUNTER,
@@ -48,60 +48,4 @@ data class SourceAvailability(
 
     /** True when no on-device step measurement is possible, so synced/estimated sources are the only options. */
     val noMeasuredStepSensor: Boolean get() = !counter && !detector
-}
-
-/**
- * The single source-priority ladder. Pure so the ordering is testable without Android.
- *
- * A counter beats a detector because it is cumulative and survives a stopped service; a detector
- * beats an estimate because it is still a measured per-step event. The estimate is the last resort
- * and is never selected while a measured sensor is available.
- */
-object StepSourcePolicy {
-
-    fun choose(available: SourceAvailability): StepSource = when {
-        available.counter -> StepSource.COUNTER
-        available.detector -> StepSource.DETECTOR
-        // Synced data is a real measurement made by another device, so it outranks an estimate.
-        available.healthConnect -> StepSource.HEALTH_CONNECT
-        available.accelerometer -> StepSource.MOTION_ESTIMATE
-        else -> StepSource.NONE
-    }
-
-    /** The next measured fallback after [current], or null when there is none. */
-    fun nextMeasured(current: StepSource, available: SourceAvailability): StepSource? = when (current) {
-        StepSource.COUNTER -> if (available.detector) StepSource.DETECTOR else null
-        else -> null
-    }
-
-    /** Best measured source that is currently available, or null when only an estimate/none is left. */
-    fun bestMeasured(available: SourceAvailability): StepSource? = when {
-        available.counter -> StepSource.COUNTER
-        available.detector -> StepSource.DETECTOR
-        else -> null
-    }
-
-    /** The estimate tier exists only when an accelerometer exists. */
-    fun canEstimate(available: SourceAvailability): Boolean = available.accelerometer
-
-    /**
-     * What to try after [current] has been silent for too long. The hardware counter is not offered
-     * again here: it stays registered and recovers on its own event. After a silent detector, the
-     * labelled estimate is the only remaining tier.
-     */
-    fun fallbackTarget(current: StepSource, available: SourceAvailability): StepSource? = when (current) {
-        StepSource.COUNTER -> when {
-            available.detector -> StepSource.DETECTOR
-            available.healthConnect -> StepSource.HEALTH_CONNECT
-            available.accelerometer -> StepSource.MOTION_ESTIMATE
-            else -> null
-        }
-        StepSource.DETECTOR -> when {
-            available.healthConnect -> StepSource.HEALTH_CONNECT
-            available.accelerometer -> StepSource.MOTION_ESTIMATE
-            else -> null
-        }
-        StepSource.HEALTH_CONNECT -> if (available.accelerometer) StepSource.MOTION_ESTIMATE else null
-        else -> null
-    }
 }

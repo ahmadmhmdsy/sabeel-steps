@@ -6,8 +6,8 @@ package com.sabeel.steps.service
  * Keeps a ring of [slots] one-minute buckets (minute key + steps in that minute). A finished minute
  * counts as an "active minute" when at least [activeSpm] steps were taken in it. Values are pure
  * (no Android, no I/O) so the tricky bits - minute rollover, day rollover, counter resets - are
- * deterministic. Thread confinement: this class is driven from the sensor callback thread; the
- * service reads it only from the same (main) thread or through [finish] during teardown.
+ * deterministic. The service serializes writes with a mutex and calls [finish] during teardown, so
+ * every public method is synchronized: the writer coroutine and the main-thread teardown may overlap.
  *
  * Day awareness: the ring belongs to exactly one local day ([day]). [activeMinutesFor] rolls the
  * day over before returning, so the writer can never stamp yesterday's minutes onto today's row
@@ -34,11 +34,13 @@ class StepCadence(
      * Forgets the previous raw value without touching the day's active minutes. Called when the
      * active source changes: a detector/estimate raw scale must not be compared with a counter raw.
      */
+    @Synchronized
     fun rebase() {
         lastRaw = Float.NaN
     }
 
     /** Loads the day's already-counted active minutes (process-death restore) and anchors the ring. */
+    @Synchronized
     fun seed(date: String, activeMinutes: Int, nowMillis: Long) {
         day = date
         activeMinutesToday = activeMinutes.coerceAtLeast(0)
@@ -55,6 +57,7 @@ class StepCadence(
      * Feeds one cumulative step-counter value.
      * @return the active minutes counted for the day so far.
      */
+    @Synchronized
     fun onEvent(raw: Float, nowMillis: Long, today: String): Int {
         rolloverIfNeeded(today, nowMillis)
         lastEventMillis = nowMillis
@@ -83,6 +86,7 @@ class StepCadence(
      * Day-aware read used by the writer: rolls the day over first, then returns today's count.
      * A midnight tick therefore returns 0 for the new day instead of yesterday's total.
      */
+    @Synchronized
     fun activeMinutesFor(today: String): Int {
         rolloverIfNeeded(today, lastEventMillis)
         return activeMinutesToday
@@ -94,6 +98,7 @@ class StepCadence(
      * not silently lost. Does not roll the day over in a way that would move minutes between days:
      * after a day change it simply returns the new day's zero count.
      */
+    @Synchronized
     fun finish(nowMillis: Long, today: String): Int {
         rolloverIfNeeded(today, nowMillis)
         closeInProgressMinute(nowMillis)

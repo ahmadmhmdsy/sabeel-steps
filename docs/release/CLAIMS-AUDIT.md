@@ -282,3 +282,68 @@ Room v1→v2 migration.
 - The release grew by 178,140 B (APK) and 439,302 B (AAB) because of the Health Connect client after
   R8; this is recorded here rather than called free.
 
+
+## 9. Addendum — step manifold and count resilience (v1.2, 2026-11-21)
+
+This section extends the audit; sections 1–8 remain dated records. It covers the v1.2 manifold that
+replaces the exclusive source ladder, the crash/boot/persistence recovery paths, the Health Connect
+background-read permission, and the release built for this change. Council verdict and research:
+[COUNCIL.md](../review/2026-11-21/step-resilience/COUNCIL.md),
+[RESEARCH.md](../review/2026-11-21/step-resilience/RESEARCH.md); verification:
+[EVIDENCE.md](../review/2026-11-21/step-resilience/EVIDENCE.md).
+
+**Artifacts measured for this addendum (build-tools 36.0.0, JDK 21):**
+
+- Debug APK 13,581,629 B, SHA-256 `117b51fd7d120500ebcbaf5781b0e62446c7da13eeff432eb2ae9014b89714dc`;
+  release APK 1,864,306 B, SHA-256 `00088fdc172cfafe17bc7ab90d112250d30ea2bae5ca1ef3de95f5cdbe518de1`;
+  AAB 3,992,650 B, SHA-256 `92d4e5da2bb2054b8156b88a2b8fee40335831e1ed0b0594f2aca526982f33ab`.
+  Signed with the upload key (cert `7b12ad6baf07817e76a2539954f7b4bde2e13f6b33454824830102566b6152d`);
+  `apksigner verify`, `zipalign -c -P 16` and `jarsigner -verify` are OK. **versionCode 2,
+  versionName 1.1.0** (the bump that must precede the first upload).
+- JVM tests: **127 in 10 suites, 0 failures/errors/skips**; `lintDebug` exit 0 (0 errors, 46
+  warnings, 1 hint); `lintVitalRelease` passed.
+- Emulator: install/onboarding/FGS, stationary, synthetic estimate walk, force-stop + reopen
+  persistence, delete-all, and boot auto-start (evidence file above). No counter, no detector and
+  no HC data on the image.
+
+| Claim | Where it appears | Evidence | Status |
+|---|---|---|---|
+| All available sources accumulate in parallel into one fused day; no source is switched and no switch resets/re-bases the total | README.md "What it does"; docs/product/spec.md §3 rules 1, 6 | `StepPipeline.kt` (`fuse`, per-source ledgers, `total = max(total, confirmed, estimateToday)`, `confirmed = max(confirmed, counterToday, detectorToday, hcToday)`); `StepPipelineTest` fusion/parallel-source cases | VERIFIED (unit level) |
+| A reboot/sensor reset (raw falls by more than 1) is rebased and adds nothing; a stale out-of-order higher raw is still ignored | README.md; docs/product/spec.md §3 rule 7 | Negative-delta check runs before the monotonic timestamp guard in `StepPipeline.onCounter`; reboot and out-of-order tests | VERIFIED (unit level) |
+| Count steps taken while the app process was dead are recovered from the cumulative counter (same boot), instead of being discarded as in v1.1 | README.md "counter catch-up"; hardware checklist A4/A8 | `StepPipeline.onCounter` elapsed-time catch-up + persisted `counterLastRaw`/`counterLastEventNanos`; catch-up tests; not exercisable on the emulator (no counter) | VERIFIED (unit level) / hardware pending |
+| The "≈" marker is derived from the ledgers and cannot relabel measured steps; a v1.1 upgrade preserves a marker that existed only in the daily row | README.md; docs/product/spec.md §3 rules 6, 11 | `StepState.estimated = total − confirmed`; `preserveLegacyMarker` + `isManifoldSchema` in `StepsRepository`; 5 marker/migration tests plus the legacy migration mapping test | VERIFIED (unit level) |
+| The estimate is only a gap-filler: its baseline is the fused total at the first estimated step, so it can never add to what a measured/synced source already confirmed; a late HC sync shrinks the estimate portion | README.md; docs/product/spec.md §3 rules 4, 6 | `StepPipeline.onEstimate` baseline rule; estimate-does-not-inflate tests; legacy marker test | VERIFIED (unit level) |
+| A Health Connect total is an absolute floor: never added, never lowered; repeated/lower reads are no-ops; polling is bounded (first within ~3 s, 180 s normal / 60 s while measured silent, 8 s timeout) | README.md; docs/product/spec.md §3 rule 5 | `onExternalTotal`; `StepCounterService` HC constants and `HealthConnect.readToday` `withTimeoutOrNull(8 s)`; HC floor tests; emulator has no HC data | VERIFIED (unit/code level) / device pending |
+| Detector events are sanity-checked (value 1..10, at most 5 events/s) so noisy vendors cannot inflate a day, while real steps are still accumulated | README.md; docs/product/spec.md §3 rule 3 | `StepPipeline.onDetector` constants `MAX_DETECTOR_EVENT`, `MIN_DETECTOR_EVENT_GAP_NANOS`; sanity tests | VERIFIED (unit level) |
+| The writing path is crash-tolerant: a failed seed still starts the writer loops; callback/lifecycle/poll failures are contained per concern; a storage write failure is shown in Diagnostics instead of being swallowed; the final write is bounded | README.md; docs/product/spec.md §3 rule 12 | `StepCounterService` seed fallback, per-concern `runCatching`, `onWriteFailure`/`StatusStore.markStorageFault`, `writeMutex` + bounded `flushPendingOnDestroy`; `DiagnosticsScreen` "Saving" row (emulator: "Working"); audit-driven changes are in the same commit | VERIFIED (code + emulator row) / fault injection not performed |
+| Shared state is safe across the sensor and writer threads (watchdog, cadence, status, writer) | — (internal, not a user claim) | `SilenceWatchdog` methods synchronized + `@Volatile` flags; `StepCadence` methods `@Synchronized`; service status methods `@Synchronized`; `writeMutex`; no deadlock path between the two lock sets (audit) | VERIFIED (code) / no stress test |
+| The app recovers on boot and can post at most one "counting paused" notification when the service is not running but counting is allowed | docs/product/spec.md §4; plan §4 (no README claim) | `BootReceiver` + `StepCounterService.ensureStarted`; emulator E8 shows `Background started FGS: Allowed … BOOT_COMPLETED` and a foreground service after reboot; `ReconcileWorker` recovery nudge is code/unit-level only | VERIFIED (boot, emulator); paused nudge untested on device |
+| "The app will never fail to count steps" (the original request) | — (not a claim we make) | The honest claim is: the day total survives every legal restart and every failure we observed, with documented gaps (detector-only steps while the process was dead; force-stop/OEM kill until the next legal start; no wakelock while the AP is suspended) | NOT CLAIMED — the absolute wording is deliberately softened |
+| No INTERNET permission or network dependency was added; no ads/trackers | README.md; privacy policy | Release APK permission dump: no INTERNET/ACCESS_NETWORK_STATE/AD_ID/ACCESS_BACKGROUND_LOCATION; dependencies unchanged | VERIFIED |
+| The new background Health Connect permission is declared only when the device feature supports it, and widening Play scope is disclosed | docs/legal/play-compliance-checklist.md; docs/legal/BLOCKERS.md; privacy policy | Manifest declares `android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND` (12 permissions now); `HealthConnect.requiredPermissions` adds it only when `FEATURE_READ_HEALTH_DATA_IN_BACKGROUND` is available; the Play Console/Health Connect forms and the hosted policy are **owner actions, not done** | VERIFIED (code) / CAVEAT (owner action) |
+| Version is bumped before upload | — | `versionCode=2`, `versionName=1.1.0` in the built APK/AAB | VERIFIED |
+
+**Superseded / amended earlier rows:**
+
+- §7 "Ladder: counter → detector → Health Connect → estimate, chosen from SensorManager availability"
+  is superseded: in v1.2 the counter and detector run in parallel whenever present and HC is a floor,
+  not a chosen tier. The §8 row "Health Connect is an optional extra tier, tried only when the phone
+  has no counter and no detector" is superseded as a *counting* rule (a granted HC total is applied in
+  parallel and never added); the *opt-in offer* is still limited to phones reporting neither counter
+  nor detector (spec rule 5), so HC on a sensor phone only happens if the grant already exists.
+- §7 rows "every source switch rebases…", "step source policy chooses…", "silence watchdog switches
+  tier", "fallback count" are superseded by the manifold rows above; `StepSourcePolicy` and
+  `StepSourceHealth` were deleted with their tests, and "Fallbacks today" now counts display-source
+  changes rather than ladder switches.
+- §8 "first poll 5 s, then every 2 min" is superseded by "first within ~3 s, 180 s normal / 60 s
+  while measured silent, 8 s timeout".
+- §6.1/§7/§8 artifact values are historical snapshots; the §9 artifacts supersede them.
+
+**Still not verified for this addendum:**
+
+- The **physical Step Zero** falsification test has not run. Until it does, the fused counter+detector
+  tolerance (2% total, detector 90–110% of counter) is a design target, not a measurement. If it
+  fails, the detector is demoted to liveness-only.
+- Counter catch-up after process death, reboot rebase and detector-only behaviour need a real step
+  sensor; they are unit-tested only (emulator has neither sensor).
+- Health Connect read/floor/background per

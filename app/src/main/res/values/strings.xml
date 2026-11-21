@@ -306,6 +306,9 @@
     <string name="diagnostics_permission_label">Activity recognition</string>
     <string name="diagnostics_permission_granted">Allowed</string>
     <string name="diagnostics_permission_missing">Not allowed</string>
+    <string name="diagnostics_storage_label">Saving</string>
+    <string name="diagnostics_storage_ok">Working</string>
+    <string name="diagnostics_storage_failed">Write failed at %1$s</string>
     <string name="diagnostics_permission_body">Without this permission Sabeel cannot read the step counter or step detector at all. Allow it, then open Sabeel again.</string>
     <string name="diagnostics_open_settings">Open app settings</string>
     <string name="diagnostics_battery_button">Open battery settings</string>

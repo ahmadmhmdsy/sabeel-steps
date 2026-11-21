@@ -1,0 +1,16 @@
+11-21 23:59:46.452     0     0 I init    : processing action (bootreceiver.enable=1 && ro.product.cpu.abilist64=*) from (/system/etc/init/hw/init.rc:635)
+11-21 23:59:46.536     1     1 W init    : type=1400 audit(0.0:4): avc:  denied  { write } for  name="error_report_end" dev="tracefs" ino=8398 scontext=u:r:init:s0 tcontext=u:object_r:debugfs_bootreceiver_tracing:s0 tclass=dir permissive=0
+11-21 23:59:46.999     0     0 I init    : processing action (bootreceiver.enable=1 && ro.product.cpu.abilist64=*) from (/system/etc/init/dmesgd.rc:7)
+11-22 00:00:14.221     0     0 I init    : processing action (bootreceiver.enable=1 && dmesgd.start=1 && ro.product.cpu.abilist64=*) from (/system/etc/init/dmesgd.rc:12)
+11-22 00:00:14.283     0     0 I init    : Command 'start dmesgd' action=bootreceiver.enable=1 && dmesgd.start=1 && ro.product.cpu.abilist64=* (/system/etc/init/dmesgd.rc:13) took 57ms and succeeded
+11-22 00:00:17.155   675  1581 I BootReceiver: Copying /sys/fs/pstore/console-ramoops-0 to DropBox (SYSTEM_LAST_KMSG)
+11-22 00:00:17.157   675  1581 I BootReceiver: Copying audit failures to DropBox
+11-22 00:00:17.173   675  1581 I BootReceiver: Copied 0 worth of audits to DropBox
+11-22 00:00:17.185   675  1581 I BootReceiver: Checking for fsck errors
+11-22 00:00:17.186   675  1581 I BootReceiver: fs_stat, partition:vdc stat:0x3
+11-22 00:00:25.386   675   719 I ActivityManager: Start proc 1987:com.android.rkpdapp/u0a135 for broadcast {com.android.rkpdapp/com.android.rkpdapp.BootReceiver}
+11-22 00:00:25.553  1987  1987 I RkpdBootReceiver: Caught boot intent, waking up.
+11-22 00:00:25.579  1987  1987 I RkpdBootReceiver: Queueing a one-time provisioning job for widevine provisioning.
+11-22 00:00:26.054   675   719 I ActivityManager: Start proc 2041:com.sabeel.steps/u0a165 for broadcast {com.sabeel.steps/com.sabeel.steps.platform.BootReceiver}
+11-22 00:00:28.358   675  1421 I ActivityManager: Background started FGS: Allowed [callingPackage: com.sabeel.steps; callingUid: 10165; uidState: RCVR; uidBFSL: n/a; intent: Intent { xflg=0x4 cmp=com.sabeel.steps/.service.StepCounterService }; code:BOOT_COMPLETED; tempAllowListReason:<3ae7acf android.intent.action.BOOT_COMPLETED/u0,reasonCode:BOOT_COMPLETED,duration:20000,callingUid:1000>; allowWiu:-1; targetSdkVersion:36; callerTargetSdkVersion:36; startForegroundCount:0; bindFromPackage:null: isBindService:false]
+11-22 00:00:28.558   675   967 W ActivityManager: Foreground service started from background can not have location/camera/microphone access: service com.sabeel.steps/.service.StepCounterService

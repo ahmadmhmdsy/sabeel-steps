@@ -322,6 +322,9 @@
     <string name="diagnostics_permission_label">التعرّف على النشاط</string>
     <string name="diagnostics_permission_granted">مسموح</string>
     <string name="diagnostics_permission_missing">غير مسموح</string>
+    <string name="diagnostics_storage_label">الحفظ</string>
+    <string name="diagnostics_storage_ok">يعمل</string>
+    <string name="diagnostics_storage_failed">فشل الحفظ في %1$s</string>
     <string name="diagnostics_permission_body">بدون هذا الإذن لا يستطيع سبيل قراءة عدّاد الخطوات أو مستشعر اكتشاف الخطوات إطلاقًا. اسمح به ثم افتح سبيل مرة أخرى.</string>
     <string name="diagnostics_open_settings">افتح إعدادات التطبيق</string>
     <string name="diagnostics_battery_button">افتح إعدادات البطارية</string>

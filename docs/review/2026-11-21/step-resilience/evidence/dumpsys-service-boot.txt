@@ -1,0 +1,4 @@
+  * ServiceRecord{995d517 u0 com.sabeel.steps/.service.StepCounterService c:com.sabeel.steps}
+    startForegroundCount=1
+    infoAllowStartForeground=[callingPackage: com.sabeel.steps; callingUid: 10165; uidState: RCVR; uidBFSL: n/a; intent: Intent { xflg=0x4 cmp=com.sabeel.steps/.service.StepCounterService }; code:BOOT_COMPLETED; tempAllowListReason:<3ae7acf android.intent.action.BOOT_COMPLETED/u0,reasonCode:BOOT_COMPLETED,duration:20000,callingUid:1000>; allowWiu:-1; targetSdkVersion:36; callerTargetSdkVersion:36; startForegroundCount:0; bindFromPackage:null: isBindService:false]
+    isForeground=true foregroundId=4101 types=0x00000100 foregroundNoti=Notification(channel=steps shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|ONLY_ALERT_ONCE|NO_CLEAR|FOREGROUND_SERVICE color=0xff0f6b5c category=service vis=PUBLIC)

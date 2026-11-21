@@ -1,7 +1,7 @@
-# Release blockers — Sabeel v1.0
+# Release blockers — Sabeel v1.1.0
 
 Items that **cannot be closed by code**. Each has an owner action, an acceptance
-test, and what it blocks. Status as of 2026-11-21 (v1.1 Health Connect + estimate-marker additions).
+test, and what it blocks. Status as of 2026-11-21 (v1.2 step-manifold release: background Health Connect read, crash/boot recovery).
 
 Legend: **OPEN** = blocks release · **PARTIAL** = code side ready, owner action
 pending · **CLOSED** = evidence recorded.
@@ -175,21 +175,26 @@ labelled estimate tier. A command-level checklist to run and paste back is
 
 ## B8 — Health Connect declarations and hardware verification — PARTIAL (code ready, owner actions)
 
-**Blocks:** shipping the v1.1 Health Connect tier; the rest of the app is unaffected if the tier stays
-invisible (it is opt-in and only offered on phones with no counter/detector).
+**Blocks:** shipping the v1.2 Health Connect read; the rest of the app is unaffected if the grant is
+never requested (it is opt-in and never a prerequisite for counting).
 
-Code side is complete (2026-11-21): `READ_STEPS` only, read-only `StepsRecord.COUNT_TOTAL`, absolute floor,
-Settings opt-in, revocation fallback, no write permission. Remaining:
+Code side is complete (2026-11-21): `READ_STEPS` and the feature-gated
+`READ_HEALTH_DATA_IN_BACKGROUND`, read-only `StepsRecord.COUNT_TOTAL`, absolute floor (never added,
+never lowered), Settings opt-in, revocation fallback, no write permission. Remaining:
 
 1. Play Console: add Health Connect to the **Health apps declaration** (Activity and Fitness; Steps data type
-   = read) and complete the Health Connect permissions form; keep Data safety consistent (on-device only,
-   no collection, no sharing).
+   = read) and complete the Health Connect permissions form, including the background-read permission
+   (a sensitive grant that widens the review); keep Data safety consistent (on-device only, no collection,
+   no sharing). If Play refuses the background read, remove it and keep foreground polling — sensor
+   counting is unaffected.
 2. Regenerate and host the v1.1 privacy policy (see B1) and link it in the listing and in-app.
 3. Run the Health Connect rows of the hardware checklist on a real no-sensor phone with a watch/app source;
    record the artifact SHA-256 and the observed source/last-sync/floor/revoke behaviour in
    `docs/legal/release-evidence-log.md`.
-4. Do **not** enable the tier on phones that have a hardware step sensor until a merge design is approved
-   (double-count risk); the current rule keeps it off there.
+4. v1.2 supersedes the old ladder placement: a granted Health Connect total is an absolute floor in the
+   fusion (never added, never lowered), not a fallback tier that replaces sensors. The opt-in card is still
+   offered only on phones that report neither a counter nor a detector (spec rule 5); if that gate is ever
+   widened, re-check the mixed-source day on hardware first.
 
 **Acceptance:** declaration complete + hosted policy + device evidence entries.
 **Owner:** account owner/engineering.

@@ -91,6 +91,9 @@ class HomeViewModel(private val app: SabeelApp) : ViewModel() {
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
                     !StepSensors.hasAny(app) && !HealthConnect.isReady(app) -> StepServiceStatus.NO_SENSOR
+                    // A live in-process service instance outranks a stale heartbeat: after a device
+                    // sleep the prefs mark can look old even though counting never stopped.
+                    StepCounterService.runningInstance -> StepServiceStatus.COUNTING
                     else -> StatusStore.read(app)
                 },
             )
@@ -170,6 +173,9 @@ class DiagnosticsViewModel(private val app: SabeelApp) : ViewModel() {
                 when {
                     !Permissions.hasActivityRecognition(app) -> StepServiceStatus.NO_PERMISSION
                     !StepSensors.hasAny(app) && !HealthConnect.isReady(app) -> StepServiceStatus.NO_SENSOR
+                    // A live in-process service instance outranks a stale heartbeat: after a device
+                    // sleep the prefs mark can look old even though counting never stopped.
+                    StepCounterService.runningInstance -> StepServiceStatus.COUNTING
                     else -> StatusStore.read(app)
                 },
             )

@@ -6,8 +6,12 @@
          ACCESS_NETWORK_STATE is pulled in transitively (WorkManager); it is removed on purpose. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- Optional source: read steps that Health Connect already holds from a watch or another
-         app. The user grants this inside Health Connect; the app never writes health data. -->
+         app. The user grants this inside Health Connect; the app never writes health data.
+         The background-read grant is requested only when the provider advertises the feature: while
+         the step foreground service runs, the app is not in the foreground, so a background read can
+         otherwise be refused. It is never a prerequisite for counting. -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />

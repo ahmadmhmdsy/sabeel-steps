@@ -35,8 +35,9 @@ import also accepts the legacy 5-column header/rows (estimated_steps = 0). `esti
 
 Preferences (DataStore): goalSteps (default 8000), units ('metric'|'imperial'), heightCm (default 170),
 weightKg (default 70), gender ('unspecified'|'male'|'female'), strideCm (0 = auto), language ('en'|'ar'),
-reminderEnabled (false), reminderMinutes (e.g. 1140 = 19:00), onboardingDone (false), todayBaseSteps,
-sensorBaselineRaw, baselineDate, stepSource (COUNTER default), stepLastRawAt (0 default).
+reminderEnabled (false), reminderMinutes (e.g. 1140 = 19:00), onboardingDone (false), notification
+timestamps, and the manifold step state (`step_state_schema=2`; see §3 rule 11). v1.1 keys are read
+once for migration, then removed.
 
 ## 2. Algorithms (pure Kotlin in domain/StepMath.kt — unit tested)
 
@@ -48,66 +49,96 @@ Active minutes: count minutes in which cadence >= 60 steps/min; service keeps a 
 Pace: durationSec / (distanceMeters / 1000.0), only if distanceMeters >= 50; formatted m:ss /km.
 BMI (optional display only): weight / (height/100)^2, one decimal, never a diagnosis.
 
-## 3. Step source ladder and pipeline (correctness is a feature)
+## 3. Step sources and the manifold pipeline (correctness is a feature)
 
-1. Ladder: Sensor.TYPE_STEP_COUNTER (measured) -> Sensor.TYPE_STEP_DETECTOR (measured) ->
-   HEALTH_CONNECT (read-only daily total from another app/watch, owner-approved 2026-11-21) ->
-   MOTION_ESTIMATE (accelerometer, always labelled "estimated") -> none. The tier is chosen from
-   SensorManager.getDefaultSensor availability plus Health Connect availability, never from a feature
-   flag; a failed registration drops exactly one tier. Estimate mode is used only when no measured
-   source exists or both registrations fail. Health Connect is offered only when the phone reports no
-   counter and no detector, and only after the user opts in from Settings; NO_SENSOR means the phone has
-   no counter, no detector and no accelerometer and Health Connect is unavailable.
-2. Counter adapter: cumulative since boot, event-driven, SENSOR_DELAY_NORMAL. When the HAL reports
-   getMaxDelay(), register batched with a delay capped at 20 s; the writer is never delayed by
-   batching.
-3. Detector adapter: one event per step; the adapter keeps a synthetic cumulative raw equal to the
-   number of detector events, so StepPipeline stays the only place that turns raw into a daily total.
-4. Estimate adapter: accelerometer at SENSOR_DELAY_UI -> MotionStepDetector (time-based EMA
-   coefficients so 10-50 Hz behave alike; 1.2 m/s^2 threshold with 0.15 hysteresis; 250-2000 ms
-   refractory; 3-peak burst; 2.5 s stop) -> synthetic cumulative raw. Estimates are marked at the
-   number ("≈"), in Home's note, in Diagnostics and in the foreground notification, and they count
-   toward the daily goal/streak only while marked (reversible owner decision).
-4b. Health Connect adapter (read-only floor): every 2 min (first read 5 s after the service starts) read
-   `StepsRecord.COUNT_TOTAL` for today with `AggregateRequest`; never write to Health Connect. The provider
-   total is absolute, so it is applied as `todaySteps = max(todaySteps, providerTotal)`, never added. It
-   only becomes the active source when it is ahead of the current total; a repeated or lower read changes
-   nothing. Only a *rising* total counts as liveness; a static total lets the silence watchdog resume the
-   live estimate (the estimate is closer to the phone in hand). Failed reads for 30 min fall back to the
-   estimate. While Health Connect is active the estimate portion stays as already counted and is never
-   reduced. Health Connect has no step timestamps, so an HC-only phone shows 0 active minutes; a walk
-   never reads Health Connect — it keeps its own counter → detector → labelled estimate ladder
-   (a sensor-less phone with an accelerometer still counts estimated walk steps; a phone with no motion
-   sensor counts no walk steps, while GPS distance still works).
-5. State: baselineRaw (raw sensor value at last rebase), source, lastRawAt (elapsedRealtime of the last
-   accepted event), todayBase (steps already counted for the current local date), estimatedStepsToday
-   (estimate portion). Persist atomically
-   (DataStore) after every meaningful delta; today's row in Room is upserted at most every ~5 s or on
-   lifecycle boundaries.
-6. Rebase on every source switch: initialized = true, new baseline = first raw of the new source,
-   today's total preserved, the switch delta ignored (no double count). Switching to Health Connect
-   applies its absolute total as a floor instead of a delta. Date rollover still wins:
-   set todayBase = 0, baselineDate = today, baselineRaw = raw, and keep the source.
-7. Plausibility clamp: a single delta cannot exceed floor(elapsed_seconds * 4) + 3 when the previous
-   event time is known; skipped when the previous timestamp is unknown. Physically impossible jumps
-   only; normal walking is never clamped.
-8. Silence watchdog: a measured source that has reported and then stays silent for 10 min triggers a
-   5 s motion probe (accelerometer -> MotionStepDetector). Two consecutive walking probes switch to
-   the next tier; a non-walking probe resets the streak and the probe interval backs off exponentially
-   (2, 4, 8 ... minutes, capped at 30) so a still phone is not probed every minute. A counter event
-   arriving while on a fallback switches back immediately (delta ignored by rule 6). The counter stays
-   registered while a fallback is active.
-9. On event (measured adapter): raw = event.values[0]; if raw < baselineRaw - 1 => device rebooted or
-   sensor reset: baselineRaw = raw, keep todayBase unchanged. delta = max(0, raw - baselineRaw).
-   todaySteps = todayBase + delta => upsert DailySteps(today).
-10. Resilience: service START_STICKY; on service start re-read persisted state, never double count
-    (todaySteps is monotonic inside a day: todaySteps = max(db.todaySteps, todayBase + delta)).
-11. Boot: BOOT_COMPLETED receiver tries to start the FGS inside try/catch (Android 15 may restrict FGS
-    from boot for some types; type 'health' is attempted, failure is non-fatal). A WorkManager one-time
-    job guarantees a reconcile within 15 min if the service could not start.
-12. No continuous sensor polling, no AlarmManager exact alarms, no wakelocks. The one polling loop is
-    the opt-in Health Connect read every 2 min while the counting service is alive (stopped with it);
-    it is a content-provider read, not a sensor registration.
+The v1.2 pipeline is a **manifold**, not an exclusive ladder: every available source accumulates in
+parallel into one fused day, so losing one does not reset or freeze the others. This section is the
+source of truth for the counting rules.
+
+1. Sources, in order of evidentiary strength for display only:
+   - `TYPE_STEP_COUNTER` — measured, cumulative since boot.
+   - `TYPE_STEP_DETECTOR` — measured, one event per step.
+   - Health Connect — synced read-only daily total from another app/watch (opt-in, owner-approved
+     2026-11-21).
+   - Accelerometer estimate — always labelled "estimated".
+   All of them are registered/listened to at the same time when present; no tier is "chosen" and no
+   source switch rebases anything. The strongest contributor is named only for display
+   (Diagnostics/status), not used to select a writing source.
+2. Counter adapter: cumulative since boot, event-driven at `SENSOR_DELAY_NORMAL`, never batched and
+   never unregistered while the service lives. On boot/process death the first raw after restart is
+   compared with the persisted last raw; the monotonic event timestamp gives the elapsed sensor time
+   so the full catch-up delta is accepted (this is what recovers steps taken while the process or the
+   whole app was dead).
+3. Detector adapter: one event per step; registered for the whole day alongside the counter. Each
+   event adds one step to its own ledger. A single value outside 1..10, or more than 5 events per
+   second, is rejected as sensor noise (sanity guard, not a rate limiter).
+4. Estimate adapter: accelerometer at `SENSOR_DELAY_UI` -> MotionStepDetector (time-based EMA
+   coefficients; 1.2 m/s^2 threshold with 0.15 hysteresis; 250-2000 ms refractory; 3-peak burst;
+   2.5 s stop). It is **only a gap-filler**: its baseline is the current fused total on the first
+   estimated step, so it can add only what no measured/synced source has already confirmed. It is
+   always marked: "≈" at the number, a note in Home, in Diagnostics, in the walk live/summary, in the
+   foreground notification and in the goal notification. Estimated steps count toward the daily
+   goal/streak while marked (reversible owner decision).
+5. Health Connect adapter (read-only floor): polls the provider's today total within seconds of a
+   usable service, then every 3 min, and every 1 min while the measured sensors are silent. The read
+   is bounded by an 8 s timeout. The provider total is absolute, so it is applied as
+   `confirmed = max(confirmed, hcToday, counterToday, detectorToday)` and never added; repeated or
+   lower reads change nothing. HC is never written. A background read needs
+   `android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND` (granted through the Health Connect
+   permission screen; requested only when the device's Health Connect feature reports it available);
+   without it the read is skipped. Health Connect has no step timestamps, so it contributes no active
+   minutes. The HC permission is offered in Settings only on phones that report neither a counter nor
+   a detector (`SourceAvailability.noMeasuredStepSensor`); once granted it is polled as a floor even
+   if a sensor later appears.
+6. Fusion, after every accepted event:
+   ```
+   confirmed = max(confirmed, counterToday, detectorToday, hcToday)
+   total     = max(total, confirmed, estimateToday)
+   estimated = total - confirmed        // derived, monotonic non-increasing for a fixed confirmed set
+   ```
+   Consequences: the detector does not double count the counter (both measure the same steps; the
+   larger ledger wins), a synced HC total never adds to the phone's sensor total, and a late HC sync
+   only shrinks the "≈" portion. `todayBase` no longer exists; the marker is never persisted
+   separately from the ledgers.
+7. Plausibility clamp (counter only): a single accepted delta cannot exceed
+   `floor(elapsed_seconds * 6) + 5`, where elapsed comes from the sensor's own monotonic timestamp.
+   It is skipped when the previous timestamp is unknown or when the delta follows a reboot. A
+   counter that fell by more than 1 (`raw < lastRaw - 1`) means reboot/sensor reset: rebase to the new
+   raw and add nothing. This is what keeps a reboot or HAL glitch from producing a phantom day.
+8. Silence watchdog (pure state machine): while both measured ledgers have been silent for 3 min, an
+   8 s accelerometer probe (max one per minute, exponential backoff up to 10 min) checks for walking.
+   If the estimate is not already active, two consecutive walking probes start the continuous
+   estimate; a non-walking probe resets the streak and backs off. Any real counter or detector event
+   stops the estimate immediately. Because the counter/detector registration is never removed,
+   continued walking is also noticed by those sensors. A failed probe can never disable the watchdog.
+9. Process death / restart: the persisted manifold state is the recovery point. On restart the
+   service seeds a fresh day (or preserves yesterday until the first sample rolls it over), reads
+   row-vs-state max so a crash between the two writes cannot lose steps, and re-registers both
+   measured sensors. Counter catch-up is recovered exactly by rule 2; detector events that occurred
+   while the process was dead cannot be recovered from the sensor (documented limit), and HC can fill
+   the gap when granted.
+10. Day rollover: at the first event/pub after local midnight, all ledgers reset to zero, the day
+    changes, the estimate detector is reset and any cross-midnight delta is dropped (unattributable).
+    Timezone changes use the same local-date rule; History keys stay local dates.
+11. State: persisted atomically in DataStore after every meaningful change
+    (`step_state_schema=2`, day, total, confirmed, counterToday, counterLastRaw,
+    counterLastEventNanos, detectorToday, detectorLastEventNanos, hcToday, estimateToday, initialized,
+    updatedAt). The Room daily row is upserted as part of the same coalesced write (at most about
+    once per second while events arrive) and reconciled on service start/worker runs. v1.1 keys are
+    migrated on first read: the old total becomes confirmed/counterToday, the old raw baseline is kept
+    and the old persisted estimate marker is preserved through the daily row
+    (`StepPipeline.preserveLegacyMarker`) so an upgrade does not relabel estimated steps as measured.
+12. Resilience of the writing path: the service coalesces sensor callbacks into one snapshot per
+    second; a write failure is marked and shown in Diagnostics instead of being swallowed; a crash in
+    a callback/lifecycle/poll is contained; the service never crash-loops. Storage failure or process
+    death cannot create phantom steps (row/state max) and cannot make the day negative.
+13. Status/provenance: Diagnostics shows the current display source, last event age, switch count,
+    Health Connect readiness, estimate activity and storage-write health. A stale source is labelled
+    stale after 2 min; a stopped/unavailable count is shown honestly (NO_SENSOR/NO_PERMISSION instead
+    of a fake zero). Notifications follow provenance and label estimated steps.
+14. No continuous sensor polling beyond the registered sensors, no AlarmManager exact alarms, no
+    wakelocks. The polling loops that exist are the opt-in Health Connect read (above) and the
+    bounded watchdog probe; both stop with the foreground service.
 
 ## 4. Services
 
@@ -266,4 +297,3 @@ older text is kept only as history.
     prepared in docs but cannot be completed in code. *Rationale: only the
     account owner can submit them; see docs/release/PLAY-SUBMISSION-CHECKLIST.md
     and docs/legal/BLOCKERS.md.*
-

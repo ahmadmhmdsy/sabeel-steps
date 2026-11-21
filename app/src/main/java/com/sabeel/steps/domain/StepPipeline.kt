@@ -1,230 +1,311 @@
 package com.sabeel.steps.domain
 
+import kotlin.math.min
+import kotlin.math.max
+
 /**
- * Persisted sensor pipeline state (lives in DataStore together with user settings).
+ * Durable state of the step manifold: one fused daily total backed by four independent ledgers.
  *
- * [initialized] separates a genuinely fresh baseline from a zero counter reading. Until the first
- * real sensor sample arrives we must not treat the lifetime hardware counter as today's steps, and
- * after a delete-all we must not resurrect the previous user's total.
+ * The old pipeline had a single baseline and one active source; switching sources rebased and threw
+ * the new source's catch-up away. The manifold keeps a ledger per source instead:
  *
- * [source] tags which collector produced [baselineRaw], so a fallback can rebase without treating a
- * different sensor's scale as a counter catch-up. [lastRawAt] (wall-clock ms, 0 = unknown) lets the
- * pipeline reject physically impossible jumps only; it never throttles normal walking.
+ *  - [counterToday]  hardware step counter deltas (cumulative since boot)
+ *  - [detectorToday] hardware step detector events (one per step, accumulated even when the counter
+ *                    is the one displayed)
+ *  - [hcToday]       absolute floor from Health Connect (never lowered)
+ *  - [estimateToday] accelerometer estimate; it starts at the current fused total so it only ever
+ *                    fills the part no confirmed source has seen
+ *
+ * [confirmed] is the best measured/synced evidence and only grows within a day. [total] is the
+ * monotonic fused day, and the displayed estimate is derived as `total - confirmed` — never
+ * accumulated separately, so a late sync can only shrink the estimated portion, never inflate it.
+ *
+ * Every function here is pure. The Android layer owns liveness/freshness and passes only numeric
+ * evidence; the day string is supplied by the caller so the state machine is testable across
+ * midnight and time zones.
  */
 data class StepState(
-    val baselineRaw: Float,
-    val todaySteps: Int,
-    val baselineDate: String,
+    /** Local ISO date the ledgers belong to. Empty only for a brand-new install. */
+    val day: String = "",
+    /** Monotonic fused total for [day]. */
+    val total: Int = 0,
+    /** Best confirmed (measured or synced) evidence for [day]; `total >= confirmed`. */
+    val confirmed: Int = 0,
+    /** Hardware counter steps attributed to [day]. */
+    val counterToday: Int = 0,
+    /** Last raw cumulative counter value, or NaN when no counter sample has been seen today. */
+    val counterLastRaw: Float = Float.NaN,
+    /** Monotonic sensor timestamp (ns) of [counterLastRaw], 0 = unknown. */
+    val counterLastEventNanos: Long = 0L,
+    /** Hardware detector steps attributed to [day]. */
+    val detectorToday: Int = 0,
+    /** Monotonic sensor timestamp (ns) of the last detector event, 0 = unknown. */
+    val detectorLastEventNanos: Long = 0L,
+    /** Absolute Health Connect total for [day]. */
+    val hcToday: Int = 0,
+    /** Accelerometer estimate accumulator (already includes the baseline it started from). */
+    val estimateToday: Int = 0,
+    /** True once any real source has contributed today; keeps a fresh install from writing a zero row. */
     val initialized: Boolean = false,
-    val source: StepSource = StepSource.COUNTER,
-    val lastRawAt: Long = 0L,
-    /**
-     * How many of [todaySteps] came from the labelled motion estimate. It only ever grows while the
-     * estimate is the active source; a source switch preserves it because those steps were still
-     * walked, and a date change starts a new day at zero.
-     */
-    val estimatedStepsToday: Int = 0,
+    /** Wall-clock time of the last state update (diagnostics only). */
+    val updatedAt: Long = 0L,
 ) {
+    /** Estimated (unconfirmed) portion of [total]; derived, never stored separately in the total. */
+    val estimated: Int get() = (total - confirmed).coerceAtLeast(0)
+
+    /** True when the day contains steps that no measured/synced source confirmed. */
+    val hasEstimate: Boolean get() = estimated > 0
+
     companion object {
-        fun initial(date: String) = StepState(
-            baselineRaw = 0f,
-            todaySteps = 0,
-            baselineDate = date,
-            initialized = false,
-            source = StepSource.COUNTER,
-            lastRawAt = 0L,
-            estimatedStepsToday = 0,
-        )
+        fun initial(day: String) = StepState(day = day)
     }
 }
 
+/** Result of applying one observation: the new state plus whether the local day changed. */
 data class StepUpdate(
     val state: StepState,
-    val todaySteps: Int,
-    val rolledOver: Boolean,
+    val rolledOver: Boolean = false,
 )
 
 /**
- * Reconciles the cumulative step source with the local day.
- * Pure function so the tricky cases (first run, reboot, process death, midnight, clock rollback,
- * source switch, implausible catch-up) are unit-testable.
+ * Pure manifold arithmetic. Public constants are the plausibility policy shared with tests/docs.
  */
 object StepPipeline {
 
+    /** Fastest humanly plausible sustained cadence, used to clamp a single counter jump. */
+    const val MAX_STEPS_PER_SECOND = 6.0
+
+    /** A delta larger than `seconds * MAX_STEPS_PER_SECOND + grace` is treated as a glitch. */
+    const val CLAMP_GRACE_STEPS = 5
+
+    /** A detector event carries one step; values above this are a HAL glitch, not 10 steps. */
+    const val MAX_DETECTOR_EVENT = 10
+
+    /** Two detector events closer than this are collapsed to at most one step. */
+    const val MIN_DETECTOR_EVENT_GAP_NANOS = 100_000_000L
+
     /**
-     * Upper bound of a plausible single delta. A person cannot take more than ~4 steps per second;
-     * the small grace absorbs the batching jitter of a cumulative counter. Anything above the bound
-     * is a sensor artifact (or a counter that kept running while another source was live), not steps.
+     * v1.1 -> v1.2 state migration. The old schema kept one counter baseline plus the day total; its
+     * estimate marker was persisted only in the durable daily row (see [preserveLegacyMarker]). The
+     * migrated state therefore treats the old total as confirmed and keeps the old baseline so the
+     * next counter sample adds only its real delta. Pure so the upgrade path is unit-tested.
      */
-    private const val MAX_STEPS_PER_SECOND = 4.0
-    private const val CLAMP_GRACE_STEPS = 3
-
-    fun onSensor(
-        state: StepState,
-        raw: Float,
+    fun migrateLegacyState(
         today: String,
-        source: StepSource = state.source,
-        nowMillis: Long = 0L,
-        /**
-         * Trusted absolute totals (e.g. a Health Connect day aggregate) can legitimately jump a lot
-         * between polls, so the per-second plausibility clamp must not apply to them.
-         */
-        trusted: Boolean = false,
-    ): StepUpdate {
-        // Sensor hardware never reports non-finite values; if it does, ignore the event rather
-        // than poisoning the persisted baseline with NaN/Infinity.
-        if (!raw.isFinite()) return StepUpdate(state, state.todaySteps, rolledOver = false)
-
-        // First reading ever (fresh install or after delete-all): the source is cumulative-since-
-        // boot (or its synthetic equivalent), so it is a baseline, not progress. Keep any today total
-        // that was restored from a backup; on a genuine first run that total is already zero.
-        if (!state.initialized) {
-            val steps = state.todaySteps.coerceAtLeast(0)
-            return StepUpdate(
-                state = StepState(
-                    baselineRaw = raw,
-                    todaySteps = steps,
-                    baselineDate = today,
-                    initialized = true,
-                    source = source,
-                    lastRawAt = nowMillis,
-                    estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
-                ),
-                todaySteps = steps,
-                rolledOver = false,
-            )
-        }
-
-        // Date changed in either direction (midnight, manual clock change, time zone travel).
-        // Steps taken between the last sample and this one cannot be attributed to either day, so
-        // per spec section 3.5 they are dropped rather than inflating the new day. A source switch
-        // that happens across midnight still rolls over; today's total belongs to the old day.
-        if (today != state.baselineDate) {
-            return StepUpdate(
-                state = StepState(
-                    baselineRaw = raw,
-                    todaySteps = 0,
-                    baselineDate = today,
-                    initialized = true,
-                    source = source,
-                    lastRawAt = nowMillis,
-                    estimatedStepsToday = 0,
-                ),
-                todaySteps = 0,
-                rolledOver = true,
-            )
-        }
-
-        // Source switch (counter -> detector -> estimate or back). The new source's raw value has a
-        // different origin/scale, so it becomes the new baseline and the switch delta is dropped.
-        // The day's total is preserved: the user already walked those steps.
-        if (source != state.source) {
-            val steps = state.todaySteps.coerceAtLeast(0)
-            return StepUpdate(
-                state = StepState(
-                    baselineRaw = raw,
-                    todaySteps = steps,
-                    baselineDate = today,
-                    initialized = true,
-                    source = source,
-                    lastRawAt = nowMillis,
-                    estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
-                ),
-                todaySteps = steps,
-                rolledOver = false,
-            )
-        }
-
-        // Counter reset (reboot, sensor reset): rebase and count nothing for the lost interval.
-        val baseline = if (raw < state.baselineRaw - 1f) raw else state.baselineRaw
-        val rawDelta = (raw - baseline).coerceAtLeast(0f)
-        val plausibleDelta = if (trusted) rawDelta.toInt().coerceAtLeast(0) else clampDelta(rawDelta, state.lastRawAt, nowMillis)
-        val todaySteps = (state.todaySteps + plausibleDelta).coerceAtLeast(0)
-        val estimatedSteps = if (source == StepSource.MOTION_ESTIMATE) {
-            (state.estimatedStepsToday + plausibleDelta).coerceIn(0, todaySteps)
-        } else {
-            state.estimatedStepsToday.coerceIn(0, todaySteps)
-        }
-        return StepUpdate(
-            state = StepState(
-                baselineRaw = raw,
-                todaySteps = todaySteps,
-                baselineDate = today,
-                initialized = true,
-                source = source,
-                lastRawAt = if (nowMillis > 0L) nowMillis else state.lastRawAt,
-                estimatedStepsToday = estimatedSteps,
-            ),
-            todaySteps = todaySteps,
-            rolledOver = false,
+        legacyTotal: Int,
+        legacyBaselineRaw: Float,
+        legacyBaselineDate: String,
+        legacyInitialized: Boolean,
+    ): StepState {
+        val total = legacyTotal.coerceAtLeast(0)
+        if (!legacyInitialized && total == 0) return StepState.initial(today)
+        val raw = if (legacyBaselineRaw.isFinite()) legacyBaselineRaw else Float.NaN
+        return StepState(
+            day = legacyBaselineDate.ifEmpty { today },
+            total = total,
+            confirmed = total,
+            counterToday = if (raw.isFinite()) total else 0,
+            counterLastRaw = raw,
+            detectorToday = 0,
+            hcToday = 0,
+            estimateToday = 0,
+            initialized = legacyInitialized,
         )
     }
 
+    /** Applies one cumulative hardware-counter sample. */
+    fun onCounter(
+        state: StepState,
+        raw: Float,
+        today: String,
+        eventNanos: Long = 0L,
+        nowMillis: Long = 0L,
+    ): StepUpdate {
+        if (!raw.isFinite()) return StepUpdate(state)
+        val (base, rolled) = dayBase(state, today, nowMillis)
+        var next = base.copy(initialized = true, updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt)
+
+        // First sample of the day/process: establish the baseline, count nothing. On a fresh install
+        // this is what prevents the since-boot value from becoming today's steps.
+        if (next.counterLastRaw.isNaN()) {
+            return StepUpdate(
+                fuse(next.copy(counterLastRaw = raw, counterLastEventNanos = eventNanos.coerceAtLeast(0))),
+                rolled,
+            )
+        }
+
+        val lastRaw = next.counterLastRaw
+        val lastNanos = next.counterLastEventNanos
+
+        val delta = raw - lastRaw
+        if (delta < -1f) {
+            // Reboot, a counter reset, or a restored state from an older boot: the monotonic sensor
+            // clock also restarted, so this must be checked BEFORE the out-of-order guard below.
+            // Rebase without adding; steps already attributed today stay.
+            return StepUpdate(
+                fuse(next.copy(counterLastRaw = raw, counterLastEventNanos = eventNanos.coerceAtLeast(0))),
+                rolled,
+            )
+        }
+
+        // Out-of-order sensor delivery must not be re-applied: it would double count the same steps
+        // (a stale sample has a HIGHER raw delta, so it cannot be confused with the reboot case).
+        if (eventNanos > 0 && lastNanos > 0 && eventNanos <= lastNanos) return StepUpdate(state)
+
+        val accepted: Int
+        if (delta <= 0f) {
+            accepted = 0
+        } else {
+            val whole = delta.toInt().coerceAtLeast(0)
+            val elapsedNanos = if (eventNanos > 0 && lastNanos > 0) eventNanos - lastNanos else 0L
+            accepted = if (elapsedNanos > 0) {
+                val plausible = (elapsedNanos / 1_000_000_000.0 * MAX_STEPS_PER_SECOND).toInt() +
+                    CLAMP_GRACE_STEPS
+                min(whole, plausible)
+            } else {
+                // Timestamp unknown (first event after a restart on old state): accept the catch-up
+                // rather than drop steps. The counter aggregate is trusted; only its rate is not.
+                whole
+            }
+        }
+
+        next = next.copy(
+            counterToday = (next.counterToday + accepted).coerceAtLeast(0),
+            counterLastRaw = raw,
+            counterLastEventNanos = if (eventNanos > 0) eventNanos else lastNanos,
+        )
+        return StepUpdate(fuse(next), rolled)
+    }
+
+    /** Applies one hardware step-detector event (value is normally 1.0). */
+    fun onDetector(
+        state: StepState,
+        steps: Int,
+        today: String,
+        eventNanos: Long = 0L,
+        nowMillis: Long = 0L,
+    ): StepUpdate {
+        if (steps <= 0) return StepUpdate(state)
+        val (base, rolled) = dayBase(state, today, nowMillis)
+        var added = steps.coerceAtMost(MAX_DETECTOR_EVENT)
+        if (eventNanos > 0 && base.detectorLastEventNanos > 0 &&
+            eventNanos > base.detectorLastEventNanos &&
+            eventNanos - base.detectorLastEventNanos < MIN_DETECTOR_EVENT_GAP_NANOS
+        ) {
+            added = min(added, 1)
+        }
+        val next = base.copy(
+            detectorToday = (base.detectorToday + added).coerceAtLeast(0),
+            detectorLastEventNanos = if (eventNanos > 0) eventNanos else base.detectorLastEventNanos,
+            initialized = true,
+            updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt,
+        )
+        return StepUpdate(fuse(next), rolled)
+    }
+
     /**
-     * Reconciles an absolute daily total from a synced source (Health Connect). There is no raw
-     * counter to diff: every read already is "steps since midnight", so the stored total is raised
-     * to the external total and never lowered. That floor rule makes polls idempotent and cannot
-     * double count with an earlier estimate or sensor total.
+     * Applies estimated steps from the accelerometer. The first estimate of the day starts the
+     * accumulator at the current fused total, so estimated steps are an extension of the day, not a
+     * second count of steps already confirmed.
      */
+    fun onEstimate(
+        state: StepState,
+        steps: Int,
+        today: String,
+        nowMillis: Long = 0L,
+    ): StepUpdate {
+        if (steps <= 0) return StepUpdate(state)
+        val (base, rolled) = dayBase(state, today, nowMillis)
+        val floor = maxOf(base.total, base.confirmed)
+        val accumulator = if (base.estimateToday <= 0) floor else base.estimateToday
+        val next = base.copy(
+            estimateToday = accumulator + steps.coerceAtMost(MAX_DETECTOR_EVENT),
+            initialized = true,
+            updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt,
+        )
+        return StepUpdate(fuse(next), rolled)
+    }
+
+    /** Applies Health Connect's absolute "steps since local midnight" total as a floor. */
     fun onExternalTotal(
         state: StepState,
         totalSteps: Int,
         today: String,
-        source: StepSource = StepSource.HEALTH_CONNECT,
         nowMillis: Long = 0L,
     ): StepUpdate {
-        if (totalSteps < 0) return StepUpdate(state, state.todaySteps, rolledOver = false)
-        val external = totalSteps.coerceAtLeast(0)
-
-        if (today != state.baselineDate) {
-            return StepUpdate(
-                state = StepState(
-                    baselineRaw = external.toFloat(),
-                    todaySteps = external,
-                    baselineDate = today,
-                    initialized = true,
-                    source = source,
-                    lastRawAt = nowMillis,
-                    estimatedStepsToday = 0,
-                ),
-                todaySteps = external,
-                rolledOver = true,
-            )
-        }
-
-        val steps = maxOf(state.todaySteps.coerceAtLeast(0), external)
-        return StepUpdate(
-            state = StepState(
-                baselineRaw = external.toFloat(),
-                todaySteps = steps,
-                baselineDate = today,
-                initialized = true,
-                source = source,
-                lastRawAt = nowMillis,
-                estimatedStepsToday = state.estimatedStepsToday.coerceIn(0, steps),
-            ),
-            todaySteps = steps,
-            rolledOver = false,
+        if (totalSteps < 0) return StepUpdate(state)
+        val (base, rolled) = dayBase(state, today, nowMillis)
+        val floor = maxOf(totalSteps, 0)
+        val next = base.copy(
+            hcToday = max(base.hcToday, floor),
+            total = max(base.total, floor),
+            initialized = base.initialized || floor > 0,
+            updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt,
         )
+        return StepUpdate(fuse(next), rolled)
+    }
+
+    /** Rolls to [today] without any new evidence (service start, midnight reconcile, boot). */
+    fun reconcile(state: StepState, today: String, nowMillis: Long = 0L): StepUpdate {
+        val (base, rolled) = dayBase(state, today, nowMillis)
+        return StepUpdate(fuse(base), rolled)
     }
 
     /**
-     * Only rejects the physically impossible. With no trusted previous timestamp (fresh state,
-     * import, clock oddity) nothing is clamped, because the pipeline's job is not to police time.
-     */
-    private fun clampDelta(rawDelta: Float, lastRawAt: Long, nowMillis: Long): Int {
-        val delta = rawDelta.toInt().coerceAtLeast(0)
-        if (nowMillis <= 0L || lastRawAt <= 0L || nowMillis <= lastRawAt) return delta
-        val elapsedSeconds = (nowMillis - lastRawAt) / 1_000.0
-        val maxPlausible = (elapsedSeconds * MAX_STEPS_PER_SECOND).toInt() + CLAMP_GRACE_STEPS
-        return delta.coerceAtMost(maxPlausible)
-    }
-
-    /**
-     * The database is the durable record for a day. A process can die after persisting the state
-     * but before the row write lands, so every write resolves against what is already stored and
-     * never lowers a day's total.
+     * Max rule against the durable daily row: a row written before a crash, or restored from CSV,
+     * must never be lowered by the in-memory state.
      */
     fun resolveTodaySteps(state: StepState, dbTodaySteps: Int?): Int =
-        maxOf(state.todaySteps.coerceAtLeast(0), dbTodaySteps?.coerceAtLeast(0) ?: 0)
+        max(state.total, dbTodaySteps ?: 0).coerceAtLeast(0)
+
+    /**
+     * Marker rule: the estimated portion persisted for the row is the state's derived marker, except
+     * when the durable row is ahead of the state (CSV restore), in which case its own marker wins.
+     */
+    fun resolveEstimatedSteps(stateEstimated: Int, existingEstimated: Int?, rowIsAhead: Boolean): Int {
+        val marker = if (rowIsAhead) max(stateEstimated, existingEstimated ?: 0) else stateEstimated
+        return marker.coerceAtLeast(0)
+    }
+
+    /**
+     * v1.1 upgrade rule: the old schema never persisted the estimate marker in DataStore, so the
+     * first v1.2 write must not erase a marker that only the durable daily row carries. Preserve it
+     * only while the totals are equal and the new state has no marker of its own; as soon as new
+     * measured evidence moves the total, the normal derived-marker rule applies again.
+     */
+    fun preserveLegacyMarker(
+        marker: Int,
+        steps: Int,
+        existingSteps: Int?,
+        existingMarker: Int?,
+    ): Int {
+        if (marker > 0 || existingSteps == null || existingMarker == null) return marker
+        if (existingSteps != steps || existingMarker <= 0) return marker
+        return existingMarker.coerceIn(0, steps.coerceAtLeast(0))
+    }
+
+    /**
+     * Confirmation invariant: confirmed = max(confirmed, every confirmed ledger), and the total never
+     * falls below either the confirmed evidence or the estimate extension. [state.total] is
+     * monotonically non-decreasing within a day because the previous total is part of the max.
+     */
+    private fun fuse(state: StepState): StepState {
+        val counter = state.counterToday.coerceAtLeast(0)
+        val detector = state.detectorToday.coerceAtLeast(0)
+        val hc = state.hcToday.coerceAtLeast(0)
+        val confirmed = maxOf(state.confirmed, counter, detector, hc).coerceAtLeast(0)
+        val total = maxOf(state.total, confirmed, state.estimateToday).coerceAtLeast(0)
+        return state.copy(total = total, confirmed = confirmed)
+    }
+
+    /**
+     * Resets every ledger when the local day changes. The step delta between the last sample of
+     * yesterday and the first sample of today cannot be attributed to either day, so it is dropped
+     * (the spec rule) rather than inflating the new day.
+     */
+    private fun dayBase(state: StepState, today: String, nowMillis: Long): Pair<StepState, Boolean> {
+        if (state.day == today) return state to false
+        val rolled = state.day.isNotEmpty()
+        return StepState(day = today, updatedAt = nowMillis.coerceAtLeast(0)) to rolled
+    }
 }

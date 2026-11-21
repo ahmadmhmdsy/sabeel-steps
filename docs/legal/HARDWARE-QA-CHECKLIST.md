@@ -1,12 +1,14 @@
-# Hardware QA checklist — step-source ladder and release smoke
+# Hardware QA checklist — step manifold (v1.2) and release smoke
 
 Use this together with [BLOCKERS.md](BLOCKERS.md) B7 and [release-evidence-log.md](release-evidence-log.md).
 It is written so someone with two phones and no project context can run it and paste results back.
 
 **Status: OPEN — no physical-device run has been recorded.** The emulator can only exercise the
 labelled estimate tier and the Health Connect opt-in card (the API 36 slim image has no step counter and
-no step detector, and no watch steps to read); the measured counter → detector ladder and the Health
-Connect floor are unit-tested only.
+no step detector, and no watch steps to read); the counter+detector manifold, the reboot/catch-up
+recovery and the Health Connect floor are unit-tested only. Run **§2 Step Zero first**: if it fails,
+the counter+detector fusion claim is not trustworthy and the detector must be demoted to
+liveness-only before the remaining measured tests are meaningful.
 
 ## 0. What you need
 
@@ -28,16 +30,34 @@ APK hash.
 ## 1. Build identity to record
 
 ```powershell
-Get-FileHash dist\Sabeel-1.0-release.apk -Algorithm SHA256
-Get-FileHash dist\Sabeel-1.0-release.aab -Algorithm SHA256
+Get-FileHash dist\Sabeel-1.1-release.apk -Algorithm SHA256
+Get-FileHash dist\Sabeel-1.1-release.aab -Algorithm SHA256
 ```
 
 Paste both hashes into the results header. **If a hash does not match `dist/SHA256SUMS.txt`, stop.**
 
-## 2. Install and grant
+## 2. Step Zero — falsification test (run before A1)
+
+This is the Maestro ruling from
+[COUNCIL.md](../review/2026-11-21/step-resilience/COUNCIL.md). Use phone A (hardware counter) and a
+physical count; a second person counting is ideal.
+
+| # | Do | Expected | Result |
+|---|---|---|---|
+| Z1 | Note Home's number. Walk exactly 300 steps beside the physical counter. | Home rises by roughly the counted number. Record the raw Home delta and the counter's own delta (Diagnostics last reading) separately. | |
+| Z2 | Compare the fused app total with the physical count. | abs(appDelta - 300) / 300 <= 2% and the hardware detector's own contribution is between 90% and 110% of the counter's delta. | |
+| Z3 | Walk 100 steps on a phone where the counter is not delivering but the detector is (a detector-only phone, or a device whose counter HAL is silent) and confirm the detector is the display source. | Detector delivers 90–110 steps; Home does not show "≈"; Diagnostics source = "Phone's step detector". | |
+
+**Z3 note:** do not force-stop the app to suppress the counter (that also kills the detector). If you
+cannot produce a counter-silent device, write "not exercisable".
+
+**Decision rule:** if Z2 or Z3 misses the tolerance, record the raw numbers and demote the detector to
+liveness-only (one constant) before trusting anything else. Do not average away a failure.
+
+## 2b. Install and grant
 
 ```powershell
-adb install dist\Sabeel-1.0-release.apk
+adb install dist\Sabeel-1.1-release.apk
 adb shell pm grant com.sabeel.steps android.permission.ACTIVITY_RECOGNITION
 adb shell pm grant com.sabeel.steps android.permission.POST_NOTIFICATIONS
 # Health Connect (phone C only): the grant normally comes from the system dialog; a manual grant is
@@ -47,8 +67,10 @@ adb shell pm grant com.sabeel.steps android.permission.health.READ_STEPS
 
 Open the app, finish onboarding, choose English on phone A and Arabic on phone B (to spread locale
 coverage). Then answer one question per phone: **which source does Diagnostics name?** Expect
-"Phone's step counter" on a counter phone, "Phone's step detector" on a detector-only phone, and
-"Phone motion (estimated)" only on a phone without either measured sensor.
+"Phone's step counter" on a counter phone (the detector runs too; the counter is displayed as the
+stronger measured source), "Phone's step detector" on a detector-only phone, "Health Connect
+(synced)" when the granted floor is ahead, and "Phone motion (estimated)" only when no measured
+source is delivering and no synced floor is available.
 
 Record:
 ```powershell
@@ -60,12 +82,14 @@ adb shell dumpsys activity services com.sabeel.steps
 
 | # | Do | Expected | Result |
 |---|---|---|---|
-| A1 | Note Home steps. Close the app (keep service). Walk 100 steps with the screen off, phone in pocket. Open Home. | Steps rise by roughly 100 (phone vendors differ); Diagnostics source stays the counter and "Last sensor reading" is fresh. | |
-| A2 | In Diagnostics, read "Fallbacks today". | `None`. The Home number must **not** show "≈". | |
-| A3 | Reboot the phone, unlock, open the app. | Service restarts (BOOT_COMPLETED or the 15-min reconcile), today's total continues, no jump, source still the counter. | |
-| A4 | Force-stop the app, reopen it. | Total continues; no double count of the missing window. | |
+| A1 | Note Home steps. Close the app (keep service). Walk 100 steps with the screen off, phone in pocket. Open Home. | Steps rise by roughly 100 (phone vendors differ); Diagnostics display source stays the counter and "Last event" is fresh. | |
+| A2 | In Diagnostics, read the source switches and storage rows. | Switches stay 0 or small; the Home number must **not** show "≈"; Saving = OK. | |
+| A3 | Reboot the phone, unlock, open the app, walk 100 steps. | Service restarts (BOOT_COMPLETED or the 15-min reconcile); today's total continues; no phantom jump at reboot; the post-reboot walk counts; display source still the counter. | |
+| A4 | Force-stop the app, walk 100 steps, reopen it. | The counter catch-up is recovered: Home jumps by roughly the 100 missed steps (intended in v1.2; this differs from v1.1), no double count of before-force-stop steps. | |
 | A5 | Walk 100 steps again while another app is in front. | Home total keeps rising; notification/status stays truthful. | |
-| A6 | Cross local midnight (or set the date forward with the app open, then restore it). | Yesterday is finalised, today starts at 0, source unchanged. | |
+| A6 | Cross local midnight (or set the date forward with the app open, then restore it). | Yesterday is finalised, today starts at 0; the post-midnight delta is attributed to the new day; no negative or frozen total. | |
+| A7 | Open Diagnostics after 2+ minutes without walking. | The last-event age is shown honestly (fresh vs stale); no fake "counting" claim if the service was killed. | |
+| A8 | Kill only the app process from developer options (not force-stop), walk 100 steps, reopen. | The counter catch-up is recovered; process death alone loses nothing on a counter phone. | |
 
 Counter reset handling: if the phone reboots while walking, A3 covers the same code path (raw value
 drops → baseline reset, today's total kept). Record anything odd verbatim.
@@ -81,7 +105,9 @@ drops → baseline reset, today's total kept). Record anything odd verbatim.
 | B5 | Kill the app during a walk, reopen. | Resume offer appears, walk continues, steps do not double count. | |
 
 If phone B has a counter too, it cannot prove the detector tier; say so in the result instead of
-pretending B1 passed.
+pretending B1 passed. A detector-only phone is also the place to check that detector catch-up while
+the process was dead is **not** promised (the detector has no cumulative value): record what happens
+and do not fail it.
 
 ## 5. Estimate-only tier (only if you have a phone with no counter and no detector — or reuse the emulator)
 
@@ -113,10 +139,20 @@ detected) and skip the rest.
 
 Record the Health Connect app version and the watch/app data source in the results header.
 
-## 6. Stall and fallback, on hardware (best effort)
+## 6. Manifold-specific and stall checks, on hardware (best effort)
 
-The silence watchdog is hard to trigger deliberately on a healthy phone. Do not fake it. On a counter
-phone, these are the reachable parts:
+The manifold means there is no source switch to observe on a healthy counter phone; what matters is
+that the other sources neither double count nor freeze the day. These are reachable:
+
+| # | Do | Expected | Result |
+|---|---|---|---|
+| M1 | Install the previous release (v1.0.0) over existing data, collect a day, then install this release over it (not uninstall). | The day's total survives; a day that had estimated steps keeps the "≈" marker after the upgrade (preserved from the daily row); no negative estimate. | |
+| M2 | Compare Home with the phone's own step counter reading after a long walk. | The app total is close to the counter's since-boot delta; the detector contribution does not add on top. | |
+| M3 | Check Diagnostics after a walk on a counter phone. | Display source = counter; switches do not grow with walking; no "≈" unless the estimate had already been used. | |
+| M4 | On a Health Connect phone, let the watch sync a large total while the phone counter is lower. | Home takes the larger floor once, never sums the two; the "≈" portion shrinks if it existed. | |
+| M5 | Reboot the phone with Health Connect granted and the app stopped. | After boot/service start the HC floor is read again (or on the next open); the app does not crash and does not start a health FGS without the activity permission. | |
+
+On a counter phone, also:
 
 | # | Do | Expected | Result |
 |---|---|---|---|
@@ -134,6 +170,8 @@ Run date/time:
 Phone A: model, Android version, ABI, counter/detector present:
 Phone B: model, Android version, ABI, counter/detector present:
 Phone C: model, Android version, ABI, counter/detector present, Health Connect app version, step data source:
+Step Zero (Z1–Z3): PASS/FAIL/NOT EXERCISABLE + raw deltas:
+Manifold (M1–M5): PASS/FAIL/NOT EXERCISABLE:
 APK SHA-256:            (must equal dist/SHA256SUMS.txt)
 AAB SHA-256:            (must equal dist/SHA256SUMS.txt)
 Locale(s):

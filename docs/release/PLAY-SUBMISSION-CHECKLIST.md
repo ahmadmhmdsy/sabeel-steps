@@ -130,12 +130,17 @@ file records exactly what must be done and what evidence proves it.
       no declarations needed.
 - [ ] **4.12 Permissions declaration** — no restricted permissions are used
       beyond the FGS/health/location items above. The build declares
-      `android.permission.health.READ_STEPS` for the opt-in Health Connect tier
+      `android.permission.health.READ_STEPS` for the opt-in Health Connect read
       (runtime health permission, requested through the system Health Connect
-      screen from the Settings card; revocable there).
+      screen from the Settings card; revocable there) and the optional,
+      feature-gated `android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND`
+      so the counting service can keep reading that synced total while the app
+      is closed. Decline leaves counting unaffected.
 - [ ] **4.13 Health Connect data access form** — in the Health Connect section,
-      list Steps as read-only, describe the fallback reason (no hardware step
-      sensor), and keep the privacy policy/Data safety answers consistent.
+      list Steps as read-only, describe the fallback reason (a mixed-source
+      floor so a watch/other app's day is not missed; the app also has its own
+      sensor counting), note the optional background read, and keep the privacy
+      policy/Data safety answers consistent.
 
 ## 5. Testing tracks and rollout
 

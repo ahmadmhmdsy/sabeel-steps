@@ -4,6 +4,8 @@ Date: 2026-11-21 · Status: implementation + emulator verification complete; phy
 Companions: `docs/review/2026-11-21/step-resilience/RESEARCH.md`, `docs/review/2026-11-21/step-resilience/COUNCIL.md`.
 Supersedes the source-selection part of `docs/superpowers/plans/2026-11-19-step-source-resilience.md`; the earlier plan's HC floor, health-FGS and watchdog work stays.
 
+Status note (2026-11-22): the counting-control, restart-hardening and custom-session parts are superseded by `docs/superpowers/plans/2026-11-22-counting-control-and-custom-sessions.md` after the owner's real-phone feedback. The manifold, Health Connect floor and honesty rules here remain in force.
+
 ## Goal
 
 Replace the exclusive source ladder with a hot-standby manifold so that the day's total is never lost or double counted when any of these happen: counter stalls/resets/reboots, detector is the only live sensor, process death, FGS refusal, Health Connect grant after start, HC hung read, midnight/timezone change, storage hiccup. History and Diagnostics must show provenance and staleness instead of claiming success.

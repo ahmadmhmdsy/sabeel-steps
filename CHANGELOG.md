@@ -31,6 +31,7 @@ All notable changes to Sabeel (Android). Format: [Keep a Changelog](https://keep
 
 ### Evidence at the time
 - Final-tree gate (2026-11-23): 205 JVM tests / 0 failures / 0 skipped in 18 suites; `lintDebug` 0 errors (80 warnings, 2 hints); release APK 2,138,010 B SHA-256 `487ee9c9f7e7d0e1bbe490c4b7692c72cb83c0f8d963cf1f2a4545677a4dfe5d`; release AAB 4,608,495 B SHA-256 `ffde823d8855a7d2e8f3987156dd93124c89cf2e92894e310ba01f43a4a9fc4e`; signed with the upload key; versionCode 3 / versionName 1.3.0. Copies and checksums in `dist/`.
+- Release-signed smoke test (2026-11-23, clean API 36 emulator): the measured R8 release APK installed, completed onboarding, opened Home with counting on, started a session with both step and walk services alive, and discarded cleanly.
 - Emulator-5564 (debug build): reboot with counting ON auto-restarted the foreground service (diagnostics `Result: STARTED`, `Still counting after the check: Yes`); reboot with counting OFF stayed off; ring toggle off→on; session pause froze steps and resume preserved them; CSV/GPX exported; PLACE goal + auto-stop saved a session and posted the goal notification.
 
 ### Not released

@@ -230,7 +230,9 @@ This is supporting evidence only; the debug injector caps each broadcast at 10 d
 | Place goal + auto-stop | Add place `Home` 39.237255,-123.150032 r100; PLACE goal; auto-stop ON; `adb emu geo fix` | session auto-saved as #2 `Goal met`, WalkTrackingService stopped, goal notification `ID_SESSION_GOAL=4107` posted (`Goal reached`) |
 | Diagnostics | Settings → Why is my count low? | two boot attempts with `Result: STARTED` and `Still counting after the check: Yes`; battery optimisation reported `Restricted` on the AVD (expected — allow it on the real phone per §C) |
 
-**Not covered here:** real step-sensor accuracy (Step Zero), MIUI autostart/battery behaviour, force-stop recovery, real GPS, Android 9/10 notification differences, release-signed install, migration from a real v1.2 install.
+**Release-signed smoke test (2026-11-23, separate clean API 36 emulator):** `dist/Sabeel-1.3.0-release.apk` (the measured, R8-minified artifact) installed and launched; onboarding completed; Home opened with counting on; a session started with both `WalkTrackingService` and `StepCounterService` alive and the live screen reported `Location is recording`; discarding removed the walk service and left counting on. This proves the release build runs, but it is still not physical-device evidence.
+
+**Not covered here:** real step-sensor accuracy (Step Zero), MIUI autostart/battery behaviour, force-stop recovery, real GPS, Android 9/10 notification differences, migration from a real v1.2 install on the phone.
 
 ---
 

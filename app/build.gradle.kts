@@ -36,9 +36,9 @@ android {
         applicationId = "com.sabeel.steps"
         minSdk = 26
         targetSdk = 36
-        // First version bump (1.0.0 -> 1.1.0) for the v1.2 manifold release; required before upload.
-        versionCode = 2
-        versionName = "1.1.0"
+        // Second version bump (1.1.0 -> 1.3.0) for the v1.3 session-engine release; required before upload.
+        versionCode = 3
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

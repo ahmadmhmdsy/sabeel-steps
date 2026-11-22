@@ -1,6 +1,6 @@
 # Plan — counting control, restart hardening and custom sessions (v1.3)
 
-Date: 2026-11-22 · Status: **proposed — awaiting owner decisions; no code implemented in this turn** · Owner: lead
+Date: 2026-11-22 · Status: **implemented in v1.3.0 (versionCode 3) — owner decisions closed, Phases 0–4 built and emulator-verified; physical Redmi Note 7 evidence still pending** · Owner: lead
 Companions: `docs/review/2026-11-22/restart-toggle-sessions/RESEARCH.md`, `docs/review/2026-11-22/restart-toggle-sessions/COUNCIL.md`.
 Supersedes the UI/recovery assumptions of `docs/superpowers/plans/2026-11-21-step-manifold-resilience.md` for the counting control and session feature; the v1.2 manifold, Health Connect floor and honesty rules stay in force.
 This document is the updated plan requested by the owner. It records what was found, what the council ruled, what will be built, in what order, and what remains an owner decision.
@@ -250,7 +250,7 @@ Extend `StatusStore` + `DiagnosticsScreen` with:
 | Data loss on uninstall/backup off | User loses history | CSV daily + sessions export; documented |
 | Scope too large for one release | Delay | Phase 1 first (control/boot/diagnostics), Phase 2 sessions, Phase 3 places/polish |
 
-## 11. Open owner decisions
+## 11. Owner decisions (answered 2026-11-22)
 
 1. Phone model/OEM/Android version; is adb available for the Step Zero log?
 2. Streak rule for a user-off day: rest-like exclusion (recommended) vs break the streak.
@@ -262,6 +262,8 @@ Extend `StatusStore` + `DiagnosticsScreen` with:
 8. CTA naming: "Start a session" / "ابدأ جلسة" (recommended) vs keep "Start walking".
 9. Ship Phase 1 (control/boot/diagnostics) first as a small update, or hold everything for one v1.3 release?
 10. Version label: v1.3.0 / versionCode 3 (recommended) vs another number.
+
+**Answers:** (1) Xiaomi Redmi Note 7, Android 11/MIUI; adb available via the owner. (2) Rest-like day. (3) Auto-enable on confirm. (4) Saved coordinate + radius; the owner additionally asked for a map/walk-move UX — deferred honestly (no INTERNET; Canvas sketch + external Maps + GPX for now). (5) Notify only by default, optional auto-stop default off. (6) One active session. (7) Pause the session (decided in implementation: the session stays paused with the global toggle off; the ring is the authority). (8) "Start a session" / "ابدأ جلسة". (9) One v1.3 release with all phases. (10) 1.3.0 / versionCode 3.
 
 ## 12. Definition of done
 
@@ -278,3 +280,9 @@ Extend `StatusStore` + `DiagnosticsScreen` with:
 ## 13. Status log
 
 - 2026-11-22: research + council complete; this plan proposed; no code changed. Awaiting owner answers to §11 and Phase 0 evidence.
+- 2026-11-22: owner answered §11 — Redmi Note 7 / Android 11 (MIUI): streak user-off day = rest-like; session while global off = prompt then auto-enable; places = saved coordinate + radius (map UX deferred); goal = notify only by default, optional auto-stop (default off); one active session; CTA "Start a session" / "ابدأ جلسة"; do all phases, emulator first.
+- 2026-11-22: Phases 0–4 implemented: counting authority + boot hardening + ring toggle + diagnostics (tasks 13/14), Room v3 + session domain/projection + setup/live/history UI (15/16/17), places/presets/SessionExportIo + SAF CSV/GPX UI (18/21/22), Play/claims/docs pack (19). Full JVM suite green.
+- 2026-11-22: emulator-5564 evidence — reboot with counting ON auto-restarted StepCounterService (BOOT_COMPLETED STARTED, "Still counting after the check: Yes", two boots); reboot with counting OFF did not start it and Home shows counting off; ring toggle off→on and off; session start with counting off prompts and auto-enables counting; session pause froze steps at 40, resume preserved 40 (later 50), saved session #1 with 50 steps/35 m; History CSV export wrote 18-column file; per-session GPX wrote valid track; Add place (Home 39.237255,-123.150032 r100) + PLACE goal + auto-stop saved session #2 "Goal met" and posted goal notification (id 4107); diagnostics shows boot attempts and battery restricted.
+- 2026-11-22: fixes found by this run — pause/resume no longer resets session steps (pre-pause segment merged into legs, covered by unit tests); pause no longer offers a bogus location-permission action on the live screen (GPS correctly reports inactive).
+- 2026-11-23: final gate green on the final tree (task-20): 205 tests / 18 suites / 0 failures, lint 0 errors (80 warnings, 2 hints), `assembleDebug`+`assembleRelease`+`bundleRelease` BUILD SUCCESSFUL. Measured artifacts: release APK 2,138,010 B SHA-256 `487ee9c9…7a4dfe5d`, AAB 4,608,495 B `ffde823d…a4a9fc4e`, versionCode 3 / name 1.3.0, upload-key cert `7b12ad6b…6152d`; merged manifest audit confirms no INTERNET/background location/battery exemption and boot receiver only BOOT_COMPLETED + MY_PACKAGE_REPLACED; Room v3 schema package verified. Copies in `dist/` with `SHA256SUMS.txt`.
+- 2026-11-23: pending — physical Redmi Note 7 Step Zero/3 cold boots (TEST-XIAOMI.md), hosted privacy policy + rebuild with `-Psabeel.privacyPolicyUrl` before Play upload, native Arabic review, owner Play-account/testing gate. Emulator evidence is recorded in TEST-XIAOMI §N.1.

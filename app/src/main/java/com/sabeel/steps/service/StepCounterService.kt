@@ -22,6 +22,8 @@ import com.sabeel.steps.domain.MotionStepDetector
 import com.sabeel.steps.domain.SilenceWatchdog
 import com.sabeel.steps.domain.StepPipeline
 import com.sabeel.steps.domain.StepSource
+import com.sabeel.steps.domain.StepState
+import com.sabeel.steps.platform.CountingStore
 import com.sabeel.steps.platform.HealthConnect
 import com.sabeel.steps.platform.Notifications
 import com.sabeel.steps.platform.Permissions
@@ -77,6 +79,13 @@ import kotlinx.coroutines.withTimeoutOrNull
 class StepCounterService : Service(), SensorEventListener {
 
     private enum class Mode { COUNTING, NO_PERMISSION, NO_SENSOR }
+
+    /**
+     * Outcome of [ensureStarted]. STARTED means "the platform accepted the foreground-service
+     * request"; the instance can still stand down later (permission race), which is why boot
+     * attempts also carry an aliveAfterCheck from [com.sabeel.steps.platform.BootHealthWorker].
+     */
+    enum class StartResult { STARTED, DISABLED, NO_PERMISSION, NO_SENSOR, REFUSED }
 
     private val app: SabeelApp get() = application as SabeelApp
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -140,6 +149,14 @@ class StepCounterService : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
         try {
+            // The user's intent is the first gate, written before any action: a START_STICKY
+            // restart after a deliberate stop must never resurrect the service (the service never
+            // self-enables). No foreground start happens here, so stopSelf() is legal.
+            if (!countingIntended()) {
+                runCatching { StatusStore.mark(this, StepServiceStatus.OFF_BY_USER) }
+                stopSelf()
+                return
+            }
             initialize()
         } catch (e: Exception) {
             // An unexpected failure during startup must degrade, never crash-loop the process.
@@ -213,6 +230,10 @@ class StepCounterService : Service(), SensorEventListener {
         runCatching {
             app.container.steps.reconcile(activeMinutesToday = cadence.activeMinutesFor(today))
         }
+        // A deliberate pause ended: rebase explicitly instead of letting the counter catch-up path
+        // count the paused gap. Runs after reconcile (so today's persisted state is current) and
+        // before the writer/sensors start (so the first sample can never look like new evidence).
+        maybeResumeAfterPause()
         // Phones with no measured sensor estimate continuously; the estimate is always labelled.
         if (counterSensor == null && detectorSensor == null && accelerometerSensor != null) {
             withContext(Dispatchers.Main) { enableEstimate(continuous = true) }
@@ -228,8 +249,20 @@ class StepCounterService : Service(), SensorEventListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP) {
+            // Explicit stop from the controller/UI. The controller has already persisted the off
+            // intent; onDestroy writes the pause baseline and marks OFF_BY_USER.
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (blocked) {
             markBlockedStatus()
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        if (!countingIntended()) {
+            // A sticky restart or a late start after the user turned counting off: stand down.
+            runCatching { StatusStore.mark(this, StepServiceStatus.OFF_BY_USER) }
             stopSelf()
             return START_NOT_STICKY
         }
@@ -240,6 +273,12 @@ class StepCounterService : Service(), SensorEventListener {
             }
             refreshHealthConnect()
             if (seeded) {
+                // A fast off->on toggle can land before the stop was processed: the instance is still
+                // alive with a pending pause marker, so run the explicit resume now instead of letting
+                // the live counter sample be read as a paused-gap catch-up.
+                if (countingIntended() && pausedMarkerPresent()) {
+                    scope.launch { maybeResumeAfterPause() }
+                }
                 // A grant made after the service started, or a registration that failed earlier,
                 // must take effect without waiting for a process death.
                 ensureMeasuredRegistrations()
@@ -330,7 +369,16 @@ class StepCounterService : Service(), SensorEventListener {
             detectorRegistered = false
             accelerometerRegistered = false
             flushPendingOnDestroy()
-            if (!eraseInProgress && mode == Mode.COUNTING) StatusStore.markStopped(this)
+            when {
+                eraseInProgress -> Unit // delete-all owns the state; nothing to report.
+                !countingIntended() -> {
+                    // Deliberate stop: freeze the manifold baselines while the last saved evidence is
+                    // current, so the next start resumes with delta 0 instead of counting the gap.
+                    runCatching { flushPauseOnStop() }
+                    runCatching { StatusStore.mark(this, StepServiceStatus.OFF_BY_USER) }
+                }
+                mode == Mode.COUNTING -> StatusStore.markStopped(this)
+            }
         } catch (ignored: Exception) {
             // Teardown must never throw.
         } finally {
@@ -755,6 +803,70 @@ class StepCounterService : Service(), SensorEventListener {
         row?.let { maybeNotifyGoal(it.steps, it.estimatedSteps > 0) }
     }
 
+    /**
+     * Persists the frozen manifold at a deliberate stop: totals stay, evidence baselines drop and
+     * Health Connect is suppressed until the resume baseline (or midnight) is known. Bounded and
+     * synchronous by design — onDestroy cannot await a coroutine, and losing this write would let the
+     * next start read the paused gap as measured steps. [flushPendingOnDestroy] ran first, so this
+     * reads the state that just saved the last real evidence.
+     */
+    private fun flushPauseOnStop() {
+        val now = System.currentTimeMillis()
+        val today = DateKey.today(now)
+        runBlocking {
+            withTimeoutOrNull(PAUSE_FLUSH_TIMEOUT_MS) {
+                try {
+                    writeMutex.withLock {
+                        val stored = app.container.settings.readStepState(today)
+                        app.container.settings.writeStepState(StepPipeline.pause(stored, now))
+                    }
+                } catch (ignored: Exception) {
+                    // A failed pause write is not fatal: CountingStore.pausedAt still forces the
+                    // explicit resume path, which rebases both baselines from scratch.
+                }
+            }
+        }
+    }
+
+    /**
+     * Explicit resume after a deliberate pause (council A4). The raw counter value is not known
+     * while the sensors are unregistered, so a NaN baseline is passed when no sample is pending;
+     * the first real sample then only rebases, never adds the paused gap. Health Connect restarts
+     * from the provider's current total, or is suppressed until midnight when it cannot answer.
+     */
+    private suspend fun maybeResumeAfterPause() {
+        if (!pausedMarkerPresent()) return
+        writeMutex.withLock { resumePausedLocked() }
+    }
+
+    private suspend fun resumePausedLocked() {
+        val now = System.currentTimeMillis()
+        val today = DateKey.today(now)
+        val stored: StepState = runCatching { app.container.settings.readStepState(today) }
+            .getOrNull() ?: StepState(day = today)
+        val hcReading = runCatching { HealthConnect.readToday(this, now)?.steps }.getOrNull()
+        val raw = synchronized(pendingLock) { pendingCounterRaw } ?: Float.NaN
+        val resumed = StepPipeline.resume(stored, raw, today, hcReading, now)
+        runCatching { app.container.settings.writeStepState(resumed) }
+        // Consume the pending counter sample: it was used only as a baseline, never as a delta.
+        synchronized(pendingLock) {
+            pendingCounterRaw = null
+            pendingCounterNanos = 0L
+            pendingDetectorSteps = 0
+            pendingDetectorNanos = 0L
+            pendingEstimateSteps = 0
+        }
+        estimateDetector.reset()
+        if (hcReading != null && hcReading >= 0) hcLastTotal = hcReading
+        runCatching { CountingStore.get(this).clearPaused() }
+    }
+
+    private fun pausedMarkerPresent(): Boolean =
+        runCatching { CountingStore.get(this).current().pausedAt > 0L }.getOrDefault(false)
+
+    private fun countingIntended(): Boolean =
+        runCatching { CountingStore.get(this).current().enabled }.getOrDefault(true)
+
     private fun maybeNotifyGoal(steps: Int, estimated: Boolean) {
         if (steps < goalSteps) return
         runCatching { Notifications.notifyGoalReached(this, steps, goalSteps, estimated) }
@@ -852,6 +964,9 @@ class StepCounterService : Service(), SensorEventListener {
         private const val PROBE_MIN_STEPS = 2
         private const val ESTIMATE_STALL_MS = 5 * 60_000L
 
+        /** Bounded synchronous pause-baseline write during onDestroy. */
+        private const val PAUSE_FLUSH_TIMEOUT_MS = 600L
+
         /** Used by the UI to distinguish "service instance alive in this process" from a stale mark. */
         @Volatile var runningInstance: Boolean = false
             private set
@@ -861,31 +976,47 @@ class StepCounterService : Service(), SensorEventListener {
 
         const val ACTION_FLUSH = "com.sabeel.steps.action.FLUSH"
 
+        /** Explicit user stop; the controller persists the off intent before sending this. */
+        const val ACTION_STOP = "com.sabeel.steps.action.STOP"
+
+        /** Explicit re-arm after the user turned counting back on. */
+        const val ACTION_START = "com.sabeel.steps.action.START"
+
         /**
          * Starts the step service only when it can legally and usefully run.
          *
-         * @return false when ACTIVITY_RECOGNITION or every counting source is missing, or when the
-         * platform refuses the start. Never throws: callers include onboarding, app-open and boot
-         * entry points where a crash is unacceptable.
+         * Checks the persisted user intent first (the service never self-enables), then the Android
+         * preconditions. Never throws: callers include onboarding, app-open and boot entry points
+         * where a crash is unacceptable. Every outcome is persisted so Diagnostics can show why the
+         * last start did not count.
          */
-        fun ensureStarted(context: Context): Boolean {
+        fun ensureStarted(context: Context): StartResult {
             val appContext = context.applicationContext
-            if (!Permissions.hasActivityRecognition(appContext)) {
-                StatusStore.mark(appContext, StepServiceStatus.NO_PERMISSION)
-                return false
-            }
-            if (!StepSensors.hasAny(appContext) && !HealthConnect.isReady(appContext)) {
-                StatusStore.mark(appContext, StepServiceStatus.NO_SENSOR)
-                return false
-            }
-            return runCatching {
+            val result = runCatching {
+                if (!CountingStore.get(appContext).current().enabled) {
+                    StatusStore.mark(appContext, StepServiceStatus.OFF_BY_USER)
+                    return@runCatching StartResult.DISABLED
+                }
+                if (!Permissions.hasActivityRecognition(appContext)) {
+                    StatusStore.mark(appContext, StepServiceStatus.NO_PERMISSION)
+                    return@runCatching StartResult.NO_PERMISSION
+                }
+                if (!StepSensors.hasAny(appContext) && !HealthConnect.isReady(appContext)) {
+                    StatusStore.mark(appContext, StepServiceStatus.NO_SENSOR)
+                    return@runCatching StartResult.NO_SENSOR
+                }
                 ContextCompat.startForegroundService(
                     appContext,
                     Intent(appContext, StepCounterService::class.java),
                 )
-                true
-            }.getOrDefault(false)
+                StartResult.STARTED
+            }.getOrDefault(StartResult.REFUSED)
+            runCatching { StatusStore.recordStartResult(appContext, result.name) }
+            return result
         }
+
+        /** The user turned counting back on: the same guarded start, with an explicit outcome. */
+        fun requestStart(context: Context): StartResult = ensureStarted(context)
 
         /** Asks the running service to flush the hardware FIFO and persist immediately (app open). */
         fun requestFlush(context: Context) {
@@ -896,6 +1027,21 @@ class StepCounterService : Service(), SensorEventListener {
                 )
             }
         }
+
+        /**
+         * Stops the service for a deliberate off toggle. The caller has already persisted the off
+         * intent (write-before-act); onDestroy then writes the pause baseline and marks OFF_BY_USER.
+         * stopService is used instead of an ACTION_STOP start because it is always legal, even when
+         * the app is in the background.
+         */
+        fun requestStop(context: Context) {
+            val appContext = context.applicationContext
+            runCatching { StatusStore.mark(appContext, StepServiceStatus.OFF_BY_USER) }
+            runCatching { appContext.stopService(Intent(appContext, StepCounterService::class.java)) }
+        }
+
+        /** True while delete-all is suppressing service writes. */
+        fun isEraseInProgress(): Boolean = eraseInProgress
 
         /** Suppresses every pending/queued service write while delete-all wipes the database. */
         fun beginErase() {

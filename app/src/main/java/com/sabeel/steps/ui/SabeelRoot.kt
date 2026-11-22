@@ -10,8 +10,10 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,8 +33,8 @@ import androidx.navigation.compose.rememberNavController
 import com.sabeel.steps.AppContainer
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.platform.CountingStore
 import com.sabeel.steps.platform.Notifications
-import com.sabeel.steps.service.StepCounterService
 import com.sabeel.steps.ui.components.LoadingScreen
 import com.sabeel.steps.ui.i18n.AppLocale
 import com.sabeel.steps.ui.screens.AboutScreen
@@ -42,6 +44,8 @@ import com.sabeel.steps.ui.screens.HomeScreen
 import com.sabeel.steps.ui.screens.InsightsScreen
 import com.sabeel.steps.ui.screens.OnboardingScreen
 import com.sabeel.steps.ui.screens.PrivacyScreen
+import com.sabeel.steps.ui.screens.SessionRoutes
+import com.sabeel.steps.ui.screens.SessionSetupScreen
 import com.sabeel.steps.ui.screens.SettingsScreen
 import com.sabeel.steps.ui.screens.WalkScreen
 import com.sabeel.steps.ui.viewmodel.AppViewModel
@@ -90,10 +94,10 @@ fun SabeelRoot(container: AppContainer) {
     // returns false and the Home status card explains why) and never wakes a service that is running.
     LifecycleResumeEffect(appState.onboardingDone) {
         if (appState.onboardingDone) {
-            StepCounterService.ensureStarted(app)
-            // Flush the hardware FIFO and the pending snapshot now: the app being open is the one
-            // moment where a delayed sensor delivery can be recovered without guessing.
-            if (StepCounterService.runningInstance) StepCounterService.requestFlush(app)
+            // Reconcile the persisted intent with the service: start when the user left counting on,
+            // stop when they left it off. The controller re-checks the flag after every action, so a
+            // rapid off/on cannot leave a zombie service behind.
+            container.countingController.syncOnAppOpen()
             Notifications.ensureChannels(AppLocale.wrap(context))
         }
         onPauseOrDispose { }
@@ -102,6 +106,29 @@ fun SabeelRoot(container: AppContainer) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val countingState by container.counting.state.collectAsStateWithLifecycle()
+    val countingOffSnack = stringResource(R.string.counting_off_snack)
+    val countingOnSnack = stringResource(R.string.counting_on_snack)
+    val undoLabel = stringResource(R.string.undo)
+    // The ring/pill/Settings switch all dispatch this: persist the new intent first, then offer a
+    // 5 s Undo. Undo only wins when the user has not toggled again meanwhile (the controller is the
+    // source of truth, not the value captured when the snackbar appeared).
+    val toggleCountingWithUndo: () -> Unit = {
+        val previous = container.counting.current().enabled
+        container.countingController.setEnabled(!previous, CountingStore.REASON_USER)
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = if (previous) countingOffSnack else countingOnSnack,
+                actionLabel = undoLabel,
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed &&
+                container.counting.current().enabled != previous
+            ) {
+                container.countingController.setEnabled(previous, CountingStore.REASON_USER)
+            }
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = tabs.any { it.route == currentRoute }
@@ -154,6 +181,9 @@ fun SabeelRoot(container: AppContainer) {
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
                     onFinished = {
+                        // Onboarding completion is the one explicit moment the default-on intent
+                        // becomes an explicit on intent; the controller persists it before acting.
+                        container.countingController.markOnboardingDone()
                         navController.navigate(Routes.HOME) {
                             popUpTo(0) { inclusive = true }
                         }
@@ -162,16 +192,29 @@ fun SabeelRoot(container: AppContainer) {
             }
             composable(Routes.HOME) {
                 HomeScreen(
-                    onStartWalk = { navController.navigate(Routes.WALK) },
+                    onStartWalk = { navController.navigate(SessionRoutes.SETUP) },
                     onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) },
+                    countingEnabled = countingState.enabled,
+                    onToggleCounting = toggleCountingWithUndo,
                 )
             }
             composable(Routes.HISTORY) { HistoryScreen() }
             composable(Routes.INSIGHTS) { InsightsScreen() }
-            composable(Routes.WALK) {
+            composable(SessionRoutes.SETUP) {
+                SessionSetupScreen(
+                    onBack = { navController.popBackStack() },
+                    onSessionStarted = {
+                        navController.navigate(SessionRoutes.LIVE) {
+                            popUpTo(SessionRoutes.SETUP) { inclusive = true }
+                        }
+                    },
+                )
+            }
+            composable(SessionRoutes.LIVE) {
                 WalkScreen(
                     onBack = { navController.popBackStack() },
                     onDone = { navController.popBackStack() },
+                    onStartSetup = { navController.navigate(SessionRoutes.SETUP) },
                 )
             }
             composable(Routes.SETTINGS) {
@@ -180,6 +223,9 @@ fun SabeelRoot(container: AppContainer) {
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) },
                     onDeletedAll = {
+                        // Delete-all is a fresh start: the counting intent is reset too, and
+                        // onboarding re-enables it explicitly on completion.
+                        container.countingController.setEnabled(false, CountingStore.REASON_USER)
                         navController.navigate(Routes.ONBOARDING) {
                             popUpTo(0) { inclusive = true }
                         }
@@ -187,6 +233,8 @@ fun SabeelRoot(container: AppContainer) {
                     onMessage = { message ->
                         scope.launch { snackbarHostState.showSnackbar(message) }
                     },
+                    countingEnabled = countingState.enabled,
+                    onToggleCounting = toggleCountingWithUndo,
                 )
             }
             composable(Routes.PRIVACY) {

@@ -43,6 +43,16 @@ data class StepState(
     val detectorLastEventNanos: Long = 0L,
     /** Absolute Health Connect total for [day]. */
     val hcToday: Int = 0,
+    /**
+     * Same-day Health Connect baseline captured when counting was resumed; the provider total is
+     * applied as `total - hcOffsetToday` so steps taken while counting was off are never backfilled.
+     */
+    val hcOffsetToday: Int = 0,
+    /**
+     * True when the Health Connect floor must be ignored until the next local midnight because no
+     * same-day baseline exists (for example HC was granted only after the pause started).
+     */
+    val hcSuppressedForDay: Boolean = false,
     /** Accelerometer estimate accumulator (already includes the baseline it started from). */
     val estimateToday: Int = 0,
     /** True once any real source has contributed today; keeps a fresh install from writing a zero row. */
@@ -226,7 +236,14 @@ object StepPipeline {
         return StepUpdate(fuse(next), rolled)
     }
 
-    /** Applies Health Connect's absolute "steps since local midnight" total as a floor. */
+    /**
+     * Applies Health Connect's absolute "steps since local midnight" total as a floor, after
+     * removing the same-day baseline captured at resume ([StepState.hcOffsetToday]). While
+     * [StepState.hcSuppressedForDay] is set the floor is ignored: subtracting an unknown paused
+     * baseline is impossible, and applying the raw total would retroactively add every step taken
+     * while counting was off. The suppression clears on the next local midnight (a fresh day has a
+     * fresh provider total and no paused gap inside it).
+     */
     fun onExternalTotal(
         state: StepState,
         totalSteps: Int,
@@ -235,7 +252,8 @@ object StepPipeline {
     ): StepUpdate {
         if (totalSteps < 0) return StepUpdate(state)
         val (base, rolled) = dayBase(state, today, nowMillis)
-        val floor = maxOf(totalSteps, 0)
+        if (base.hcSuppressedForDay) return StepUpdate(fuse(base), rolled)
+        val floor = (totalSteps - base.hcOffsetToday).coerceAtLeast(0)
         val next = base.copy(
             hcToday = max(base.hcToday, floor),
             total = max(base.total, floor),
@@ -243,6 +261,63 @@ object StepPipeline {
             updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt,
         )
         return StepUpdate(fuse(next), rolled)
+    }
+
+    /**
+     * Freezes the manifold when the user deliberately stops counting.
+     *
+     * Every day total is history and is kept as-is; only the *evidence baselines* are dropped so
+     * the next samples can never be interpreted as steps taken while counting was off:
+     *  - the cumulative counter baseline becomes NaN (the same rule as a fresh install), so the
+     *    first sample after [resume] only rebases and adds nothing;
+     *  - detector/event timestamps are cleared (the sensors are unregistered while paused);
+     *  - the Health Connect floor is suppressed until [resume] supplies a same-day baseline or the
+     *    local day rolls over.
+     *
+     * [StepState.total], [StepState.confirmed], the per-source ledgers and the estimate marker are
+     * deliberately preserved: nothing already reported as today's steps may disappear from Home.
+     */
+    fun pause(state: StepState, nowMillis: Long = 0L): StepState = state.copy(
+        counterLastRaw = Float.NaN,
+        counterLastEventNanos = 0L,
+        detectorLastEventNanos = 0L,
+        hcSuppressedForDay = true,
+        updatedAt = if (nowMillis > 0) nowMillis else state.updatedAt,
+    )
+
+    /**
+     * Explicit resume entry point (never routed through [onCounter], whose permissive catch-up path
+     * would count the paused gap as measured evidence).
+     *
+     * The counter is rebased to [raw] with a delta of 0; a non-finite [raw] (no sensor sample yet)
+     * leaves the NaN baseline in place so the first real sample still only rebases. The detector and
+     * estimate ledgers continue from the values pause preserved (their sensors were unregistered, so
+     * no off-period events exist to backfill). Health Connect restarts from [hcReading] when the
+     * provider answered (>= 0): later provider totals are reduced by that baseline. With no same-day
+     * reading the floor is suppressed until midnight rather than guessed.
+     *
+     * [dayBase] runs first, so a resume after midnight rolls to the new day with zero and the frozen
+     * old row is untouched.
+     */
+    fun resume(
+        state: StepState,
+        raw: Float,
+        today: String,
+        hcReading: Int?,
+        nowMillis: Long = 0L,
+    ): StepState {
+        val (base, _) = dayBase(state, today, nowMillis)
+        val hasHcBaseline = hcReading != null && hcReading >= 0
+        val next = base.copy(
+            counterLastRaw = if (raw.isFinite()) raw else Float.NaN,
+            counterLastEventNanos = 0L,
+            detectorLastEventNanos = 0L,
+            hcToday = 0,
+            hcOffsetToday = if (hasHcBaseline) hcReading!! else 0,
+            hcSuppressedForDay = !hasHcBaseline,
+            updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt,
+        )
+        return fuse(next)
     }
 
     /** Rolls to [today] without any new evidence (service start, midnight reconcile, boot). */
@@ -301,7 +376,9 @@ object StepPipeline {
     /**
      * Resets every ledger when the local day changes. The step delta between the last sample of
      * yesterday and the first sample of today cannot be attributed to either day, so it is dropped
-     * (the spec rule) rather than inflating the new day.
+     * (the spec rule) rather than inflating the new day. A new day also clears the pause/resume
+     * Health Connect bookkeeping: there is no paused gap inside the new provider day, so a fresh
+     * (zero) baseline is correct and suppression must not leak across midnight.
      */
     private fun dayBase(state: StepState, today: String, nowMillis: Long): Pair<StepState, Boolean> {
         if (state.day == today) return state to false

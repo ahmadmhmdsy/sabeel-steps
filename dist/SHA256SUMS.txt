@@ -1,3 +1,6 @@
 117b51fd7d120500ebcbaf5781b0e62446c7da13eeff432eb2ae9014b89714dc  Sabeel-1.1-debug.apk
 00088fdc172cfafe17bc7ab90d112250d30ea2bae5ca1ef3de95f5cdbe518de1  Sabeel-1.1-release.apk
 92d4e5da2bb2054b8156b88a2b8fee40335831e1ed0b0594f2aca526982f33ab  Sabeel-1.1-release.aab
+487ee9c9f7e7d0e1bbe490c4b7692c72cb83c0f8d963cf1f2a4545677a4dfe5d  Sabeel-1.3.0-release.apk
+ffde823d8855a7d2e8f3987156dd93124c89cf2e92894e310ba01f43a4a9fc4e  Sabeel-1.3.0-release.aab
+a61444db33db63971642fc53af4795bb48e19d16c3c7f8dce3614b43facd1fbf  Sabeel-1.3.0-debug.apk

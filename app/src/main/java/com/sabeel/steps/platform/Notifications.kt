@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -40,11 +41,15 @@ object Notifications {
     const val ID_GOAL = 4103
     const val ID_REMINDER = 4104
     const val ID_COUNTING_PAUSED = 4105
+    const val ID_RECOVERY = 4106
+    const val ID_SESSION_GOAL = 4107
 
     private const val PREFS = "sabeel_notifications"
     private const val KEY_GOAL_NOTIFIED_DATE = "goal_notified_date"
     private const val KEY_PAUSED_NOTIFIED_AT = "paused_notified_at"
+    private const val KEY_RECOVERY_BOOT_EPOCH = "recovery_boot_epoch"
     private const val PAUSED_REMINDER_INTERVAL_MS = 12 * 60 * 60 * 1000L
+    private const val BOOT_EPOCH_TOLERANCE_MS = 5 * 60 * 1000L
     private const val ACCENT_COLOR = 0xFF0F6B5C.toInt()
 
     /**
@@ -111,14 +116,23 @@ object Notifications {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
 
-    /** Foreground notification of the walk service, with a Stop action. */
+    /**
+     * Foreground notification of the walk service, with a Pause/Resume action and a Stop action.
+     *
+     * [paused] only chooses the action label and icon tint; the action itself is built by the
+     * service so it always carries the current target action. The action is optional so a caller that
+     * has no service entry point (or a future non-session walk) can still post a valid notification.
+     */
     fun walkNotification(
         context: Context,
         title: String,
         text: String,
         stopAction: PendingIntent,
-    ): Notification =
-        NotificationCompat.Builder(context, CHANNEL_STEPS)
+        pauseAction: PendingIntent? = null,
+        paused: Boolean = false,
+    ): Notification {
+        val localized = AppLocale.wrap(context)
+        val builder = NotificationCompat.Builder(context, CHANNEL_STEPS)
             .setSmallIcon(R.drawable.ic_stat_steps)
             .setColor(ACCENT_COLOR)
             .setContentTitle(title)
@@ -129,12 +143,54 @@ object Notifications {
             .setShowWhen(false)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .addAction(
+        if (pauseAction != null) {
+            builder.addAction(
                 R.drawable.ic_stat_steps,
-                AppLocale.wrap(context).getString(R.string.sensor_notif_walk_stop),
-                stopAction,
+                localized.getString(if (paused) R.string.session_resume else R.string.session_pause),
+                pauseAction,
             )
+        }
+        builder.addAction(
+            R.drawable.ic_stat_steps,
+            localized.getString(R.string.sensor_notif_walk_stop),
+            stopAction,
+        )
+        return builder.build()
+    }
+
+    /**
+     * One-shot notification when the active session reaches its goal. The service latches the first
+     * reach per session and stays silent afterwards; this method itself has no once-per-day state, so a
+     * user who starts a new session may be told about the new goal.
+     *
+     * Permission- and channel-gated exactly like the other optional notifications: a denied permission
+     * or a disabled goal channel simply skips the post, and the foreground notification still shows the
+     * reached marker.
+     *
+     * @return true when the notification was actually posted now.
+     */
+    @Synchronized
+    fun notifySessionGoalReached(context: Context): Boolean {
+        if (!Permissions.hasNotifications(context)) return false
+        ensureChannels(context)
+        if (isChannelOff(context, CHANNEL_GOAL)) return false
+        val localized = AppLocale.wrap(context)
+        val title = localized.getString(R.string.session_goal_met)
+        val text = localized.getString(R.string.session_goal_met_body)
+        val notification = NotificationCompat.Builder(context, CHANNEL_GOAL)
+            .setSmallIcon(R.drawable.ic_stat_steps)
+            .setColor(ACCENT_COLOR)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(openAppIntent(context))
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
+        return post(context, ID_SESSION_GOAL, notification)
+    }
 
     /**
      * Posts the "daily goal reached" notification at most once per local day.
@@ -220,6 +276,45 @@ object Notifications {
         if (posted) {
             prefs.edit().putLong(KEY_PAUSED_NOTIFIED_AT, System.currentTimeMillis()).apply()
         }
+        return posted
+    }
+
+    /**
+     * The boot-recovery nudge: counting is meant to run but the service is not alive after boot.
+     *
+     * At most once per boot epoch (wall clock minus uptime, with a small tolerance for clock
+     * corrections), so a worker retry cannot spam the shade. Tapping it opens the app, which is one
+     * of the allowed paths for starting the health foreground service again.
+     *
+     * @return true when a notification was actually posted now.
+     */
+    @Synchronized
+    fun notifyRecoveryNeeded(context: Context): Boolean {
+        if (!Permissions.hasNotifications(context)) return false
+        ensureChannels(context)
+        if (isChannelOff(context, CHANNEL_STEPS)) return false
+        val prefs = prefs(context)
+        val bootEpoch = System.currentTimeMillis() - SystemClock.elapsedRealtime()
+        val last = prefs.getLong(KEY_RECOVERY_BOOT_EPOCH, 0L)
+        if (last > 0L && kotlin.math.abs(bootEpoch - last) < BOOT_EPOCH_TOLERANCE_MS) return false
+        val localized = AppLocale.wrap(context)
+        val notification = NotificationCompat.Builder(context, CHANNEL_STEPS)
+            .setSmallIcon(R.drawable.ic_stat_steps)
+            .setColor(ACCENT_COLOR)
+            .setContentTitle(localized.getString(R.string.sensor_notif_paused_title))
+            .setContentText(localized.getString(R.string.sensor_notif_paused_text))
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(localized.getString(R.string.sensor_notif_paused_text)),
+            )
+            .setContentIntent(openAppIntent(context))
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        val posted = post(context, ID_RECOVERY, notification)
+        if (posted) prefs.edit().putLong(KEY_RECOVERY_BOOT_EPOCH, bootEpoch).apply()
         return posted
     }
 

@@ -2,6 +2,9 @@ package com.sabeel.steps.service
 
 import android.content.Context
 import com.sabeel.steps.domain.RoutePoint
+import com.sabeel.steps.domain.session.ActivityType
+import com.sabeel.steps.domain.session.GoalType
+import com.sabeel.steps.domain.session.WalkLeg
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +37,29 @@ object WalkTracker {
         val saving: Boolean = false,
         val savedWalkId: Long? = null,
         val error: String? = null,
+        // Custom-session state (v1.3). Defaults describe "no session", so every pre-session UI call
+        // site that only reads the walk fields above keeps compiling and rendering unchanged.
+        val activityType: ActivityType = ActivityType.WALK,
+        val goalType: GoalType = GoalType.NONE,
+        /** Goal value in the goal own unit: seconds / steps / metres; ignored for NONE and PLACE. */
+        val goalValue: Double = 0.0,
+        /** Live goal progress in the same unit as [goalValue]; 0.0/1.0 for PLACE arrival. */
+        val goalCurrent: Double = 0.0,
+        /** Sticky latch: true once the goal has been reached in this session. */
+        val goalReached: Boolean = false,
+        val paused: Boolean = false,
+        /** Wall clock of the pause moment (0 while not paused); elapsed time is frozen from it. */
+        val pausedAt: Long = 0L,
+        /** True when the global step count is switched off, so the session cannot advance. */
+        val countingOff: Boolean = false,
+        /** ISO local date the live projection currently belongs to ("" before the first tick). */
+        val sessionDate: String = "",
+        /** Calendar days already closed by midnight rollover, oldest first. */
+        val legs: List<WalkLeg> = emptyList(),
+        val startPlaceId: Long? = null,
+        val endPlaceId: Long? = null,
+        val presetId: Long? = null,
+        val autoStop: Boolean = false,
     )
 
     private val _state = MutableStateFlow(Live())

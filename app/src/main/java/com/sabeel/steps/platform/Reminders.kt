@@ -28,6 +28,7 @@ object Reminders {
     const val WORK_REMINDER = "sabeel_reminder"
     const val WORK_RECONCILE = "sabeel_reconcile"
     const val WORK_BOOT_RECONCILE = "sabeel_boot_reconcile"
+    const val WORK_BOOT_HEALTH = "sabeel_boot_health"
 
     /** (Re)schedules the one-shot daily reminder; cancels the previous chain first. */
     fun reschedule(context: Context, settings: UserSettings) {
@@ -127,14 +128,21 @@ class ReconcileWorker(
         val container = app.container
         val settings = runCatching { container.settings.current() }.getOrElse { return Result.retry() }
 
+        // 0. Counting off or paused: the frozen day must not be resurrected by this background pass
+        //    (no reconcile HC floor, no paused-gap backfill). Goal catch-up below is still harmless.
+        val counting = runCatching { CountingStore.get(context).current() }.getOrNull()
+        val countingSuppressed = counting != null &&
+            (!counting.enabled || counting.pausedAt > 0L || !counting.onboarded)
+
         // 1. Midnight rollover and process-death restore: never double count.
         runCatching { container.steps.reconcile() }
 
         // 2. Health Connect floor while the service cannot run. A background read needs the
         //    provider's background-read grant; when it is missing the read simply fails and the
-        //    already-stored day is left untouched (no invented total).
+        //    already-stored day is left untouched (no invented total). Skipped while counting is
+        //    deliberately off/paused: the provider total still includes the paused gap.
         var todayRow = runCatching { container.steps.todayFlow().first() }.getOrNull()
-        if (HealthConnect.isReady(context)) {
+        if (!countingSuppressed && HealthConnect.isReady(context)) {
             val read = runCatching { HealthConnect.readToday(context) }.getOrNull()
             if (read != null && read.steps > 0) {
                 todayRow = runCatching {
@@ -163,9 +171,11 @@ class ReconcileWorker(
         runCatching {
             val canCount = Permissions.hasActivityRecognition(context) &&
                 (StepSensors.hasAny(context) || HealthConnect.isReady(context))
-            if (canCount &&
+            val status = StatusStore.read(context)
+            if (!countingSuppressed &&
+                canCount &&
                 !StepCounterService.runningInstance &&
-                StatusStore.read(context) == StepServiceStatus.STOPPED
+                (status == StepServiceStatus.STOPPED || status == StepServiceStatus.STOPPED_BY_SYSTEM)
             ) {
                 Notifications.notifyCountingPaused(context)
             }

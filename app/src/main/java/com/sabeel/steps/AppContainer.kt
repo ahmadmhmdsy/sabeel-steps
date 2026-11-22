@@ -6,10 +6,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.sabeel.steps.data.db.AppDatabase
 import com.sabeel.steps.data.db.MIGRATION_1_2
+import com.sabeel.steps.data.db.MIGRATION_2_3
 import com.sabeel.steps.data.prefs.SettingsRepository
 import com.sabeel.steps.data.prefs.SabeelDataStore
 import com.sabeel.steps.data.repo.StepsRepository
 import com.sabeel.steps.data.repo.WalkRepository
+import com.sabeel.steps.platform.CountingStore
+import com.sabeel.steps.platform.StatusStore
+import com.sabeel.steps.service.CountingController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,10 +28,14 @@ class AppContainer(context: Context) {
     // Schema is exported under app/schemas by the Room compiler (see build.gradle.kts). No
     // fallbackToDestructiveMigration: a missing migration must fail loudly in tests, not wipe data.
     val database: AppDatabase = Room.databaseBuilder(appContext, AppDatabase::class.java, "Sabeel.db")
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 
     val settings = SettingsRepository(store)
     val steps = StepsRepository(database, database.dailyStepsDao(), settings)
-    val walks = WalkRepository(database.walkDao())
+    val walks = WalkRepository(database.walkDao(), database)
+
+    /** Persisted counting intent; the single authority for start/stop decisions. */
+    val counting = CountingStore.get(appContext)
+    val countingController = CountingController(appContext, counting, settings, StatusStore)
 }

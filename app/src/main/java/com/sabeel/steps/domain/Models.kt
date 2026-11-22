@@ -1,5 +1,9 @@
 package com.sabeel.steps.domain
 
+import com.sabeel.steps.domain.session.ActivityType
+import com.sabeel.steps.domain.session.GoalType
+import com.sabeel.steps.domain.session.SessionStatus
+
 enum class Units { METRIC, IMPERIAL }
 enum class Gender { UNSPECIFIED, MALE, FEMALE }
 enum class AppLanguage(val code: String) {
@@ -40,6 +44,20 @@ data class Walk(
     val route: List<RoutePoint> = emptyList(),
     /** True when at least part of this walk's step count came from the labelled estimate. */
     val estimated: Boolean = false,
+    // Custom-session fields (Room schema v3). Defaults keep every pre-session call site valid: a
+    // plain walk is still WALK / NONE / COMPLETED with no GPS and no places.
+    val activityType: ActivityType = ActivityType.WALK,
+    val goalType: GoalType = GoalType.NONE,
+    /** Goal value in the goal's unit: seconds (TIME), steps (STEPS), metres (DISTANCE), ignored otherwise. */
+    val goalValue: Double = 0.0,
+    /** True when the session's goal had been reached at least once before the session was saved. */
+    val targetMet: Boolean = false,
+    val status: SessionStatus = SessionStatus.COMPLETED,
+    /** True when GPS was recorded for this session (foreground only, never boot-started). */
+    val gpsUsed: Boolean = false,
+    val startPlaceId: Long? = null,
+    val endPlaceId: Long? = null,
+    val sessionPresetId: Long? = null,
 )
 
 data class UserSettings(

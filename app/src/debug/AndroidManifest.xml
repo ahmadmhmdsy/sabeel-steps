@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug-only step injector for emulator/QA: never merged into a release build. -->
+        <receiver
+            android:name=".debug.DebugStepReceiver"
+            android:exported="true" />
+    </application>
+</manifest>

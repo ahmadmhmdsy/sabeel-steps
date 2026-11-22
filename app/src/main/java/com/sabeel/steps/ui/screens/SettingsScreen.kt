@@ -80,7 +80,8 @@ private val RowHorizontalPadding = 16.dp
 private val RowVerticalPadding = 14.dp
 
 /**
- * Settings, grouped into six cards plus a danger zone (Q1-b design).
+ * Settings, grouped into seven cards plus a danger zone (Q1-b design + the Phase 1 counting
+ * mirror).
  *
  * Every group is a [SectionHeader] over one [SettingsCard]; every row inside a card follows the
  * same pattern: title, an optional subtitle, and exactly one trailing control (stepper, switch, or
@@ -96,6 +97,10 @@ fun SettingsScreen(
     onOpenDiagnostics: () -> Unit,
     onDeletedAll: () -> Unit,
     onMessage: (String) -> Unit,
+    /** Counting switch value; null reads the SettingsViewModel's own mirror. */
+    countingEnabled: Boolean? = null,
+    /** Counting toggle action; null toggles through the SettingsViewModel's controller. */
+    onToggleCounting: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
@@ -103,6 +108,11 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val restDays = viewModel.restDays.collectAsStateWithLifecycle().value
     val goalAdvice = viewModel.goalAdvice.collectAsStateWithLifecycle().value
+    val viewModelCountingEnabled by viewModel.countingEnabled.collectAsStateWithLifecycle()
+    // Null-safe fallbacks: the app shell may pass the switch value and action, but the screen still
+    // works on its own (existing call sites keep compiling and stay correct).
+    val countingOn = countingEnabled ?: viewModelCountingEnabled
+    val externalCountingToggle = onToggleCounting
     val restDayToday = DateKey.today() in restDays
     val stackedRows = LocalConfiguration.current.fontScale > 1.4f
     val language = AppLocale.current(context)
@@ -204,6 +214,26 @@ fun SettingsScreen(
                 advice = goalAdvice,
                 stacked = stackedRows,
                 onOpenSuggestion = { showGoalSuggestion = true },
+            )
+        }
+
+        // The Settings mirror of the Home ring switch: one persisted intent, two controls. The
+        // subtitle is the honest limit, not a promise that Android can never stop counting.
+        SectionHeader(title = stringResource(R.string.settings_section_counting))
+        SettingsCard {
+            SettingsSwitchRow(
+                title = stringResource(R.string.settings_counting_title),
+                subtitle = stringResource(R.string.settings_counting_switch_desc),
+                checked = countingOn,
+                onCheckedChange = { checked ->
+                    val external = externalCountingToggle
+                    if (external != null) {
+                        external()
+                    } else {
+                        viewModel.setCountingEnabled(checked)
+                    }
+                },
+                stacked = stackedRows,
             )
         }
 

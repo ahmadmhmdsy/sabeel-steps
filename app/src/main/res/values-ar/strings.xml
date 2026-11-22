@@ -93,7 +93,7 @@
         <item quantity="other">%d دقيقة نشاط</item>
     </plurals>
     <string name="home_last_7_days">آخر 7 أيام</string>
-    <string name="home_start_walk">ابدأ مشية</string>
+    <string name="home_start_walk">ابدأ جلسة</string>
     <string name="home_cd_chart">رسم أعمدة للخطوات في آخر %1$s. المتوسط %2$d خطوة يوميًا.</string>
     <string name="home_updated_at">آخر تحديث %1$s</string>
     <string name="home_rest_day_note">يوم راحة. سلسلتك متوقفة مؤقتًا.</string>
@@ -345,4 +345,172 @@
     <string name="diagnostics_no_sensor_note">لا يوفّر هذا الهاتف عدّاد خطوات ولا مستشعر اكتشاف خطوات ولا مستشعر حركة، لذا لا يمكن تشغيل العدّ بأي إعداد.</string>
     <string name="diagnostics_footer">تختلف الصياغة والقوائم بين طُرز الهواتف. هذه التعليمات إرشاد لا وعد.</string>
     <string name="diagnostics_error_no_settings">لم يفتح هذا الهاتف شاشة الإعدادات المطلوبة. افتح تطبيق الإعدادات في هاتفك بدلًا من ذلك.</string>
+    <!-- التحكم في العدّ (المرحلة 1): مفتاح الحلقة والقرص وحالة التوقف وإيقاف أندرويد. -->
+    <string name="home_counting_pill_on">العدّ قيد التشغيل · اضغط للإيقاف</string>
+    <string name="home_counting_pill_off">العدّ متوقف · اضغط للتشغيل</string>
+    <string name="home_paused_caption">إجمالي اليوم — متوقف</string>
+    <string name="home_paused_line">العدّ متوقف — خطوات اليوم لا تُحتسب.</string>
+    <string name="home_ring_state_on">العدّ قيد التشغيل</string>
+    <string name="home_ring_state_off">العدّ متوقف</string>
+    <string name="home_ring_action_stop">أوقف العدّ</string>
+    <string name="home_ring_action_start">ابدأ العدّ</string>
+    <string name="home_system_stopped_title">أوقف أندرويد العدّ</string>
+    <string name="home_system_stopped_body">أوقف أندرويد العدّ — اضغط لإعادة التشغيل. آخر فحص %1$s.</string>
+    <string name="home_system_stopped_body_none">أوقف أندرويد العدّ — اضغط لإعادة التشغيل.</string>
+    <string name="home_system_stopped_action">أعد تشغيل العدّ</string>
+
+    <!-- مفتاح الإعدادات: نفس النية المحفوظة التي تعبّر عنها حلقة الرئيسية. -->
+    <string name="settings_section_counting">العدّ</string>
+    <string name="settings_counting_title">احسب الخطوات</string>
+    <string name="settings_counting_switch_desc">يطلب سبِيل من أندرويد الاستمرار في العدّ؛ لكن أندرويد أو صانع هاتفك قد يوقفه رغم ذلك.</string>
+
+    <!-- التشخيص: نية العدّ وآخر فحص ومحاولات التشغيل وإعادة التشغيل والمشاركة. -->
+    <string name="diagnostics_status_off_user">متوقف — أوقفت العدّ بنفسك</string>
+    <string name="diagnostics_status_stopped_system">أوقفه أندرويد</string>
+    <string name="diagnostics_heartbeat_label">آخر فحص</string>
+    <string name="diagnostics_heartbeat_none">لم يحدث بعد</string>
+    <string name="diagnostics_notifications_label">الإشعارات</string>
+    <string name="diagnostics_battery_optimization_label">تحسين البطارية</string>
+    <string name="diagnostics_battery_restricted">مقيّد (قد يوقف العدّ)</string>
+    <string name="diagnostics_battery_unrestricted">غير مقيّد</string>
+    <string name="diagnostics_boot_section">محاولات التشغيل الأخيرة</string>
+    <string name="diagnostics_boot_empty">لم تُسجَّل محاولات تشغيل بعد.</string>
+    <string name="diagnostics_boot_attempt_title">%1$s — %2$s</string>
+    <string name="diagnostics_boot_result">النتيجة: %1$s</string>
+    <string name="diagnostics_boot_flags">التهيئة %1$s · إذن النشاط %2$s · المستشعر %3$s · Health Connect %4$s</string>
+    <string name="diagnostics_boot_alive">ما زال يعدّ بعد الفحص: %1$s</string>
+    <string name="diagnostics_boot_exception">خطأ: %1$s</string>
+    <string name="diagnostics_yes">نعم</string>
+    <string name="diagnostics_no">لا</string>
+    <string name="diagnostics_not_checked">لم يُنفَّذ الفحص بعد</string>
+    <string name="diagnostics_unknown">غير معروف</string>
+    <string name="diagnostics_restart_counting">أعد تشغيل العدّ</string>
+    <string name="diagnostics_share">شارك التشخيص</string>
+    <string name="diagnostics_share_chooser">شارك التشخيص</string>
+    <string name="diagnostics_share_subject">تشخيص سبِيل</string>
+    <string name="diagnostics_share_title">تشخيص سبِيل</string>
+    <string name="diagnostics_share_note">لا يحتوي النص المشارَك على أي بيانات موقع أو أماكن.</string>
+    <string name="diagnostics_share_error">تعذّر فتح تطبيق للمشاركة.</string>
+    <string name="diagnostics_share_footer">أُرسل من سبِيل. لا يحتوي على بيانات موقع أو أماكن.</string>
+    <!-- الجلسات المخصّصة (المرحلة 2): الإعداد والجلسة الجارية والملخص وعناوين السجل. -->
+    <string name="session_setup_title">جلسة جديدة</string>
+    <string name="session_activity_label">النشاط</string>
+    <string name="session_activity_walk">مشي</string>
+    <string name="session_activity_run">جري</string>
+    <string name="session_gps_label">استخدام الموقع (اختياري)</string>
+    <string name="session_gps_desc">يسجّل سبيل المسافة والمسار فقط ما دامت هذه الشاشة مفتوحة. لا خرائط ولا شبكة.</string>
+    <string name="session_gps_denied">لم يُسمح بالموقع، لذا ستعدّ هذه الجلسة الخطوات دون مسار.</string>
+    <string name="session_gps_inactive">الموقع لا يسجّل الآن. المسافة والمسار متوقفان.</string>
+    <string name="session_goal_label">الهدف</string>
+    <string name="session_goal_none">بدون هدف</string>
+    <string name="session_goal_time">الوقت</string>
+    <string name="session_goal_steps">الخطوات</string>
+    <string name="session_goal_distance">المسافة</string>
+    <string name="session_goal_place">المكان</string>
+    <string name="session_goal_unit_time">دقائق</string>
+    <string name="session_goal_unit_steps">خطوات</string>
+    <string name="session_goal_unit_distance">كيلومترات</string>
+    <string name="session_goal_unit_mile">أميال</string>
+    <string name="session_goal_helper_time">الهدف علامة تقدّم؛ تستمر الجلسة حتى تنهيها.</string>
+    <string name="session_goal_helper_steps">تُحتسب الخطوات التي تُؤخذ بعد بدء الجلسة فقط.</string>
+    <string name="session_goal_helper_distance">تُقاس المسافة من نقاط الموقع، لذا تحتاج تشغيل الموقع.</string>
+    <string name="session_goal_helper_place">يمكن أن تتوقف الجلسة من تلقاء نفسها عند الوصول إن فعّلت ذلك.</string>
+    <string name="session_goal_invalid">أدخل رقمًا أكبر من صفر.</string>
+    <string name="session_goal_chip_label">الهدف: %1$s</string>
+    <string name="session_goal_chip_none">بدون هدف</string>
+    <string name="session_goal_progress">%1$s من %2$s</string>
+    <string name="session_goal_place_target">الهدف: الوصول إلى %1$s</string>
+    <string name="session_goal_result">النتيجة</string>
+    <string name="session_goal_met">تم بلوغ الهدف</string>
+    <string name="session_goal_met_body">يمكنك الإنهاء الآن أو المتابعة.</string>
+    <string name="session_goal_met_autostop">هذا الإعداد يوقف الجلسة ويحفظها عند بلوغ الهدف.</string>
+    <string name="session_place_label">مكان محفوظ</string>
+    <string name="session_place_empty">لا أماكن محفوظة بعد. تُحفظ الأماكن على هذا الهاتف.</string>
+    <string name="session_auto_stop_label">التوقف عند الهدف</string>
+    <string name="session_auto_stop_desc">تُنهى الجلسة وتُحفظ عند بلوغ الهدف.</string>
+    <string name="session_presets_label">إعدادات محفوظة</string>
+    <string name="session_presets_empty">الإعدادات التي تحفظها تظهر هنا.</string>
+    <string name="session_preset_save">احفظ هذا الإعداد</string>
+    <string name="session_preset_dialog_title">حفظ الإعداد</string>
+    <string name="session_preset_name_label">الاسم</string>
+    <string name="session_preset_name_empty">أدخل اسمًا أولًا.</string>
+    <string name="session_preset_saved">حُفظ الإعداد.</string>
+    <string name="session_start">ابدأ الجلسة</string>
+    <string name="session_start_blocked">تعذّر بدء الجلسة الآن. تحقّق من أذونات الموقع والنشاط في الإعدادات.</string>
+    <string name="session_counting_off_title">العدّ متوقف</string>
+    <string name="session_counting_off_body">تقيس الجلسة خطواتك عبر عدّ سبيل. شغّل العدّ لتبدأ هذه الجلسة.</string>
+    <string name="session_counting_off_action">شغّل العدّ وابدأ</string>
+    <string name="session_counting_off_live_body">توقف العدّ أثناء الجلسة، فتوقفت الخطوات والأهداف. شغّله من جديد للمتابعة.</string>
+    <string name="session_turn_on_counting">شغّل العدّ</string>
+    <string name="session_live_title">الجلسة</string>
+    <string name="session_paused_label">متوقفة مؤقتًا</string>
+    <string name="session_paused_body">يتجمّد الوقت والخطوات والمسافة أثناء الإيقاف المؤقت.</string>
+    <string name="session_pause">إيقاف مؤقت</string>
+    <string name="session_resume">استئناف</string>
+    <string name="session_finish">إنهاء وحفظ</string>
+    <string name="session_discard">تجاهل الجلسة</string>
+    <string name="session_discard_confirm_title">أتريد تجاهل هذه الجلسة؟</string>
+    <string name="session_discard_confirm_body">لن يُحفظ ما سُجّل حتى الآن.</string>
+    <string name="session_exit_title">أتريد إنهاء هذه الجلسة؟</string>
+    <string name="session_exit_body">احفظ ما سجّلته أو تجاهله.</string>
+    <string name="session_steps_note">هذه خطوات هذه الجلسة. تظهر الرئيسية إجمالي اليوم كاملًا.</string>
+    <string name="session_summary_title">تم حفظ الجلسة</string>
+    <string name="session_summary_body">تبقى جلستك ومسارها على هذا الهاتف. لا يُرسل شيء إلى الإنترنت.</string>
+    <string name="session_summary_saved_id">حُفظت كجلسة رقم %1$d</string>
+    <string name="session_summary_goal_met">تحقق الهدف</string>
+    <string name="session_summary_goal_missed">لم يتحقق الهدف</string>
+    <string name="session_summary_no_goal">بدون هدف</string>
+    <string name="session_resume_title">تقطّعت جلسة سابقة</string>
+    <string name="session_resume_body">حفظ سبيل هذه الجلسة على هاتفك. تابعها من حيث توقفت أو تجاهلها.</string>
+    <string name="session_resume_action">استئناف الجلسة</string>
+    <string name="session_resume_discard">تجاهل الجلسة المحفوظة</string>
+    <string name="session_none_title">لا توجد جلسة جارية</string>
+    <string name="session_none_body">ابدأ جلسة مشي أو جري لتسجيل الخطوات والوقت والمسافة والمسار.</string>
+
+    <!-- السجل: الجلسات المحفوظة تحمل نوع نشاط وهدفًا. -->
+    <string name="history_sessions_title">الجلسات المحفوظة</string>
+    <string name="history_sessions_empty">الجلسات التي تحفظها تظهر هنا.</string>
+    <string name="history_session_detail_title">تفاصيل الجلسة</string>
+    <string name="history_session_goal_met">تحقق الهدف</string>
+    <string name="history_session_goal_missed">لم يتحقق الهدف</string>
+
+    <!-- شريط العدّ في الرئيسية: تأكيد فوري مع نافذة تراجع قصيرة. -->
+    <string name="counting_off_snack">تم إيقاف العدّ. خطوات اليوم مجمّدة.</string>
+    <string name="counting_on_snack">العدّ يعمل.</string>
+    <string name="undo">تراجع</string>
+
+    <!-- المرحلة 3: أماكن محفوظة محليًا؛ تُكتب الإحداثيات أو تُؤخذ من آخر موقع معروف. -->
+    <string name="session_places_manage">إدارة الأماكن</string>
+    <string name="session_places_title">الأماكن المحفوظة</string>
+    <string name="session_place_add">إضافة مكان</string>
+    <string name="session_place_delete">حذف</string>
+    <string name="session_place_delete_title">حذف هذا المكان؟</string>
+    <string name="session_place_delete_body">تحتفظ الجلسات التي استخدمته ببياناتها المسجّلة، لكن الأهداف الجديدة لن تتمكن من اختياره.</string>
+    <string name="session_place_name_label">اسم المكان</string>
+    <string name="session_place_name_required">أدخل اسمًا لهذا المكان.</string>
+    <string name="session_place_lat_label">خط العرض</string>
+    <string name="session_place_lon_label">خط الطول</string>
+    <string name="session_place_invalid_coordinates">أدخل خط عرض بين -90 و90 وخط طول بين -180 و180.</string>
+    <string name="session_place_radius_label">نصف القطر (م)</string>
+    <string name="session_place_radius_helper">بين 25 و1000 متر.</string>
+    <string name="session_place_invalid_radius">أدخل نصف قطر بين 25 و1000 متر.</string>
+    <string name="session_place_radius_value">نصف القطر %1$s م</string>
+    <string name="session_place_current_unavailable">الموقع الحالي غير متاح. أدخل الإحداثيات بنفسك.</string>
+    <string name="session_place_open_maps">فتح في الخرائط</string>
+    <string name="session_place_maps_error">لا يوجد تطبيق على هذا الهاتف يمكنه فتح هذا الموقع.</string>
+
+    <!-- المرحلة 3: حذف الإعدادات المسبقة (قوالب فقط؛ الجلسات المسجّلة تحتفظ بإعداداتها). -->
+    <string name="session_preset_delete">حذف الإعداد المسبق %1$s</string>
+    <string name="session_preset_delete_title">حذف هذا الإعداد المسبق؟</string>
+    <string name="session_preset_delete_body">تتم إزالة الإعداد المحفوظ. تحتفظ الجلسات المسجّلة بإعداداتها.</string>
+    <string name="session_preset_delete_action">حذف الإعداد المسبق</string>
+
+    <!-- المرحلة 3: ملفات الجلسات الاختيارية عبر منتقي ملفات النظام (بلا إنترنت). -->
+    <string name="history_export_csv">تصدير كل الجلسات (CSV)</string>
+    <string name="history_export_csv_success">الجلسات المصدّرة: %1$d</string>
+    <string name="history_export_gpx">تصدير GPX</string>
+    <string name="history_export_gpx_success">تم تصدير الجلسة.</string>
+    <string name="history_export_gpx_missing">لم تعد هذه الجلسة محفوظة.</string>
+    <string name="history_export_error">تعذّر كتابة الملف.</string>
+    <string name="history_export_running_note">أنهِ الجلسة الجارية قبل التصدير.</string>
 </resources>

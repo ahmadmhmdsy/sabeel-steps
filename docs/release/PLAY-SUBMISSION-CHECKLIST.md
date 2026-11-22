@@ -1,5 +1,6 @@
 # Play submission checklist — Sabeel v1.0
 
+> **Superseded for v1.3:** this file covers the v1.0 submission and predates custom sessions, the counting switch and the boot-recovery path. Use [PLAY-1.3.md](PLAY-1.3.md) for the v1.3 console answers and [CLAIMS-AUDIT.md](CLAIMS-AUDIT.md) §10 for what is and is not verified. Keep this file for the historical v1.0 checklist only.
 **Owner:** account owner (human). Engineering cannot complete these items; this
 file records exactly what must be done and what evidence proves it.
 **Companion:** [docs/legal/play-compliance-checklist.md](../legal/play-compliance-checklist.md)

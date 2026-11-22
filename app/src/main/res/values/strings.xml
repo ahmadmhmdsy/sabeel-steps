@@ -81,7 +81,7 @@
         <item quantity="other">%d active minutes</item>
     </plurals>
     <string name="home_last_7_days">Last 7 days</string>
-    <string name="home_start_walk">Start a walk</string>
+    <string name="home_start_walk">Start a session</string>
     <string name="home_cd_chart">Bar chart of steps for the last %1$s. Average %2$d steps per day.</string>
     <string name="home_updated_at">Updated %1$s</string>
     <string name="home_rest_day_note">Rest day. Your streak is paused.</string>
@@ -329,4 +329,172 @@
     <string name="diagnostics_no_sensor_note">This phone reports no step counter, no step detector and no motion sensor, so no setting can turn counting on.</string>
     <string name="diagnostics_footer">Wording and menus differ between phone models. These instructions are a guide, not a promise.</string>
     <string name="diagnostics_error_no_settings">This phone did not open that settings screen. Open your phone’s Settings app instead.</string>
+    <!-- Counting control (Phase 1): ring switch, pill, paused state, system-stopped card. -->
+    <string name="home_counting_pill_on">Counting on · Tap to stop</string>
+    <string name="home_counting_pill_off">Counting off · Tap to start</string>
+    <string name="home_paused_caption">Today’s total — paused</string>
+    <string name="home_paused_line">Counting is off — today’s steps are not being counted.</string>
+    <string name="home_ring_state_on">Counting on</string>
+    <string name="home_ring_state_off">Counting off</string>
+    <string name="home_ring_action_stop">Stop counting</string>
+    <string name="home_ring_action_start">Start counting</string>
+    <string name="home_system_stopped_title">Android stopped counting</string>
+    <string name="home_system_stopped_body">Android stopped counting — tap to restart. Last check-in %1$s.</string>
+    <string name="home_system_stopped_body_none">Android stopped counting — tap to restart.</string>
+    <string name="home_system_stopped_action">Restart counting</string>
+
+    <!-- Settings switch: same persisted intent as the Home ring. -->
+    <string name="settings_section_counting">Counting</string>
+    <string name="settings_counting_title">Count steps</string>
+    <string name="settings_counting_switch_desc">Sabeel asks Android to keep counting; Android or your phone maker can still stop it.</string>
+
+    <!-- Diagnostics: counting intent, heartbeat, boot attempts, restart and share. -->
+    <string name="diagnostics_status_off_user">Off — you turned counting off</string>
+    <string name="diagnostics_status_stopped_system">Stopped by Android</string>
+    <string name="diagnostics_heartbeat_label">Last check-in</string>
+    <string name="diagnostics_heartbeat_none">Never</string>
+    <string name="diagnostics_notifications_label">Notifications</string>
+    <string name="diagnostics_battery_optimization_label">Battery optimisation</string>
+    <string name="diagnostics_battery_restricted">Restricted (may stop counting)</string>
+    <string name="diagnostics_battery_unrestricted">Not restricted</string>
+    <string name="diagnostics_boot_section">Last boot attempts</string>
+    <string name="diagnostics_boot_empty">No boot attempts recorded yet.</string>
+    <string name="diagnostics_boot_attempt_title">%1$s — %2$s</string>
+    <string name="diagnostics_boot_result">Result: %1$s</string>
+    <string name="diagnostics_boot_flags">Onboarded %1$s · activity permission %2$s · sensor %3$s · Health Connect %4$s</string>
+    <string name="diagnostics_boot_alive">Still counting after the check: %1$s</string>
+    <string name="diagnostics_boot_exception">Error: %1$s</string>
+    <string name="diagnostics_yes">Yes</string>
+    <string name="diagnostics_no">No</string>
+    <string name="diagnostics_not_checked">check not run yet</string>
+    <string name="diagnostics_unknown">Unknown</string>
+    <string name="diagnostics_restart_counting">Restart counting</string>
+    <string name="diagnostics_share">Share diagnostics</string>
+    <string name="diagnostics_share_chooser">Share diagnostics</string>
+    <string name="diagnostics_share_subject">Sabeel diagnostics</string>
+    <string name="diagnostics_share_title">Sabeel diagnostics</string>
+    <string name="diagnostics_share_note">The shared text contains no location or place data.</string>
+    <string name="diagnostics_share_error">Could not open a sharing app.</string>
+    <string name="diagnostics_share_footer">Shared from Sabeel. Contains no location or place data.</string>
+    <!-- Custom sessions (Phase 2): setup, live session, summary and history labels. -->
+    <string name="session_setup_title">New session</string>
+    <string name="session_activity_label">Activity</string>
+    <string name="session_activity_walk">Walk</string>
+    <string name="session_activity_run">Run</string>
+    <string name="session_gps_label">Use location (optional)</string>
+    <string name="session_gps_desc">Sabeel records distance and a route only while this screen stays open. No map tiles, no network.</string>
+    <string name="session_gps_denied">Location was not allowed, so this session counts steps without a route.</string>
+    <string name="session_gps_inactive">Location is not recording. Distance and route are on hold.</string>
+    <string name="session_goal_label">Goal</string>
+    <string name="session_goal_none">No goal</string>
+    <string name="session_goal_time">Time</string>
+    <string name="session_goal_steps">Steps</string>
+    <string name="session_goal_distance">Distance</string>
+    <string name="session_goal_place">Place</string>
+    <string name="session_goal_unit_time">Minutes</string>
+    <string name="session_goal_unit_steps">Steps</string>
+    <string name="session_goal_unit_distance">Kilometres</string>
+    <string name="session_goal_unit_mile">Miles</string>
+    <string name="session_goal_helper_time">The goal marks progress; the session keeps running until you finish.</string>
+    <string name="session_goal_helper_steps">Only steps taken after the session starts count toward this goal.</string>
+    <string name="session_goal_helper_distance">Distance is measured from location points, so it needs location on.</string>
+    <string name="session_goal_helper_place">The session can stop by itself when you get there, if you turn that on.</string>
+    <string name="session_goal_invalid">Enter a number greater than zero.</string>
+    <string name="session_goal_chip_label">Goal: %1$s</string>
+    <string name="session_goal_chip_none">No goal set</string>
+    <string name="session_goal_progress">%1$s of %2$s</string>
+    <string name="session_goal_place_target">Goal: reach %1$s</string>
+    <string name="session_goal_result">Result</string>
+    <string name="session_goal_met">Goal reached</string>
+    <string name="session_goal_met_body">You can finish now, or keep going.</string>
+    <string name="session_goal_met_autostop">This setup stops and saves the session at the goal.</string>
+    <string name="session_place_label">Saved place</string>
+    <string name="session_place_empty">No saved places yet. Places are saved on this phone.</string>
+    <string name="session_auto_stop_label">Stop at the goal</string>
+    <string name="session_auto_stop_desc">Finish and save the session when the goal is reached.</string>
+    <string name="session_presets_label">Saved setups</string>
+    <string name="session_presets_empty">Setups you save appear here.</string>
+    <string name="session_preset_save">Save this setup</string>
+    <string name="session_preset_dialog_title">Save setup</string>
+    <string name="session_preset_name_label">Name</string>
+    <string name="session_preset_name_empty">Enter a name first.</string>
+    <string name="session_preset_saved">Setup saved.</string>
+    <string name="session_start">Start session</string>
+    <string name="session_start_blocked">A session could not start right now. Check location and activity permissions in Settings.</string>
+    <string name="session_counting_off_title">Counting is off</string>
+    <string name="session_counting_off_body">A session measures your steps through Sabeel\'s counting. Turn counting on to start this session.</string>
+    <string name="session_counting_off_action">Turn on and start</string>
+    <string name="session_counting_off_live_body">Counting stopped during this session, so steps and goals are on hold. Turn it back on to continue.</string>
+    <string name="session_turn_on_counting">Turn on counting</string>
+    <string name="session_live_title">Session</string>
+    <string name="session_paused_label">Paused</string>
+    <string name="session_paused_body">Time, steps and distance are frozen while paused.</string>
+    <string name="session_pause">Pause</string>
+    <string name="session_resume">Resume</string>
+    <string name="session_finish">Finish and save</string>
+    <string name="session_discard">Discard session</string>
+    <string name="session_discard_confirm_title">Discard this session?</string>
+    <string name="session_discard_confirm_body">The session recorded so far will not be kept.</string>
+    <string name="session_exit_title">End this session?</string>
+    <string name="session_exit_body">Save what you recorded, or discard it.</string>
+    <string name="session_steps_note">These are this session\'s steps. Home still shows the whole day.</string>
+    <string name="session_summary_title">Session saved</string>
+    <string name="session_summary_body">Your session and its route stay on this phone. Nothing is uploaded.</string>
+    <string name="session_summary_saved_id">Saved as session #%1$d</string>
+    <string name="session_summary_goal_met">Goal met</string>
+    <string name="session_summary_goal_missed">Goal not reached</string>
+    <string name="session_summary_no_goal">No goal set</string>
+    <string name="session_resume_title">An earlier session was interrupted</string>
+    <string name="session_resume_body">Sabeel kept this session on your phone. Continue it from where it stopped, or discard it.</string>
+    <string name="session_resume_action">Resume session</string>
+    <string name="session_resume_discard">Discard saved session</string>
+    <string name="session_none_title">No session is running</string>
+    <string name="session_none_body">Start a walk or run session to record steps, time, distance and a route.</string>
+
+    <!-- History: saved sessions carry an activity and a goal. -->
+    <string name="history_sessions_title">Saved sessions</string>
+    <string name="history_sessions_empty">Sessions you save appear here.</string>
+    <string name="history_session_detail_title">Session details</string>
+    <string name="history_session_goal_met">Goal met</string>
+    <string name="history_session_goal_missed">Goal not reached</string>
+
+    <!-- Home counting snackbar: immediate feedback with a short Undo window. -->
+    <string name="counting_off_snack">Counting stopped. Today\'s steps are frozen.</string>
+    <string name="counting_on_snack">Counting on.</string>
+    <string name="undo">Undo</string>
+
+    <!-- Phase 3: saved places (local only; coordinates are typed or taken from the last known fix). -->
+    <string name="session_places_manage">Manage places</string>
+    <string name="session_places_title">Saved places</string>
+    <string name="session_place_add">Add a place</string>
+    <string name="session_place_delete">Delete</string>
+    <string name="session_place_delete_title">Delete this place?</string>
+    <string name="session_place_delete_body">Sessions that used it keep their recorded data, but new goals can no longer pick it.</string>
+    <string name="session_place_name_label">Place name</string>
+    <string name="session_place_name_required">Enter a name for this place.</string>
+    <string name="session_place_lat_label">Latitude</string>
+    <string name="session_place_lon_label">Longitude</string>
+    <string name="session_place_invalid_coordinates">Enter a latitude between -90 and 90 and a longitude between -180 and 180.</string>
+    <string name="session_place_radius_label">Radius (m)</string>
+    <string name="session_place_radius_helper">Between 25 and 1000 metres.</string>
+    <string name="session_place_invalid_radius">Enter a radius between 25 and 1000 metres.</string>
+    <string name="session_place_radius_value">Radius %1$s m</string>
+    <string name="session_place_current_unavailable">Current location is unavailable. Type the coordinates yourself.</string>
+    <string name="session_place_open_maps">Open in Maps</string>
+    <string name="session_place_maps_error">No app on this phone could open this location.</string>
+
+    <!-- Phase 3: preset deletion (templates only; recorded sessions keep their settings). -->
+    <string name="session_preset_delete">Delete preset %1$s</string>
+    <string name="session_preset_delete_title">Delete this preset?</string>
+    <string name="session_preset_delete_body">The saved setup is removed. Sessions already recorded keep their settings.</string>
+    <string name="session_preset_delete_action">Delete preset</string>
+
+    <!-- Phase 3: opt-in session files exported through the system file picker (no network). -->
+    <string name="history_export_csv">Export all sessions (CSV)</string>
+    <string name="history_export_csv_success">Exported sessions: %1$d</string>
+    <string name="history_export_gpx">Export GPX</string>
+    <string name="history_export_gpx_success">Session exported.</string>
+    <string name="history_export_gpx_missing">That session is no longer saved.</string>
+    <string name="history_export_error">The file could not be written.</string>
+    <string name="history_export_running_note">Finish the running session before exporting.</string>
 </resources>

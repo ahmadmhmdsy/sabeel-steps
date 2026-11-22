@@ -2,6 +2,7 @@ package com.sabeel.steps.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,8 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +42,7 @@ import com.sabeel.steps.platform.Permissions
 import com.sabeel.steps.platform.StepServiceStatus
 import com.sabeel.steps.ui.components.BarChart
 import com.sabeel.steps.ui.components.BarChartEntry
+import com.sabeel.steps.ui.components.CountingPill
 import com.sabeel.steps.ui.components.CountingStatusCard
 import com.sabeel.steps.ui.components.PermissionCard
 import com.sabeel.steps.ui.components.ProgressRing
@@ -55,18 +61,30 @@ import com.sabeel.steps.ui.viewmodel.HomeViewModel
 
 /**
  * Stateful entry point kept for callers that do not hoist the ViewModel: it owns the home
- * ViewModel and forwards its [HomeViewModel.startCounting] to the status card.
+ * ViewModel, forwards its [HomeViewModel.startCounting] to the status card and its
+ * [HomeViewModel.toggleCounting] to the ring and pill.
+ *
+ * [countingEnabled] and [onToggleCounting] are optional so an existing call site keeps compiling;
+ * when null the screen reads the switch value from its own ViewModel state and toggles through the
+ * same ViewModel. The app shell passes both when it wants to own the 5 s Undo snackbar.
  */
 @Composable
-fun HomeScreen(onStartWalk: () -> Unit, onOpenDiagnostics: () -> Unit) {
+fun HomeScreen(
+    onStartWalk: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
+    countingEnabled: Boolean? = null,
+    onToggleCounting: (() -> Unit)? = null,
+) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(app))
     val ui by viewModel.state.collectAsStateWithLifecycle()
     HomeScreen(
         ui = ui,
+        countingEnabled = countingEnabled ?: ui.countingEnabled,
         onStartWalk = onStartWalk,
         onStartCounting = { viewModel.startCounting() },
+        onToggleCounting = onToggleCounting ?: { viewModel.toggleCounting() },
         onOpenDiagnostics = onOpenDiagnostics,
     )
 }
@@ -77,6 +95,8 @@ fun HomeScreen(
     onStartWalk: () -> Unit,
     onStartCounting: () -> Unit,
     onOpenDiagnostics: () -> Unit,
+    countingEnabled: Boolean? = null,
+    onToggleCounting: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as SabeelApp
@@ -84,21 +104,26 @@ fun HomeScreen(
     val ui by viewModel.state.collectAsStateWithLifecycle()
     HomeScreen(
         ui = ui,
+        countingEnabled = countingEnabled ?: ui.countingEnabled,
         onStartWalk = onStartWalk,
         onStartCounting = onStartCounting,
+        onToggleCounting = onToggleCounting ?: { viewModel.toggleCounting() },
         onOpenDiagnostics = onOpenDiagnostics,
     )
 }
 
 /**
- * Stateless home screen: the ViewModel state is passed in and the counting and diagnostics
- * actions are supplied by the caller.
+ * Stateless home screen: the ViewModel state is passed in, [countingEnabled] is the switch value
+ * for the ring (the same value shown by the pill), and [onToggleCounting] is the single toggle
+ * action the ring and the pill dispatch.
  */
 @Composable
 fun HomeScreen(
     ui: HomeUiState,
+    countingEnabled: Boolean,
     onStartWalk: () -> Unit,
     onStartCounting: () -> Unit,
+    onToggleCounting: () -> Unit,
     onOpenDiagnostics: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -116,8 +141,17 @@ fun HomeScreen(
         ActivityResultContracts.RequestPermission(),
     ) { permissionEpoch++ }
 
+    // One haptic for every counting toggle (ring and pill): the control changes a running state, so
+    // it confirms the tap even before TalkBack has announced the new switch state.
+    val haptic = LocalHapticFeedback.current
+    val toggleWithHaptic: () -> Unit = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onToggleCounting()
+    }
+
     HomeContent(
         ui = ui,
+        countingEnabled = countingEnabled,
         fontScale = LocalConfiguration.current.fontScale,
         activityPermissionGranted = hasActivityPermission,
         onGrantPermission = {
@@ -125,6 +159,7 @@ fun HomeScreen(
         },
         onStartWalk = onStartWalk,
         onStartCounting = onStartCounting,
+        onToggleCounting = toggleWithHaptic,
         onOpenDiagnostics = onOpenDiagnostics,
     )
 }
@@ -132,11 +167,13 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     ui: HomeUiState,
+    countingEnabled: Boolean,
     fontScale: Float,
     activityPermissionGranted: Boolean,
     onGrantPermission: () -> Unit,
     onStartWalk: () -> Unit,
     onStartCounting: () -> Unit,
+    onToggleCounting: () -> Unit,
     onOpenDiagnostics: () -> Unit,
 ) {
     val steps = ui.today?.steps ?: 0
@@ -186,6 +223,11 @@ private fun HomeContent(
         stepsLabel,
         stepsText(goal),
     )
+    val systemStoppedBody = if (ui.lastHeartbeatAt > 0L) {
+        stringResource(R.string.home_system_stopped_body, timeText(ui.lastHeartbeatAt))
+    } else {
+        stringResource(R.string.home_system_stopped_body_none)
+    }
 
     ScreenScaffold(title = stringResource(R.string.home_title)) {
         Row(
@@ -201,8 +243,9 @@ private fun HomeContent(
             )
         }
 
-        // Counting health first: a stopped service or a missing sensor is the cause the user can act
-        // on. NO_PERMISSION keeps the permission card; STOPPED/NO_SENSOR get their own status card.
+        // Counting health first: a missing sensor or a missing permission is the cause the user can
+        // act on. A deliberate OFF is not a failure, so it never gets a warning card - the ring, the
+        // pill and the paused caption carry that state instead.
         if (!activityPermissionGranted || ui.serviceStatus == StepServiceStatus.NO_PERMISSION) {
             PermissionCard(
                 title = stringResource(R.string.permission_activity_title),
@@ -213,17 +256,29 @@ private fun HomeContent(
                 onGrant = onGrantPermission,
             )
         }
-        when (ui.serviceStatus) {
-            StepServiceStatus.STOPPED -> CountingStatusCard(
+        when {
+            ui.serviceStatus == StepServiceStatus.NO_SENSOR -> CountingStatusCard(
+                title = stringResource(R.string.home_status_no_sensor_title),
+                body = stringResource(R.string.home_status_no_sensor_body),
+            )
+
+            !countingEnabled -> Unit
+
+            // Counting is wanted but the service is gone: say who stopped it and offer a restart,
+            // never "you stopped it".
+            ui.serviceStatus == StepServiceStatus.STOPPED_BY_SYSTEM ||
+                ui.countingStoppedBySystem -> CountingStatusCard(
+                title = stringResource(R.string.home_system_stopped_title),
+                body = systemStoppedBody,
+                actionLabel = stringResource(R.string.home_system_stopped_action),
+                onAction = onStartCounting,
+            )
+
+            ui.serviceStatus == StepServiceStatus.STOPPED -> CountingStatusCard(
                 title = stringResource(R.string.home_status_stopped_title),
                 body = stringResource(R.string.home_status_stopped_body),
                 actionLabel = stringResource(R.string.home_status_action_start),
                 onAction = onStartCounting,
-            )
-
-            StepServiceStatus.NO_SENSOR -> CountingStatusCard(
-                title = stringResource(R.string.home_status_no_sensor_title),
-                body = stringResource(R.string.home_status_no_sensor_body),
             )
 
             else -> Unit
@@ -235,8 +290,21 @@ private fun HomeContent(
                 contentDescription = ringDescription,
                 ringSize = ringSize,
                 showCompleteBadge = progress >= 1f,
+                // Ring = the counting switch. The number inside stays the day total; TalkBack gets
+                // the step progress plus the switch state in one merged node.
+                countingEnabled = countingEnabled,
+                onToggleCounting = onToggleCounting,
+                toggleOnLabel = stringResource(R.string.home_ring_action_stop),
+                toggleOffLabel = stringResource(R.string.home_ring_action_start),
+                stateDescriptionOn = stringResource(R.string.home_ring_state_on),
+                stateDescriptionOff = stringResource(R.string.home_ring_state_off),
+                dimmed = !countingEnabled,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (!countingEnabled) {
+                        PauseGlyph()
+                        Spacer(Modifier.height(6.dp))
+                    }
                     Text(
                         text = stepsLabel,
                         style = bigStyle,
@@ -245,7 +313,11 @@ private fun HomeContent(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = stringResource(R.string.home_ring_goal, stepsText(goal)),
+                        text = if (countingEnabled) {
+                            stringResource(R.string.home_ring_goal, stepsText(goal))
+                        } else {
+                            stringResource(R.string.home_paused_caption)
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -253,6 +325,18 @@ private fun HomeContent(
                 }
             }
         }
+
+        // Visible state + action under the ring: the owner can stop/start without discovering that
+        // the ring itself is a switch.
+        CountingPill(
+            text = if (countingEnabled) {
+                stringResource(R.string.home_counting_pill_on)
+            } else {
+                stringResource(R.string.home_counting_pill_off)
+            },
+            onClick = onToggleCounting,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
 
         // An estimate is never presented as a measured fact. The marker sits on the number and the
         // plain-language note explains where it came from.
@@ -291,7 +375,11 @@ private fun HomeContent(
         )
 
         Text(
-            text = statusLine(steps = steps, goal = goal),
+            text = if (countingEnabled) {
+                statusLine(steps = steps, goal = goal)
+            } else {
+                stringResource(R.string.home_paused_line)
+            },
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -321,6 +409,7 @@ private fun HomeContent(
         }
 
         // Primary CTA before the stats and the 7-day chart, so it stays above the fold on 360x640.
+        // The label deliberately names a session, not counting: the ring owns global counting.
         SabeelPrimaryButton(
             text = stringResource(R.string.home_start_walk),
             onClick = onStartWalk,
@@ -372,6 +461,27 @@ private fun HomeContent(
             )
         }
         Spacer(Modifier.height(8.dp))
+    }
+}
+
+/** Two rounded bars: the pause glyph at the top of the ring while counting is deliberately off. */
+@Composable
+private fun PauseGlyph() {
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = 4.dp, height = 16.dp)
+                .background(color, RoundedCornerShape(2.dp)),
+        )
+        Box(
+            modifier = Modifier
+                .size(width = 4.dp, height = 16.dp)
+                .background(color, RoundedCornerShape(2.dp)),
+        )
     }
 }
 

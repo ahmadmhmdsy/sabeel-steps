@@ -6,6 +6,8 @@ All notable changes to Sabeel (Android). Format: [Keep a Changelog](https://keep
 
 ## [Unreleased] — 1.3.0 (versionCode 3)
 
+**GitHub release:** [Sabeel v1.3.0 — signed APK + AAB assets](https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest) · checksums: [`dist/SHA256SUMS.txt`](dist/SHA256SUMS.txt).
+
 **Status: built and tested 2026-11-23; not published.** Unit tests (205 / 18 suites / 0 failures), lint (0 errors), and debug/release/AAB builds are green; emulator flows are recorded in `TEST-XIAOMI.md` §N.1. Physical Redmi Note 7 evidence is still pending. See `README.md` *Verification status* for the measured artifact table and `docs/release/CLAIMS-AUDIT.md` §10 for per-claim evidence.
 
 ### Added

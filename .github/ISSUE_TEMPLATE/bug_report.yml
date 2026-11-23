@@ -1,0 +1,139 @@
+name: Bug report
+description: Report a defect in Sabeel (Android)
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        Sabeel is offline by design: no accounts, no ads, no analytics, no crash reporting and no
+        `INTERNET` permission. We cannot see your crashes or usage, so the details below are all we
+        have — please be precise and copy real values.
+
+        **Do not paste location, saved places, addresses, GPS tracks or exported CSV/GPX files.**
+        The in-app Diagnostics → Share report is built to exclude location/place data; still read
+        it before pasting.
+
+        **Security issues must not be filed here.** See
+        [SECURITY.md](https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/SECURITY.md).
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: "Settings → About. Include versionName and versionCode if shown."
+      placeholder: "1.3.0 (versionCode 3)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: build-source
+    attributes:
+      label: Where did this build come from?
+      description: Debug or release, and whether you built it from this repository or downloaded it.
+      options:
+        - I built it from source (debug)
+        - I built it from source (release)
+        - Downloaded release APK from GitHub Releases
+        - Other (explain in the description)
+    validations:
+      required: true
+
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version, device and OEM
+      description: "Android version and API level, device model, and the OEM skin (e.g. MIUI, One UI)."
+      placeholder: "Android 15 / API 35, Pixel 7"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: step-source
+    attributes:
+      label: Step source(s) involved
+      description: Diagnostics shows which source is supplying steps. Select all that apply.
+      multiple: true
+      options:
+        - Hardware step counter (TYPE_STEP_COUNTER)
+        - Step detector (TYPE_STEP_DETECTOR)
+        - Health Connect (read-only)
+        - Accelerometer estimate (the "≈" count)
+        - No source / counting is off
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: counting-state
+    attributes:
+      label: Counting state when the bug happened
+      description: The Home ring, the status pill and Settings all control the same counting switch.
+      options:
+        - Counting was on
+        - Counting was off
+        - Counting should have been on, but stopped (force-stop, OEM kill, reboot)
+        - It happened after a reboot or app update
+        - Not applicable to this bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect the app to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead? Include exact step numbers, times and screens.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Sabeel on Home
+        2. Start a walk session
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report (optional, but very helpful)
+      description: "Diagnostics → Share creates a text report. Remove anything personal before pasting. Do not paste place names or coordinates."
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Logs or screenshots
+      description: "Drag images here or paste text. Remove or blur personal data; never attach a CSV/GPX export, a map of a saved place, or a device backup."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am running v1.3.x — the release APK from GitHub Releases or a build from this repository's current source. Sabeel is not published on Google Play.
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I have not included location data, saved places, health data, GPS tracks or exported files in this report.
+          required: true
+        - label: I read the honest limitations in the README — force-stop/OEM kills and missing sensors are documented behaviour, not bugs.
+          required: true

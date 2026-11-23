@@ -1,0 +1,12 @@
+# Issue-template configuration for the Sabeel repository.
+blank_issues_enabled: true
+contact_links:
+  - name: Build, test and verification status (README)
+    url: https://github.com/ahmadmhmdsy/sabeel-steps#readme
+    about: Prerequisites, the exact build/test/lint commands, and what has actually been measured.
+  - name: Privacy policy (source text)
+    url: https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/legal/privacy-policy.md
+    about: What Sabeel stores on the device, and what it never does.
+  - name: Report a security vulnerability
+    url: https://github.com/ahmadmhmdsy/sabeel-steps/security/advisories/new
+    about: Private reporting channel. Never post vulnerability details in a public issue.

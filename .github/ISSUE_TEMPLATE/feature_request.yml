@@ -1,0 +1,70 @@
+name: Feature request
+description: Propose a feature that fits Sabeel's offline, ad-free scope
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sabeel is an **offline, ad-free, no-account** app, and that is not negotiable. Requests that
+        need any of the following will be closed with a pointer to this note:
+
+        - network access (no `INTERNET` permission), cloud sync, accounts or sign-in
+        - ads, subscriptions, in-app purchases, analytics, crash reporting or tracking
+        - background location, map tiles, geocoding or address search
+        - writing to Health Connect (reading is opt-in and read-only)
+        - medical, diagnostic or health-advice claims
+
+        Everything else is open for discussion — bring the user problem, not just the feature.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Who hits it, when, and what do they do today? A concrete scenario helps more than a feature name.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: What should the app do, from the user's point of view? No implementation needed unless it affects privacy or permissions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-impact
+    attributes:
+      label: Does this need a new permission, background work, battery use, or export changes?
+      description: Say so if it does, and say so if you are unsure. New permissions and exported components need review.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: Other apps, existing screens/settings, or approaches you have tried.
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How would we verify it honestly?
+      description: Optional. Which checks or tests would prove it works without overclaiming (emulator limits, no hardware step sensor, no physical-device evidence yet)?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This request fits the offline / no-network / no-ads / no-accounts model.
+          required: true
+        - label: This is a feature request, not a bug report or a security report.
+          required: true

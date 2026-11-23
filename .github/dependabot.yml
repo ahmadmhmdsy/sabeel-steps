@@ -1,0 +1,28 @@
+# Dependabot version-update configuration for Sabeel.
+#
+# Security updates are configured separately in the repository settings; this file only controls
+# scheduled version updates. Keep the limits low: every dependency PR has to pass the same gate as
+# any other change (assembleDebug, testDebugUnitTest, lintDebug at 0 errors, bundleRelease), and a
+# dependency bump is not automatically safe for an R8-minified release build.
+version: 2
+updates:
+  # Android/Gradle dependencies declared in `build.gradle.kts` and `app/build.gradle.kts` (this
+  # repository keeps versions directly in the build files, there is no version catalog).
+  # The Gradle wrapper itself (8.11.1) is not updated by Dependabot; bump it manually.
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Actions used by `.github/workflows/android.yml` (checkout, setup-java, setup-android,
+  # setup-gradle, upload-artifact). Monthly is enough for this single workflow.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(deps)"

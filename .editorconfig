@@ -1,0 +1,31 @@
+# EditorConfig settings for Sabeel.
+# Matches the files in this repository as of v1.3.0: UTF-8, LF, final newline, no trailing
+# whitespace, 4-space Kotlin/Java/XML indent (kotlin.code.style=official in gradle.properties),
+# 2-space YAML/JSON. Markdown keeps trailing spaces on purpose (they are hard line breaks).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts,java}]
+indent_size = 4
+
+[*.{xml,gradle,pro}]
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+# Two trailing spaces in Markdown are a hard line break; preserve them.
+trim_trailing_whitespace = false
+insert_final_newline = true
+
+[*.{bat,cmd}]
+# Windows wrapper scripts are CRLF in this repository.
+end_of_line = crlf

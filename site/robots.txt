@@ -1,0 +1,5 @@
+# Sabeel static site — https://ahmadmhmdsy.github.io/sabeel-steps/
+User-agent: *
+Allow: /
+
+Sitemap: https://ahmadmhmdsy.github.io/sabeel-steps/sitemap.xml

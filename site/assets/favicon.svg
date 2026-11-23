@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512" role="img" aria-label="Sabeel mark">
+  <title>Sabeel — three rising stride arcs and a step dot</title>
+  <rect width="108" height="108" fill="#E9D8B8"/>
+  <g fill="none" stroke="#0F6B5C" stroke-width="5" stroke-linecap="round">
+    <path d="M32,74 C40,67 49,64 60,64"/>
+    <path d="M38,63 C44,57 52,54 62,54"/>
+    <path d="M45,52 C50,47 56,45 63,45"/>
+  </g>
+  <circle cx="70" cy="36" r="5" fill="#0F6B5C"/>
+</svg>

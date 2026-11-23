@@ -1,0 +1,26 @@
+{
+  "name": "Sabeel — offline step counter",
+  "short_name": "Sabeel",
+  "description": "Sabeel is an offline, ad-free step counter and walk tracker for Android. No account, no ads, no analytics, and no INTERNET permission.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/sabeel-steps/",
+  "scope": "/sabeel-steps/",
+  "display": "browser",
+  "background_color": "#FAF7F2",
+  "theme_color": "#0F6B5C",
+  "icons": [
+    {
+      "src": "/sabeel-steps/assets/favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sabeel-steps/assets/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

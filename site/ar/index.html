@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سبيل — عدّاد خطوات ومتتبّع مشي لأندرويد دون إنترنت</title>
+<meta name="description" content="سبيل تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد، يعمل دون إنترنت: بلا حساب، بلا إعلانات، بلا تحليلات، وبلا إذن الإنترنت. حرّ ومفتوح المصدر برخصة Apache-2.0.">
+<meta name="author" content="أحمد محمود">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0F6B5C">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="https://ahmadmhmdsy.github.io/sabeel-steps/ar/">
+<link rel="alternate" hreflang="en" href="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<link rel="alternate" hreflang="ar" href="https://ahmadmhmdsy.github.io/sabeel-steps/ar/">
+<link rel="alternate" hreflang="x-default" href="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../assets/favicon-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="سبيل">
+<meta property="og:title" content="سبيل — عدّاد خطوات ومتتبّع مشي بلا إنترنت">
+<meta property="og:description" content="تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد. لا حساب، لا إعلانات، لا تحليلات، ولا إذن الإنترنت.">
+<meta property="og:url" content="https://ahmadmhmdsy.github.io/sabeel-steps/ar/">
+<meta property="og:locale" content="ar_IQ">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://ahmadmhmdsy.github.io/sabeel-steps/assets/og-1200x630.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="بطاقة سبيل: شعار التطبيق واسمه بالعربية والإنجليزية، ولقطتا شاشتين من التطبيق.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="سبيل — عدّاد خطوات ومتتبّع مشي بلا إنترنت">
+<meta name="twitter:description" content="تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد. لا حساب، لا إعلانات، لا تحليلات، ولا إذن الإنترنت.">
+<meta name="twitter:image" content="https://ahmadmhmdsy.github.io/sabeel-steps/assets/og-1200x630.png">
+<meta name="twitter:image:alt" content="بطاقة سبيل مع اسم التطبيق ولقطتي شاشتين.">
+<link rel="preload" as="image" href="../assets/hero-ar.png" imagesrcset="../assets/hero-ar-640.png 640w, ../assets/hero-ar-960.png 960w, ../assets/hero-ar.png 1600w" imagesizes="(min-width: 1180px) 1120px, calc(100vw - 40px)" fetchpriority="high">
+<link rel="stylesheet" href="../assets/styles.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/ar/#website",
+      "url": "https://ahmadmhmdsy.github.io/sabeel-steps/ar/",
+      "name": "سبيل",
+      "alternateName": "Sabeel",
+      "description": "الموقع الرسمي لتطبيق سبيل، عدّاد خطوات ومتتبّع مشي على أندرويد يعمل دون إنترنت وبلا إعلانات.",
+      "inLanguage": ["ar", "en"]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/ar/#app",
+      "name": "سبيل",
+      "alternateName": "Sabeel",
+      "description": "سبيل تطبيق أصلي لعدّ الخطوات وتتبّع المشي والجري على أندرويد، يعمل دون إنترنت وبلا إعلانات. يعدّ الخطوات بلا حساب وبلا إذن android.permission.INTERNET، ويحفظ كل شيء على الجهاز.",
+      "applicationCategory": "HealthApplication",
+      "applicationSubCategory": "عدّاد خطوات ومتتبّع مشي",
+      "operatingSystem": "أندرويد 8.0+",
+      "softwareVersion": "1.3.0",
+      "inLanguage": ["ar", "en"],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "codeRepository": "https://github.com/ahmadmhmdsy/sabeel-steps",
+      "downloadUrl": "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+      "releaseNotes": "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+      "privacyPolicy": "https://ahmadmhmdsy.github.io/sabeel-steps/privacy/",
+      "fileSize": "2138010",
+      "author": {
+        "@type": "Person",
+        "name": "أحمد محمود"
+      },
+      "screenshot": [
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/home-ar.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/home-en.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/insights-en.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/history-en.png"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/ar/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "هل يحتاج سبيل إلى الإنترنت؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لا. لا يحتوي ملف بيان أندرويد المدمج على إذن INTERNET، ولا يشحن التطبيق أي رمز شبكة أو إعلانات أو تحليلات. وضع الطيران لا يغيّر شيئًا. المرة الوحيدة التي يتصل فيها الهاتف بالإنترنت لأجل سبيل هي عندما تختار أنت تنزيل تحديث من GitHub أو من متجر — لا من داخل التطبيق أبدًا."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل سبيل متوفر على Google Play؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ليس بعد. الإصدار 1.3.0 مبني وموقّع ومقيس (2026-11-23)، لكن لم يُرفع شيء إلى Google Play ولا تُدَّعى أي موافقة. الشيفرة المصدرية وملفّا APK و AAB على GitHub."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل يمكنه ضمان أن عدّ الخطوات لا يتوقف أبدًا؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لا — ولا يستطيع أي تطبيق أندرويد ذلك. الإيقاف القسري يوقف العدّ حتى تعيد فتح سبيل؛ ومديرو البطارية المتشددون قد يوقفون الخدمات في المقدمة أيضًا. يسجّل سبيل كل محاولة إقلاع ويعرض النتيجة في «التشخيص» بدلًا من ادّعاء أن اليوم مكتمل."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ماذا يفعل سبيل بموقعي؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "الموقع اختياري وفي المقدمة فقط. يُستخدم فقط أثناء فتح شاشة الجلسة لرسم مسار على لوحة التطبيق نفسه — بلا بلاطات خرائط وبلا بحث عن عنوان. لا يوجد إذن موقع في الخلفية. وإذا رفضت، فسيظل المشي متتبعًا بالخطوات."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما الأذونات التي يطلبها، وإلى أين تذهب بياناتي؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "التعرّف على النشاط (لعدّ الخطوات)، والإشعارات (التذكيرات وإشعار التتبّع الجاري)، وموقع اختياري في المقدمة لرسم مسار، والتشغيل عند الإقلاع للتذكيرات والعدّ. وHealth Connect إضافة اختيارية للقراءة فقط. تبقى البيانات في التخزين الخاص بالتطبيق، والنسخ الاحتياطي السحابي متوقف، و«حذف كل البيانات» يزيلها."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل سبيل مجاني ومفتوح المصدر؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم. مرخّص بموجب Apache-2.0، بلا إعلانات وبلا مشتريات داخل التطبيق، والشيفرة الكاملة علنية على GitHub — بما في ذلك ملف البيان الذي يُظهر غياب إذن INTERNET."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل راجع النص العربي متحدّث أصلي؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ليس بعد. الواجهة وهذا الموقع مترجمان بالكامل، لكن المراجعة العربية الأصلية لم تحدث بعد؛ وهي شرط مسبق قبل إدراج النسخة العربية. وإذا بدت عبارة ركيكة فهذه الملاحظة مفيدة فعلًا."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="سبيل — الصفحة الرئيسية">
+      <img src="../assets/favicon.svg" width="40" height="40" alt="">
+      <span class="brand-name" lang="en">Sabeel</span>
+      <span class="brand-ar">سبيل</span>
+    </a>
+    <nav class="nav" aria-label="التنقل الرئيسي">
+      <a class="nav-sec" href="#why">لماذا</a>
+      <a class="nav-sec" href="#features">الميزات</a>
+      <a class="nav-sec" href="#limitations">الحدود</a>
+      <a class="nav-sec" href="#privacy">الخصوصية</a>
+      <a class="nav-sec" href="#faq">الأسئلة</a>
+      <a class="lang" href="../" hreflang="en" lang="en">English</a>
+      <a class="btn small" href="#download">نزّل</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="hero-brand">
+        <span class="hero-brand-name latin" lang="en">Sabeel</span>
+        <span class="hero-brand-ar">سبيل</span>
+        <span class="hero-brand-desc">عدّاد خطوات يعمل دون إنترنت على أندرويد</span>
+      </p>
+      <h1 id="hero-title">عُدَّ خطواتك.<br><em>واحتفظ بها لنفسك.</em></h1>
+      <p class="hero-lede">عدّاد خطوات ومتتبّع مشي هادئ يعمل دون اتصال، ودون حساب، ودون معرّف إعلاني. يضيف الإصدار 1.3 مفتاح تشغيل وإيقاف حقيقيًا للعدّ، وجلسات مشي أو جري مخصّصة — ومع ذلك يبقى التطبيق عاجزًا عن إرسال بياناتك إلى أي مكان.</p>
+      <div class="hero-actions">
+        <a class="btn" href="https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest">نزّل الإصدار 1.3.0</a>
+        <a class="btn ghost" href="#why">لماذا يختلف سبيل؟</a>
+      </div>
+      <p class="hero-meta">أندرويد 8.0+ · العربية والإنجليزية · رخصة Apache-2.0 · مجاني بلا إعلانات</p>
+      <figure class="hero-figure">
+        <img src="../assets/hero-ar.png"
+             srcset="../assets/hero-ar-640.png 640w, ../assets/hero-ar-960.png 960w, ../assets/hero-ar.png 1600w"
+             sizes="(min-width: 1180px) 1120px, calc(100vw - 40px)"
+             width="1600" height="1000" fetchpriority="high"
+             alt="أربع شاشات من سبيل جنبًا إلى جنب: حلقة خطوات اليوم مع الهدف والتقديرات، ومخطط السجل لسبعة أيام، وملخّص الرؤى، والإعدادات.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="why" aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          لماذا وُجد سبيل
+        </p>
+        <h2 id="why-title">خطواتك ليست سلعة.</h2>
+        <p class="lede">معظم عدّادات الخطوات مجانية لأن حركتك هي الثمن. يقترح سبيل الصفقة المعاكسة: أن يفعل أقلّ في الخفاء، وأن يقول بصراحة ما لا يستطيعه.</p>
+      </div>
+      <div class="why-grid">
+        <article class="why-card">
+          <span class="num" aria-hidden="true">01</span>
+          <h3>دون إنترنت بالتصميم</h3>
+          <p>لا يحتوي ملف البيان المدمج على الإذن <code dir="ltr">android.permission.INTERNET</code>. وهذا ليس مفتاحًا يمكن أن يعيده تحديث لاحق: لا يوجد رمز اتصال بالشبكة ولا خادم يُتحدَّث معه. كل خطوة تبقى في التخزين الخاص على الهاتف.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">02</span>
+          <h3>بلا إعلانات أو حسابات أو تحليلات</h3>
+          <p>لا حِزَم إعلانات، ولا تحليلات، ولا تقارير أعطال، ولا تسجيل دخول. لا شيء تلغي الاشتراك فيه، ولا معرّف إعلاني تسلّمه لأحد. يمكن فحص نسخة الإصدار؛ وقائمة الاعتماديات علنية.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">03</span>
+          <h3>صريح عند التعثّر</h3>
+          <p>إذا أوقف أندرويد أو صانع الهاتف العدّ في الخلفية، يسجّل سبيل ما حدث عند الإقلاع ويعرضه في «التشخيص». لا يدّعي أن العدّ «لا يتوقف أبدًا»، لأن هذا الوعد لا يمكن الوفاء به على أندرويد.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">04</span>
+          <h3>العربية أولًا، لا كإضافة متأخرة</h3>
+          <p>تأتي الواجهة كاملة بالإنجليزية والعربية مع تخطيط من اليمين إلى اليسار. النصوص العربية مترجمة، لكن مراجعة متحدّث أصلي ما زالت معلّقة، وهذا الموقع يذكر ذلك بدلًا من إخفائه.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          ما الجديد في الإصدار 1.3
+        </p>
+        <h2 id="features-title">ميزات صغيرة ومكتملة للعدّ والمشي.</h2>
+        <p class="lede">كل ما يلي يعمل دون اتصال. لا شيء فيه يحتاج في الخفاء إلى حساب أو خدمة مزامنة أو طلب شبكة.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.25"/><path d="m8.7 12.2 2.2 2.2 4.4-4.6"/></svg>
+          <h3>مفتاح واحد للعدّ</h3>
+          <p>اضغط الحلقة في الشاشة الرئيسية، أو شارة الحالة تحتها، أو المفتاح في الإعدادات — إنه المفتاح نفسه المحفوظ. وإذا أوقفت العدّ يبقى متوقفًا بعد إعادة التشغيل.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9c2.4-2.6 5.2-2.6 7.6 0s5.2 2.6 7.6 0"/><path d="M3.5 15c2.4-2.6 5.2-2.6 7.6 0s5.2 2.6 7.6 0"/></svg>
+          <h3>عدّ يبيّن مصدره</h3>
+          <p>يعمل عدّاد الخطوات العتادي وكاشف الخطوات معًا. ويمكن لـ Health Connect أن يضيف حدًّا أدنى للقراءة فقط متزامنًا مع الساعة، ولا يملأ تقدير مقياس التسارع المُعلَّم إلا الجزء الذي لم يره مصدر مقيس.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/><path d="M12 12v.1"/></svg>
+          <h3>دليل الإقلاع، لا الوعود</h3>
+          <p>بعد إعادة التشغيل يسجّل سبيل المحاولة — الأذونات، والمستشعر، والنتيجة، وهل كانت الخدمة حيّة بعد الفحص — ثم يحاول استئناف العدّ. تعرض «التشخيص» آخر عشر محاولات، ويمكن مشاركة تقرير نصي بلا بيانات موقع أو أماكن.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.2v4l2.6 2"/><path d="M9.5 2.5h5"/><path d="M12 2.5V5"/></svg>
+          <h3>جلسات مشي أو جري مخصّصة</h3>
+          <p>اختر مشيًا أو جريًا، وهدفًا اختياريًا بالوقت أو الخطوات أو المسافة أو المكان، وهل ترسم المسار. الإيقاف المؤقت يجمّد مؤقّت الجلسة وخطواتها دون احتساب رجعي، والجلسات التي تعبر منتصف الليل تُقسَّم إلى أجزاء. جلسة واحدة في كل مرة.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21c4.2-4.3 6.5-7.6 6.5-10.5a6.5 6.5 0 1 0-13 0C5.5 13.4 7.8 16.7 12 21Z"/><circle cx="12" cy="10.3" r="2.4"/></svg>
+          <h3>أماكن وإعدادات محفوظة محليًا</h3>
+          <p>احفظ مكانًا باسم وإحداثيات ونطاق — بلا بحث عن عنوان، وبلا تحويل جغرافي، وبلا تنزيل خريطة. واحفظ إعداد جلستك المعتاد وابدأه بلمسة واحدة.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-3.5"/><path d="M12 16V8.5"/><path d="M16 16v-6.5"/><path d="M20 16V6.5"/></svg>
+          <h3>السجل والرؤى</h3>
+          <p>عرض لسبعة أو ثلاثين يومًا مع خط هدفك، والقائمة اليومية والجلسات المحفوظة؛ ومتوسطات النافذة وأفضل يوم ونسبة بلوغ الهدف وإجمالي المسافة في «الرؤى». أيام الراحة توقف السلسلة مؤقتًا دون كسرها.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
+          <h3>تذكيرات وإشعار الهدف</h3>
+          <p>تذكير هادئ عبر WorkManager في وقت تختاره، وإشعار عند بلوغ هدف اليوم، وإشعار استرداد واحد على الأكثر إذا لم يستطع العدّ الاستئناف بعد الإقلاع.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+          <h3>تصدير تبدأه بنفسك</h3>
+          <p>اكتب الإجماليات اليومية بصيغة CSV، أو كل الجلسات بصيغة CSV، أو جلسة واحدة بصيغة GPX عبر منتقي الملفات في أندرويد. لا يُرفع شيء؛ والملف يذهب فقط إلى حيث ترسله.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="limitations" aria-labelledby="limits-title">
+    <div class="wrap">
+      <div class="limits-grid">
+        <div class="section-head">
+          <p class="eyebrow">
+            <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            اقرأ هذا قبل التنزيل
+          </p>
+          <h2 id="limits-title">ما لا يستطيعه سبيل.</h2>
+          <p class="lede">هذه الحدود حقيقية. وهي ثمن تطبيق لا يستطيع الاتصال بالخارج، والإنصاف أن تُقال هنا لا أن تُدفن في صفحة متجر.</p>
+        </div>
+        <ul class="limit-list">
+          <li>
+            <strong>لا يمكنه إعادة تشغيل نفسه بعد الإيقاف القسري.</strong>
+            <span>لا يسمح أندرويد بذلك. يستأنف العدّ عند فتح التطبيق تاليًا، أو بعد إعادة التشغيل حين يسمح أندرويد لمستقبل الإقلاع بتشغيل الخدمة.</span>
+          </li>
+          <li>
+            <strong>قد توقفه مديرو البطارية المتشددون.</strong>
+            <span>تُنهي MIUI وأنظمة مشابهة الخدمات في الخلفية. يسجّل سبيل محاولة الإقلاع ويقول متى مُنع؛ ولا يستطيع أي تطبيق أن يضمن غير ذلك.</span>
+          </li>
+          <li>
+            <strong>إنه متتبّع، لا جهاز قياس.</strong>
+            <span>الخطوات والمسافة والدقائق النشطة والسعرات تقديرات من مستشعرات الهاتف، وليست قياسات طبية. وسبيل ليس جهازًا طبيًا.</span>
+          </li>
+          <li>
+            <strong>لا موقع في الخلفية ولا بلاطات خرائط.</strong>
+            <span>يُرسم المسار فقط أثناء فتح شاشة الجلسة، وبإذنك فقط. لا بحث عن عنوان ولا تنزيل خرائط.</span>
+          </li>
+          <li>
+            <strong>اختُبر الإصدار 1.3 على محاكيات، لا على هاتف فعلي بعد.</strong>
+            <span>هناك 205 اختبارات JVM، وتشغيل lint نظيف، واختبارات دخان على المحاكي. لا يُدَّعى أي تشغيل على جهاز فعلي للإصدار 1.3، ولا أي مراجعة متجر.</span>
+          </li>
+          <li>
+            <strong>غير منشور على Google Play.</strong>
+            <span>الإصدار 1.3.0 مبني وموقّع ومقيس، لكن التوفر على Play غير مُدَّعى. التنزيل من GitHub.</span>
+          </li>
+          <li>
+            <strong>العربية تحتاج مراجعًا أصليًا.</strong>
+            <span>الترجمات مكتملة والمراجعة معلّقة — وهي شرط مسبق قبل إدراج النسخة العربية. ملاحظات الصياغة مرحّب بها.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap">
+      <div class="privacy-grid">
+        <div class="privacy-copy">
+          <p class="eyebrow">
+            <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            الخصوصية
+          </p>
+          <h2 id="privacy-title">سياسة خصوصية تُقرأ في جلسة واحدة.</h2>
+          <p>لا يوجد حساب تنشئه، ولا خادم يحتفظ بنسخة من مشيك. النسخ الاحتياطي السحابي في أندرويد متوقف لتطبيق سبيل، فلا تنتقل بياناته إلى نسخة احتياطية أيضًا. تغطي السياسة المنشورة بدقة ما يُخزَّن، وكل إذن ولماذا يُطلب، وكيف تحذف كل شيء.</p>
+          <p>السياسة منشورة بالإنجليزية والعربية على هذا الموقع نفسه. وHealth Connect اختياري وللقراءة فقط؛ ولا يكتب التطبيق فيه أبدًا.</p>
+          <p><a href="../privacy/">اقرأ سياسة الخصوصية كاملة (EN + العربية) ←</a></p>
+        </div>
+        <aside class="policy-panel" aria-label="وعود الخصوصية">
+          <h3>ما يبقى صحيحًا بالتصميم</h3>
+          <ul>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>لا إذن <code dir="ltr">INTERNET</code> في ملف البيان المدمج</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>لا حسابات ولا إعلانات ولا تحليلات ولا حِزَم أعطال</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>النسخ الاحتياطي السحابي في أندرويد متوقف للتطبيق</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Health Connect اختياري ولا يُكتب فيه أبدًا</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>«حذف كل البيانات» يزيل السجل والجلسات والأماكن</li>
+          </ul>
+          <a class="btn small" href="../privacy/">افتح السياسة</a>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="screenshots" aria-labelledby="screens-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            الشاشات
+        </p>
+        <h2 id="screens-title">التطبيق الحقيقي، بالعربية والإنجليزية.</h2>
+        <p class="lede">لقطات حقيقية من الواجهة أثناء الاختبار — ليست تصاميم ولا إطارات أجهزة. أُخفيت ملاحظة «لا يوجد مستشعر خطوات» الخاصة بالمحاكي من لقطات الرئيسية الثلاث، ويوضّح التعليق أدناه السبب.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot">
+          <img src="../assets/screenshots/home-en.png" width="540" height="1039" loading="lazy" decoding="async" alt="الشاشة الرئيسية من سبيل بالإنجليزية: حلقة تقدّم اليوم عند 7,240 من 7,000 خطوة، وسلسلة 17 يومًا، و72 دقيقة نشطة، وزر بدء مشي، وتقديرات المسافة والطاقة.">
+          <figcaption>الرئيسية (بالإنجليزية) — حلقة اليوم والسلسلة والهدف والتقديرات المعلّمة.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/home-ar.png" width="540" height="1030" loading="lazy" decoding="async" alt="الشاشة الرئيسية من سبيل بالعربية بتخطيط من اليمين إلى اليسار: حلقة تقدّم عند 8,500 من 8,000 خطوة، والسلسلة والدقائق النشطة وزر بدء المشي بالعربية.">
+          <figcaption>الرئيسية (العربية) — الشاشة نفسها بتخطيط من اليمين إلى اليسار.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/home-dark-en.png" width="540" height="1039" loading="lazy" decoding="async" alt="الشاشة الرئيسية من سبيل في النمط الداكن مع حلقة تقدّم بلون نعناعي وملخّص اليوم نفسه.">
+          <figcaption>الرئيسية في النمط الداكن.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/history-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="شاشة السجل في سبيل: مخطط أعمدة لسبعة أيام مع خط هدف متقطّع وقائمة يومية تعرض الخطوات والمسافة.">
+          <figcaption>السجل — أعمدة سبعة أيام مع خط الهدف، والقائمة اليومية تحتها.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/insights-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="شاشة الرؤى في سبيل: متوسط ثلاثين يومًا، وأفضل يوم، ونسبة بلوغ الهدف، وإجمالي المسافة، وملخّص بلغة واضحة لآخر ثلاثين يومًا.">
+          <figcaption>الرؤى — متوسط ثلاثين يومًا، وأفضل يوم، ونسبة بلوغ الهدف، وإجمالي المسافة.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/settings-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="شاشة الإعدادات في سبيل: ضبط الهدف اليومي، ومفتاحا أيام الراحة والتذكير، والوحدات، واللغة.">
+          <figcaption>الإعدادات — الهدف، ومفاتيح التتبّع، والوحدات، واللغة.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../assets/screenshots/walk-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="شاشة إعداد المشي في سبيل تشرح أن الموقع يُستخدم فقط أثناء تتبّع المشي، مع زرّي السماح وبدء المشي.">
+          <figcaption>إعداد المشي — يشرح سبيل الموقع قبل أن يسأل أندرويد.</figcaption>
+        </figure>
+      </div>
+      <p class="shot-note">لقطات من محاكي أثناء اختبار الإصدار في نوفمبر 2026. صورة API 36 ATD ليس فيها مستشعر خطوات عتادي، لذا حُقنت قيم خطوات اليوم عبر مستقبل الخطوات في نسخة التصحيح. هذه ليست دعوى تشغيل على جهاز فعلي للإصدار 1.3، وقد تختلف الشاشات قليلًا في البناء التالي. وقد أُخفيت ملاحظة «لا يوجد مستشعر خطوات» التي يعرضها المحاكي على الرئيسية من اللقطات أعلاه؛ وعلى هاتف لا يملك ذلك المستشعر يعرضها التطبيق فعلًا (اللقطات غير المعدّلة موجودة في README).</p>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            الأسئلة الشائعة
+        </p>
+        <h2 id="faq-title">أسئلة يطرحها الناس فعلًا.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>هل يحتاج سبيل إلى الإنترنت؟</summary>
+          <p>لا. لا يحتوي ملف بيان أندرويد المدمج على إذن INTERNET، ولا يشحن التطبيق أي رمز شبكة أو إعلانات أو تحليلات. وضع الطيران لا يغيّر شيئًا. المرة الوحيدة التي يتصل فيها الهاتف بالإنترنت لأجل سبيل هي عندما تختار أنت تنزيل تحديث من GitHub أو من متجر — لا من داخل التطبيق أبدًا.</p>
+        </details>
+        <details>
+          <summary>هل سبيل متوفر على Google Play؟</summary>
+          <p>ليس بعد. الإصدار 1.3.0 مبني وموقّع ومقيس (2026-11-23)، لكن لم يُرفع شيء إلى Google Play ولا تُدَّعى أي موافقة. الشيفرة المصدرية وملفّا APK و AAB على GitHub.</p>
+        </details>
+        <details>
+          <summary>هل يمكنه ضمان أن عدّ الخطوات لا يتوقف أبدًا؟</summary>
+          <p>لا — ولا يستطيع أي تطبيق أندرويد ذلك. الإيقاف القسري يوقف العدّ حتى تعيد فتح سبيل؛ ومديرو البطارية المتشددون قد يوقفون الخدمات في المقدمة أيضًا. يسجّل سبيل كل محاولة إقلاع ويعرض النتيجة في «التشخيص» بدلًا من ادّعاء أن اليوم مكتمل.</p>
+        </details>
+        <details>
+          <summary>ماذا يفعل سبيل بموقعي؟</summary>
+          <p>الموقع اختياري وفي المقدمة فقط. يُستخدم فقط أثناء فتح شاشة الجلسة لرسم مسار على لوحة التطبيق نفسه — بلا بلاطات خرائط وبلا بحث عن عنوان. لا يوجد إذن موقع في الخلفية. وإذا رفضت، فسيظل المشي متتبعًا بالخطوات.</p>
+        </details>
+        <details>
+          <summary>ما الأذونات التي يطلبها، وإلى أين تذهب بياناتي؟</summary>
+          <p>التعرّف على النشاط (لعدّ الخطوات)، والإشعارات (التذكيرات وإشعار التتبّع الجاري)، وموقع اختياري في المقدمة لرسم مسار، والتشغيل عند الإقلاع للتذكيرات والعدّ. وHealth Connect إضافة اختيارية للقراءة فقط. تبقى البيانات في التخزين الخاص بالتطبيق، والنسخ الاحتياطي السحابي متوقف، و«حذف كل البيانات» يزيلها.</p>
+        </details>
+        <details>
+          <summary>هل سبيل مجاني ومفتوح المصدر؟</summary>
+          <p>نعم. مرخّص بموجب Apache-2.0، بلا إعلانات وبلا مشتريات داخل التطبيق، والشيفرة الكاملة علنية على GitHub — بما في ذلك ملف البيان الذي يُظهر غياب إذن INTERNET.</p>
+        </details>
+        <details>
+          <summary>هل راجع النص العربي متحدّث أصلي؟</summary>
+          <p>ليس بعد. الواجهة وهذا الموقع مترجمان بالكامل، لكن المراجعة العربية الأصلية لم تحدث بعد؛ وهي شرط مسبق قبل إدراج النسخة العربية. وإذا بدت عبارة ركيكة فهذه الملاحظة مفيدة فعلًا.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="download" aria-labelledby="download-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            التنزيل
+        </p>
+        <h2 id="download-title">احصل على سبيل 1.3.0.</h2>
+        <p class="lede">بُني ووُقّع وقيس في 2026-11-23. التنزيل من GitHub؛ ولا توجد صفحة متجر بعد.</p>
+      </div>
+      <div class="dl">
+        <dl class="facts">
+          <div class="fact"><dt>الإصدار</dt><dd>1.3.0 (versionCode 3)</dd></div>
+          <div class="fact"><dt>النظام</dt><dd>أندرويد 8.0+ · minSdk 26 · targetSdk 36</dd></div>
+          <div class="fact"><dt>حزمة APK</dt><dd>2,138,010 بايت<br><span class="hash" dir="ltr">SHA-256 487ee9c9f7e7d0e1bbe490c4b7692c72cb83c0f8d963cf1f2a4545677a4dfe5d</span></dd></div>
+          <div class="fact"><dt>حزمة AAB</dt><dd>4,608,495 بايت<br><span class="hash" dir="ltr">SHA-256 ffde823d8855a7d2e8f3987156dd93124c89cf2e92894e310ba01f43a4a9fc4e</span></dd></div>
+          <div class="fact"><dt>أدلة الاختبار</dt><dd>205 اختبارات JVM / 18 مجموعة / 0 فشل · lint بلا أخطاء (80 تحذيرًا، 2 تلميح)</dd></div>
+          <div class="fact"><dt>التحقق</dt><dd>اختبارات دخان على المحاكي فقط — لا تشغيل على جهاز فعلي للإصدار 1.3؛ وغير منشور على Google Play.</dd></div>
+        </dl>
+        <div class="dl-actions">
+          <a class="btn wide" href="https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest">نزّل الإصدار 1.3.0 من GitHub</a>
+          <a class="btn ghost wide" href="https://github.com/ahmadmhmdsy/sabeel-steps">تصفّح الشيفرة المصدرية</a>
+          <a class="btn ghost wide" href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md">اقرأ ملاحظات الإصدار</a>
+          <p>حزمة APK موقّعة بمفتاح الرفع الخاص بالمشروع. بعد التنزيل، قارن الملف بقيمة SHA-256 أعلاه باستخدام <code dir="ltr">sha256sum</code>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="./" aria-label="سبيل — الصفحة الرئيسية">
+          <img src="../assets/favicon.svg" width="40" height="40" alt="">
+          <span class="brand-name" lang="en">Sabeel</span>
+          <span class="brand-ar">سبيل</span>
+        </a>
+        <p>تطبيق أصلي لعدّ الخطوات وتتبّع المشي على أندرويد، يعمل دون إنترنت وبلا إعلانات. لا حساب، ولا إعلانات، ولا تحليلات، ولا إذن INTERNET.</p>
+      </div>
+      <nav class="footer-col" aria-label="أقسام الموقع">
+        <h3>هذا الموقع</h3>
+        <ul>
+          <li><a href="#why">لماذا سبيل</a></li>
+          <li><a href="#features">الميزات</a></li>
+          <li><a href="#limitations">الحدود الصادقة</a></li>
+          <li><a href="#privacy">الخصوصية</a></li>
+          <li><a href="#screenshots">الشاشات</a></li>
+          <li><a href="#faq">الأسئلة الشائعة</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="روابط المشروع">
+        <h3>المشروع</h3>
+        <ul>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps">مستودع GitHub</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/releases">الإصدارات</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE">الرخصة (Apache-2.0)</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md">سجل التغييرات</a></li>
+          <li><a href="../privacy/">سياسة الخصوصية</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="اللغة">
+        <h3>اللغة</h3>
+        <ul>
+          <li><a href="../" lang="en" hreflang="en">English</a></li>
+          <li><a href="./" lang="ar" aria-current="page">العربية</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 أحمد محمود · رخصة Apache-2.0 · غير مرتبط بجوجل · لا تُدَّعى أي إتاحة على Google Play.</p>
+      <p>الترجمة العربية: المراجعة الأصلية معلّقة. · لا تُحمّل هذه الصفحة خطوطًا أو نصوصًا برمجية أو متتبّعات خارجية.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

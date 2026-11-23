@@ -1,0 +1,934 @@
+{
+  "base": "http://127.0.0.1:8766/sabeel-steps",
+  "pages": [
+    {
+      "name": "en-desktop",
+      "url": "http://127.0.0.1:8766/sabeel-steps/",
+      "status": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\en-desktop.png",
+      "screenshot_bytes": 1405908,
+      "metrics": {
+        "title": "Sabeel — Offline Step Counter & Walk Tracker for Android",
+        "description": "Sabeel is a quiet, offline step counter and walk tracker for Android — no account, no ads, no analytics, and no INTERNET permission. Free (Apache-2.0).",
+        "lang": "en",
+        "dir": "ltr",
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "scrollHeight": 8656,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero.png",
+            "w": 1120,
+            "h": 700,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "ar/",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "privacy/",
+          "privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "privacy/",
+          "./",
+          "ar/"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "ar-desktop",
+      "url": "http://127.0.0.1:8766/sabeel-steps/ar/",
+      "status": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\ar-desktop.png",
+      "screenshot_bytes": 1156086,
+      "metrics": {
+        "title": "سبيل — عدّاد خطوات ومتتبّع مشي لأندرويد دون إنترنت",
+        "description": "سبيل تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد، يعمل دون إنترنت: بلا حساب، بلا إعلانات، بلا تحليلات، وبلا إذن الإنترنت. حرّ ومفتوح المصدر برخصة Apache-2.0.",
+        "lang": "ar",
+        "dir": "rtl",
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "scrollHeight": 8201,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar.png",
+            "w": 1120,
+            "h": 700,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "../",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "../privacy/",
+          "../privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "../privacy/",
+          "../",
+          "./"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/ar/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "privacy-desktop",
+      "url": "http://127.0.0.1:8766/sabeel-steps/privacy/",
+      "status": 200,
+      "viewport": {
+        "width": 1280,
+        "height": 1000
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\privacy-desktop.png",
+      "screenshot_bytes": 699894,
+      "metrics": {
+        "title": "Sabeel Privacy Policy — Offline Android Step Counter",
+        "description": "Sabeel's privacy policy in English and Arabic, version 1.2. The offline Android step counter collects nothing, has no account, and keeps every walk on your device.",
+        "lang": "en",
+        "dir": "ltr",
+        "scrollWidth": 1280,
+        "innerWidth": 1280,
+        "scrollHeight": 10460,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "../",
+          "../",
+          "#english",
+          "#arabic",
+          "mailto:ahmad2002bc@gmail.com",
+          "#english",
+          "#arabic",
+          "mailto:ahmad2002bc@gmail.com",
+          "mailto:ahmad2002bc@gmail.com",
+          "../",
+          "https://github.com/ahmadmhmdsy/sabeel-steps"
+        ],
+        "stylesheets": [
+          "(inline)"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/privacy/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "404-desktop",
+      "url": "http://127.0.0.1:8766/sabeel-steps/404.html",
+      "status": 200,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\404-desktop.png",
+      "screenshot_bytes": 121848,
+      "metrics": {
+        "title": "Page not found — Sabeel",
+        "description": "That page does not exist. Sabeel is an offline step counter and walk tracker for Android.",
+        "lang": "en",
+        "dir": "ltr",
+        "scrollWidth": 1280,
+        "innerWidth": 1280,
+        "scrollHeight": 900,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "/sabeel-steps/",
+          "/sabeel-steps/",
+          "/sabeel-steps/privacy/",
+          "/sabeel-steps/",
+          "/sabeel-steps/privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps"
+        ],
+        "stylesheets": [
+          "(inline)"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/404.html",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "en-mobile",
+      "url": "http://127.0.0.1:8766/sabeel-steps/",
+      "status": 200,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\en-mobile.png",
+      "screenshot_bytes": 952872,
+      "metrics": {
+        "title": "Sabeel — Offline Step Counter & Walk Tracker for Android",
+        "description": "Sabeel is a quiet, offline step counter and walk tracker for Android — no account, no ads, no analytics, and no INTERNET permission. Free (Apache-2.0).",
+        "lang": "en",
+        "dir": "ltr",
+        "scrollWidth": 390,
+        "innerWidth": 390,
+        "scrollHeight": 12683,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero-640.png",
+            "w": 350,
+            "h": 218,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "ar/",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "privacy/",
+          "privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "privacy/",
+          "./",
+          "ar/"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero-640.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "ar-mobile",
+      "url": "http://127.0.0.1:8766/sabeel-steps/ar/",
+      "status": 200,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\ar-mobile.png",
+      "screenshot_bytes": 741772,
+      "metrics": {
+        "title": "سبيل — عدّاد خطوات ومتتبّع مشي لأندرويد دون إنترنت",
+        "description": "سبيل تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد، يعمل دون إنترنت: بلا حساب، بلا إعلانات، بلا تحليلات، وبلا إذن الإنترنت. حرّ ومفتوح المصدر برخصة Apache-2.0.",
+        "lang": "ar",
+        "dir": "rtl",
+        "scrollWidth": 390,
+        "innerWidth": 390,
+        "scrollHeight": 11378,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar-640.png",
+            "w": 350,
+            "h": 218,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "../",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "../privacy/",
+          "../privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "../privacy/",
+          "../",
+          "./"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/ar/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar-640.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "en-narrow",
+      "url": "http://127.0.0.1:8766/sabeel-steps/",
+      "status": 200,
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\en-narrow.png",
+      "screenshot_bytes": 876534,
+      "metrics": {
+        "title": "Sabeel — Offline Step Counter & Walk Tracker for Android",
+        "description": "Sabeel is a quiet, offline step counter and walk tracker for Android — no account, no ads, no analytics, and no INTERNET permission. Free (Apache-2.0).",
+        "lang": "en",
+        "dir": "ltr",
+        "scrollWidth": 320,
+        "innerWidth": 320,
+        "scrollHeight": 13925,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero-640.png",
+            "w": 279,
+            "h": 174,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "ar/",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "privacy/",
+          "privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "privacy/",
+          "./",
+          "ar/"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero-640.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    },
+    {
+      "name": "ar-narrow",
+      "url": "http://127.0.0.1:8766/sabeel-steps/ar/",
+      "status": 200,
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "screenshot": "docs\\review\\2026-11-23-site\\screenshots\\ar-narrow.png",
+      "screenshot_bytes": 662862,
+      "metrics": {
+        "title": "سبيل — عدّاد خطوات ومتتبّع مشي لأندرويد دون إنترنت",
+        "description": "سبيل تطبيق هادئ لعدّ الخطوات وتتبّع المشي على أندرويد، يعمل دون إنترنت: بلا حساب، بلا إعلانات، بلا تحليلات، وبلا إذن الإنترنت. حرّ ومفتوح المصدر برخصة Apache-2.0.",
+        "lang": "ar",
+        "dir": "rtl",
+        "scrollWidth": 320,
+        "innerWidth": 320,
+        "scrollHeight": 11946,
+        "h1": 1,
+        "imgs": [
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar-640.png",
+            "w": 279,
+            "h": 174,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+            "w": 540,
+            "h": 1030,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+            "w": 540,
+            "h": 1039,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+            "w": 540,
+            "h": 1200,
+            "complete": true
+          },
+          {
+            "src": "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+            "w": 512,
+            "h": 512,
+            "complete": true
+          }
+        ],
+        "links": [
+          "#main",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#faq",
+          "../",
+          "#download",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "#why",
+          "../privacy/",
+          "../privacy/",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md",
+          "./",
+          "#why",
+          "#features",
+          "#limitations",
+          "#privacy",
+          "#screenshots",
+          "#faq",
+          "https://github.com/ahmadmhmdsy/sabeel-steps",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE",
+          "https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md",
+          "../privacy/",
+          "../",
+          "./"
+        ],
+        "stylesheets": [
+          "http://127.0.0.1:8766/sabeel-steps/assets/styles.css"
+        ]
+      },
+      "requests": [
+        "http://127.0.0.1:8766/sabeel-steps/ar/",
+        "http://127.0.0.1:8766/sabeel-steps/assets/hero-ar-640.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/styles.css",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-ar.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/home-dark-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/history-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/insights-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/settings-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/screenshots/walk-en.png",
+        "http://127.0.0.1:8766/sabeel-steps/assets/favicon.svg"
+      ],
+      "external_requests": [],
+      "request_failures": [],
+      "console_errors_or_warnings": [],
+      "broken_images": [],
+      "horizontal_overflow_px": 0
+    }
+  ],
+  "failures": []
+}

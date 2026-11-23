@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sabeel — Offline Step Counter &amp; Walk Tracker for Android</title>
+<meta name="description" content="Sabeel is a quiet, offline step counter and walk tracker for Android — no account, no ads, no analytics, and no INTERNET permission. Free (Apache-2.0).">
+<meta name="author" content="Ahmad Mahmoud">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0F6B5C">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<link rel="alternate" hreflang="en" href="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<link rel="alternate" hreflang="ar" href="https://ahmadmhmdsy.github.io/sabeel-steps/ar/">
+<link rel="alternate" hreflang="x-default" href="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sabeel">
+<meta property="og:title" content="Sabeel — Offline Step Counter for Android">
+<meta property="og:description" content="A quiet, offline step counter and walk tracker. No account, no ads, no analytics, and no INTERNET permission.">
+<meta property="og:url" content="https://ahmadmhmdsy.github.io/sabeel-steps/">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ar_IQ">
+<meta property="og:image" content="https://ahmadmhmdsy.github.io/sabeel-steps/assets/og-1200x630.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sabeel social card: the Sabeel mark, the name in English and Arabic, and two app screenshots.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sabeel — Offline Step Counter for Android">
+<meta name="twitter:description" content="A quiet, offline step counter and walk tracker. No account, no ads, no analytics, and no INTERNET permission.">
+<meta name="twitter:image" content="https://ahmadmhmdsy.github.io/sabeel-steps/assets/og-1200x630.png">
+<meta name="twitter:image:alt" content="Sabeel social card with the app name and two screenshots.">
+<link rel="preload" as="image" href="assets/hero.png" imagesrcset="assets/hero-640.png 640w, assets/hero-960.png 960w, assets/hero.png 1600w" imagesizes="(min-width: 1180px) 1120px, calc(100vw - 40px)" fetchpriority="high">
+<link rel="stylesheet" href="assets/styles.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/#website",
+      "url": "https://ahmadmhmdsy.github.io/sabeel-steps/",
+      "name": "Sabeel",
+      "alternateName": "سبيل",
+      "description": "The official static site for Sabeel, an offline, ad-free step counter and walk tracker for Android.",
+      "inLanguage": ["en", "ar"]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/#app",
+      "name": "Sabeel",
+      "alternateName": "سبيل",
+      "description": "Sabeel is an original, offline, ad-free step counter and walk/run tracker for Android. It counts steps without an account, without ads and without the android.permission.INTERNET permission, and stores everything on the device.",
+      "applicationCategory": "HealthApplication",
+      "applicationSubCategory": "Step counter and walk tracker",
+      "operatingSystem": "Android 8.0+",
+      "softwareVersion": "1.3.0",
+      "inLanguage": ["en", "ar"],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "codeRepository": "https://github.com/ahmadmhmdsy/sabeel-steps",
+      "downloadUrl": "https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest",
+      "releaseNotes": "https://github.com/ahmadmhmdsy/sabeel-steps/releases",
+      "privacyPolicy": "https://ahmadmhmdsy.github.io/sabeel-steps/privacy/",
+      "fileSize": "2138010",
+      "author": {
+        "@type": "Person",
+        "name": "Ahmad Mahmoud"
+      },
+      "screenshot": [
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/home-en.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/insights-en.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/history-en.png",
+        "https://ahmadmhmdsy.github.io/sabeel-steps/assets/screenshots/home-ar.png"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://ahmadmhmdsy.github.io/sabeel-steps/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does Sabeel need the internet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The merged Android manifest has no INTERNET permission, and the app ships no networking, advertising or analytics code. Airplane mode changes nothing. The only time the phone goes online for Sabeel is when you choose to fetch an update from GitHub or a store — never from inside the app."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Sabeel on Google Play?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not yet. Version 1.3.0 is built, signed and measured (2026-11-23), but nothing has been uploaded to Google Play and no approval is implied. The source code, APK and AAB are on GitHub."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it guarantee that step counting never stops?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No — and no Android app can. A force-stop stops counting until you reopen Sabeel; aggressive battery managers can also stop foreground services. Sabeel records each boot attempt and shows the result in Diagnostics instead of pretending the day is complete."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Sabeel do with my location?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Location is optional and foreground-only. It is used only while a session screen is open, to draw a route on the app's own canvas — no map tiles and no address search. There is no background location permission. If you decline, a walk is still tracked by steps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What permissions does it ask for, and where does my data go?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Activity recognition (to count steps), notifications (reminders and the ongoing tracking notice), optional foreground location for a route, and start-at-boot for reminders and counting. Health Connect is an optional, read-only extra. Data stays in the app's private storage, cloud backup is disabled, and Delete all data removes it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Sabeel free and open source?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. It is licensed under Apache-2.0, has no ads and no in-app purchases, and the full source is public on GitHub — including the manifest that shows there is no INTERNET permission."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the Arabic text reviewed by a native speaker?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not yet. The interface and this site are fully translated, but a native Arabic review has not happened; it is a launch precondition for the Arabic listing. If a phrase reads awkwardly, that feedback is genuinely useful."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Sabeel — home">
+      <img src="assets/favicon.svg" width="40" height="40" alt="">
+      <span class="brand-name">Sabeel</span>
+      <span class="brand-ar" lang="ar" dir="rtl">سبيل</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-sec" href="#why">Why</a>
+      <a class="nav-sec" href="#features">Features</a>
+      <a class="nav-sec" href="#limitations">Limits</a>
+      <a class="nav-sec" href="#privacy">Privacy</a>
+      <a class="nav-sec" href="#faq">FAQ</a>
+      <a class="lang" href="ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a>
+      <a class="btn small" href="#download">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="hero-brand">
+        <span class="hero-brand-name">Sabeel</span>
+        <span class="hero-brand-ar" lang="ar" dir="rtl">سبيل</span>
+        <span class="hero-brand-desc">offline step counter for Android</span>
+      </p>
+      <h1 id="hero-title">Count your steps.<br><em>Keep them to yourself.</em></h1>
+      <p class="hero-lede">A calm step counter and walk tracker that works without a connection, an account or an advertising ID. Version 1.3 adds a real on/off switch for counting and custom walk or run sessions — and the app still cannot send your data anywhere.</p>
+      <div class="hero-actions">
+        <a class="btn" href="https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest">Download v1.3.0</a>
+        <a class="btn ghost" href="#why">Why Sabeel is different</a>
+      </div>
+      <p class="hero-meta">Android 8.0+ · English &amp; العربية · Apache-2.0 · Free, with no ads</p>
+      <figure class="hero-figure">
+        <img src="assets/hero.png"
+             srcset="assets/hero-640.png 640w, assets/hero-960.png 960w, assets/hero.png 1600w"
+             sizes="(min-width: 1180px) 1120px, calc(100vw - 40px)"
+             width="1600" height="1000" fetchpriority="high"
+             alt="Four Sabeel screens side by side: today's step ring with goal and estimates, the 7-day history chart, the insights summary, and settings.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="why" aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          Why Sabeel exists
+        </p>
+        <h2 id="why-title">Your steps are not a product.</h2>
+        <p class="lede">Most step counters are free because your movement pays for them. Sabeel takes the opposite deal: it does less behind your back, and it says out loud what it cannot do.</p>
+      </div>
+      <div class="why-grid">
+        <article class="why-card">
+          <span class="num" aria-hidden="true">01</span>
+          <h3>Offline by architecture</h3>
+          <p>The merged manifest has no <code>android.permission.INTERNET</code>. That is not a toggle that can be switched back on by an update: there is no networking code and no server to talk to. Every step stays in private storage on the phone.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">02</span>
+          <h3>No ads, accounts or analytics</h3>
+          <p>No ad SDK, no analytics, no crash reporting, no sign-in. Nothing to opt out of, and no advertising ID to hand to anyone. The release build can be inspected; the dependency list is public.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">03</span>
+          <h3>Honest about failure</h3>
+          <p>If Android or a phone maker stops background counting, Sabeel records what happened at boot and shows it in Diagnostics. It never claims that counting “never stops”, because on Android that promise cannot be kept.</p>
+        </article>
+        <article class="why-card">
+          <span class="num" aria-hidden="true">04</span>
+          <h3>Arabic first, not as an afterthought</h3>
+          <p>The whole interface ships in English and Arabic with a right-to-left layout. The Arabic strings are translated; a native-speaker review is still pending, and this site states that instead of hiding it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          What's in version 1.3
+        </p>
+        <h2 id="features-title">Small, finished features for counting and walking.</h2>
+        <p class="lede">Everything below works without a connection. Nothing here quietly needs an account, a sync service or a network request.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.25"/><path d="m8.7 12.2 2.2 2.2 4.4-4.6"/></svg>
+          <h3>One switch for counting</h3>
+          <p>Tap the ring on Home, the status pill beneath it, or the switch in Settings — they are the same persisted switch. If you turn counting off, it stays off after a restart.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9c2.4-2.6 5.2-2.6 7.6 0s5.2 2.6 7.6 0"/><path d="M3.5 15c2.4-2.6 5.2-2.6 7.6 0s5.2 2.6 7.6 0"/></svg>
+          <h3>Counting that shows its work</h3>
+          <p>A hardware step counter and a step detector run together. Health Connect can add a read-only, watch-synced floor, and a labelled accelerometer estimate fills only the part no measured source saw.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/><path d="M12 12v.1"/></svg>
+          <h3>Boot evidence, not promises</h3>
+          <p>After a restart, Sabeel records the attempt — permissions, sensor, result, whether the service was alive after a check — and tries to resume counting. Diagnostics lists the last ten attempts and can share a text report with no location or place data.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.2v4l2.6 2"/><path d="M9.5 2.5h5"/><path d="M12 2.5V5"/></svg>
+          <h3>Custom walk or run sessions</h3>
+          <p>Choose walk or run, an optional time, step, distance or place goal, and whether to draw a route. Pause freezes the session clock and steps without back-filling; midnight sessions are split into legs. One session at a time.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21c4.2-4.3 6.5-7.6 6.5-10.5a6.5 6.5 0 1 0-13 0C5.5 13.4 7.8 16.7 12 21Z"/><circle cx="12" cy="10.3" r="2.4"/></svg>
+          <h3>Places and presets, kept locally</h3>
+          <p>Save a place as a label, coordinates and radius — no address search, no geocoding, no map download. Save your usual session setup and start it in one tap.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-3.5"/><path d="M12 16V8.5"/><path d="M16 16v-6.5"/><path d="M20 16V6.5"/></svg>
+          <h3>History and insights</h3>
+          <p>A 7- or 30-day view with your goal line, the daily list and saved sessions; window averages, best day, goal-hit rate and total distance on Insights. Rest days pause a streak without breaking it.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
+          <h3>Reminders and a goal notification</h3>
+          <p>A quiet WorkManager reminder at a time you choose, a notification when you reach the day's goal, and at most one recovery notice if counting could not restart after a boot.</p>
+        </article>
+        <article class="feature">
+          <svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+          <h3>Export you start yourself</h3>
+          <p>Write daily totals as CSV, all sessions as CSV, or one session as GPX through Android's system file picker. Nothing is uploaded; the file goes only where you send it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="limitations" aria-labelledby="limits-title">
+    <div class="wrap">
+      <div class="limits-grid">
+        <div class="section-head">
+          <p class="eyebrow">
+            <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            Read this before downloading
+          </p>
+          <h2 id="limits-title">What Sabeel cannot do.</h2>
+          <p class="lede">These limits are real. They are the price of an app that cannot phone home, and it is fairer to say them here than to bury them in a store listing.</p>
+        </div>
+        <ul class="limit-list">
+          <li>
+            <strong>It cannot restart itself after a force-stop.</strong>
+            <span>Android does not allow it. Counting resumes when you next open the app, or after a restart when Android lets the boot receiver start the service.</span>
+          </li>
+          <li>
+            <strong>Aggressive battery managers can still stop it.</strong>
+            <span>MIUI and similar systems kill background services. Sabeel records the boot attempt and says when it was blocked; no app can guarantee otherwise.</span>
+          </li>
+          <li>
+            <strong>It is a tracker, not a measuring instrument.</strong>
+            <span>Steps, distance, active minutes and calories are estimates from phone sensors, not medical measurements. Sabeel is not a medical device.</span>
+          </li>
+          <li>
+            <strong>No background location and no map tiles.</strong>
+            <span>A route is drawn only while the session screen is open and only with your permission. There is no address search and no map download.</span>
+          </li>
+          <li>
+            <strong>Version 1.3 has been tested on emulators, not on a physical phone yet.</strong>
+            <span>205 JVM tests, a clean lint run and emulator smoke tests are recorded. No physical-device run of v1.3 and no store review are claimed.</span>
+          </li>
+          <li>
+            <strong>It is not published on Google Play.</strong>
+            <span>Version 1.3.0 is built, signed and measured, but availability on Play is not claimed. The download lives on GitHub.</span>
+          </li>
+          <li>
+            <strong>Arabic still needs a native reviewer.</strong>
+            <span>The translations are complete, and the review is pending — a launch precondition for the Arabic listing. Wording feedback is welcome.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap">
+      <div class="privacy-grid">
+        <div class="privacy-copy">
+          <p class="eyebrow">
+            <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+            Privacy
+          </p>
+          <h2 id="privacy-title">A privacy policy you can read in one sitting.</h2>
+          <p>There is no account to create and no server holding a copy of your walks. Android cloud backup is off for Sabeel, so its data is not carried into a backup either. The hosted policy covers exactly what is stored, every permission and why it is asked, and how to delete everything.</p>
+          <p>The policy is published in English and Arabic on this same site. Health Connect is optional and read-only; the app never writes to it.</p>
+          <p><a href="privacy/">Read the full privacy policy (EN + العربية) →</a></p>
+        </div>
+        <aside class="policy-panel" aria-label="Privacy promises">
+          <h3>What stays true by design</h3>
+          <ul>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>No <code>INTERNET</code> permission in the merged manifest</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>No account, ads, analytics or crash SDKs</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Android cloud backup disabled for the app</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Health Connect is opt-in and never written to</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Delete all data removes history, sessions and places</li>
+          </ul>
+          <a class="btn small" href="privacy/">Open the policy</a>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="screenshots" aria-labelledby="screens-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          Screenshots
+        </p>
+        <h2 id="screens-title">The real app, in English and Arabic.</h2>
+        <p class="lede">Real UI captures from release testing — not mockups, not device frames. The emulator-only “No step sensor” notice is hidden in the three Home shots; the note below explains why.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot">
+          <img src="assets/screenshots/home-en.png" width="540" height="1039" loading="lazy" decoding="async" alt="Sabeel Home screen in English: today's progress ring at 7,240 of 7,000 steps, a 17-day streak, 72 active minutes, a Start a walk button, and distance and energy estimates.">
+          <figcaption>Home (English) — today's ring, streak, goal and labelled estimates.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/home-ar.png" width="540" height="1030" loading="lazy" decoding="async" alt="Sabeel Home screen in Arabic with a right-to-left layout: progress ring at 8,500 of 8,000 steps, streak, active minutes and the Start a walk button in Arabic.">
+          <figcaption>Home (العربية) — the same screen in a right-to-left layout.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/home-dark-en.png" width="540" height="1039" loading="lazy" decoding="async" alt="Sabeel Home screen in dark mode with a mint progress ring and the same day summary.">
+          <figcaption>Home in the dark theme.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/history-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="Sabeel History screen: a 7-day bar chart with a dashed goal line and a daily list showing steps and distance.">
+          <figcaption>History — 7-day bars against the goal line, with the daily list below.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/insights-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="Sabeel Insights screen: 30-day average, best day, goal-hit rate, total distance and a plain-language summary of the last 30 days.">
+          <figcaption>Insights — 30-day average, best day, goal-hit rate and total distance.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/settings-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="Sabeel Settings screen: daily goal stepper, rest-day and reminder switches, units and language.">
+          <figcaption>Settings — goal, tracking controls, units and language.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/screenshots/walk-en.png" width="540" height="1200" loading="lazy" decoding="async" alt="Sabeel walk setup screen explaining that location is used only while a walk is tracked, with Allow and Start walk buttons.">
+          <figcaption>Walk setup — Sabeel explains location before Android asks.</figcaption>
+        </figure>
+      </div>
+      <p class="shot-note">Emulator captures from release testing in November 2026. The API 36 ATD image has no hardware step sensor, so today's step values were injected through the debug build's step receiver. These are not a physical-device claim for v1.3, and screens may differ slightly in the next build. The “No step sensor” notice the emulator shows on Home has been hidden in the Home captures above; on a phone without that sensor the app does show it (unedited captures are in the README).</p>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          FAQ
+        </p>
+        <h2 id="faq-title">Questions people actually ask.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Does Sabeel need the internet?</summary>
+          <p>No. The merged Android manifest has no INTERNET permission, and the app ships no networking, advertising or analytics code. Airplane mode changes nothing. The only time the phone goes online for Sabeel is when you choose to fetch an update from GitHub or a store — never from inside the app.</p>
+        </details>
+        <details>
+          <summary>Is Sabeel on Google Play?</summary>
+          <p>Not yet. Version 1.3.0 is built, signed and measured (2026-11-23), but nothing has been uploaded to Google Play and no approval is implied. The source code, APK and AAB are on GitHub.</p>
+        </details>
+        <details>
+          <summary>Can it guarantee that step counting never stops?</summary>
+          <p>No — and no Android app can. A force-stop stops counting until you reopen Sabeel; aggressive battery managers can also stop foreground services. Sabeel records each boot attempt and shows the result in Diagnostics instead of pretending the day is complete.</p>
+        </details>
+        <details>
+          <summary>What does Sabeel do with my location?</summary>
+          <p>Location is optional and foreground-only. It is used only while a session screen is open, to draw a route on the app's own canvas — no map tiles and no address search. There is no background location permission. If you decline, a walk is still tracked by steps.</p>
+        </details>
+        <details>
+          <summary>What permissions does it ask for, and where does my data go?</summary>
+          <p>Activity recognition (to count steps), notifications (reminders and the ongoing tracking notice), optional foreground location for a route, and start-at-boot for reminders and counting. Health Connect is an optional, read-only extra. Data stays in the app's private storage, cloud backup is disabled, and Delete all data removes it.</p>
+        </details>
+        <details>
+          <summary>Is Sabeel free and open source?</summary>
+          <p>Yes. It is licensed under Apache-2.0, has no ads and no in-app purchases, and the full source is public on GitHub — including the manifest that shows there is no INTERNET permission.</p>
+        </details>
+        <details>
+          <summary>Is the Arabic text reviewed by a native speaker?</summary>
+          <p>Not yet. The interface and this site are fully translated, but a native Arabic review has not happened; it is a launch precondition for the Arabic listing. If a phrase reads awkwardly, that feedback is genuinely useful.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint" id="download" aria-labelledby="download-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">
+          <svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 20c2.8-3 5.6-4.4 9-4.4"/><path d="M7 14.4c2.3-2.5 4.7-3.7 7.6-3.7"/><path d="M11 9c1.9-2 3.8-3 6.2-3"/><circle cx="21" cy="5" r="1.6" fill="currentColor" stroke="none"/></svg>
+          Download
+        </p>
+        <h2 id="download-title">Get Sabeel 1.3.0.</h2>
+        <p class="lede">Built, signed and measured on 2026-11-23. The download lives on GitHub; there is no store listing yet.</p>
+      </div>
+      <div class="dl">
+        <dl class="facts">
+          <div class="fact"><dt>Version</dt><dd>1.3.0 (versionCode 3)</dd></div>
+          <div class="fact"><dt>Platform</dt><dd>Android 8.0+ · minSdk 26 · targetSdk 36</dd></div>
+          <div class="fact"><dt>Release APK</dt><dd>2,138,010 B<br><span class="hash">SHA-256 487ee9c9f7e7d0e1bbe490c4b7692c72cb83c0f8d963cf1f2a4545677a4dfe5d</span></dd></div>
+          <div class="fact"><dt>Release AAB</dt><dd>4,608,495 B<br><span class="hash">SHA-256 ffde823d8855a7d2e8f3987156dd93124c89cf2e92894e310ba01f43a4a9fc4e</span></dd></div>
+          <div class="fact"><dt>Test evidence</dt><dd>205 JVM tests / 18 suites / 0 failures · lint 0 errors (80 warnings, 2 hints)</dd></div>
+          <div class="fact"><dt>Verification</dt><dd>Emulator smoke tests only — no physical-device run of v1.3; not published on Google Play.</dd></div>
+        </dl>
+        <div class="dl-actions">
+          <a class="btn wide" href="https://github.com/ahmadmhmdsy/sabeel-steps/releases/latest">Download v1.3.0 from GitHub</a>
+          <a class="btn ghost wide" href="https://github.com/ahmadmhmdsy/sabeel-steps">Browse the source</a>
+          <a class="btn ghost wide" href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/docs/release/NOTES-1.3.md">Read the release notes</a>
+          <p>The APK is signed with the project's upload key. After downloading, compare the file with the SHA-256 above using <code>sha256sum</code>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="./" aria-label="Sabeel — home">
+          <img src="assets/favicon.svg" width="40" height="40" alt="">
+          <span class="brand-name">Sabeel</span>
+          <span class="brand-ar" lang="ar" dir="rtl">سبيل</span>
+        </a>
+        <p>An original, offline, ad-free step counter and walk tracker for Android. No account, no ads, no analytics, and no INTERNET permission.</p>
+      </div>
+      <nav class="footer-col" aria-label="Site sections">
+        <h3>This site</h3>
+        <ul>
+          <li><a href="#why">Why Sabeel</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#limitations">Honest limits</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="Project links">
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps">GitHub repository</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/releases">Releases</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/LICENSE">License (Apache-2.0)</a></li>
+          <li><a href="https://github.com/ahmadmhmdsy/sabeel-steps/blob/main/CHANGELOG.md">Changelog</a></li>
+          <li><a href="privacy/">Privacy policy</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-col" aria-label="Language">
+        <h3>Language</h3>
+        <ul>
+          <li><a href="./" lang="en" aria-current="page">English</a></li>
+          <li><a href="ar/" lang="ar" hreflang="ar" dir="rtl">العربية</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Ahmad Mahmoud · Licensed Apache-2.0 · Not affiliated with Google · No Google Play availability is claimed.</p>
+      <p>Arabic translation: native review pending. · This page loads no external fonts, scripts or trackers.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

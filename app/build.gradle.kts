@@ -129,7 +129,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.navigation:navigation-compose:2.10.2")
 
     // Compose foundation + core icons (BOM-managed)
     implementation("androidx.compose.foundation:foundation")

@@ -1,0 +1,18 @@
+# Keep line endings consistent across Windows, macOS and Linux checkouts.
+# Source and docs are stored with LF; Windows batch files stay CRLF; binaries are untouched.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.apk binary
+*.aab binary
+*.keystore binary
+*.jar binary

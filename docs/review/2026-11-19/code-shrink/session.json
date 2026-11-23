@@ -1,0 +1,612 @@
+{
+  "title": "Sabeel - The Review Room - can the project be rewritten at half its size?",
+  "brand": "The Review Room",
+  "target": "Sabeel (سبيل) / steps_app / main b687f16 / app/src byte-identical to 7c48fe2",
+  "session": "session SB-2026-11-19",
+  "recorded": "2026-11-19 / 20:06 Asia/Baghdad / room of five",
+  "stamp": "maestro silent until the room closes",
+  "kicker": "live transcript / objective: half, a quarter or a tenth of the code, same result, same tests, readable for humans, machines and agents",
+  "headline": "10,348 lines of Kotlin, <em>142,456 lines of tree</em>, and a question that turns out to be two questions.",
+  "lede": "A step-tracker app with 108 frozen tests was put on trial for its size. The room found that the code cannot be halved without deleting the product, that the tree can be shrunk 6.62x in three and a half hours, and that the only real 2x is a decision the owner has not made yet.",
+  "mode": "standard",
+  "stats": [
+    {
+      "value": "6.62x",
+      "label": "tree shrink / 3.5 hours",
+      "tone": "good"
+    },
+    {
+      "value": "-4.79%",
+      "label": "code shrink / 80 hours",
+      "tone": "bad"
+    },
+    {
+      "value": "108/11/0",
+      "label": "tests frozen, green",
+      "tone": ""
+    },
+    {
+      "value": "0",
+      "label": "lines halved",
+      "tone": "bad"
+    }
+  ],
+  "roles": {
+    "expert": {
+      "name": "Nadia Okafor",
+      "handle": "NO",
+      "desc": "shipped two Android apps / one reverted after a safe refactor",
+      "color": "#b07bff"
+    },
+    "engineer": {
+      "name": "Tomas Reyes",
+      "handle": "TR",
+      "desc": "owns the plan / three refactors that each broke one thing",
+      "color": "#5b9dff"
+    },
+    "advocate": {
+      "name": "Devil's Advocate",
+      "handle": "DA",
+      "desc": "rejects the plan / finds the sentence that is false",
+      "color": "#e4574f"
+    },
+    "customer": {
+      "name": "The Dumb Customer",
+      "handle": "DC",
+      "desc": "the owner who asked / five minutes and a grudge",
+      "color": "#38b88a"
+    },
+    "maestro": {
+      "name": "The Maestro",
+      "handle": "MA",
+      "desc": "silent / observer / ruling",
+      "color": "#e8a33d"
+    }
+  },
+  "sidebar": {
+    "rulings": [
+      {
+        "tag": "EX-1",
+        "text": "Fatal: the oracle sees 1,106 of 10,348 lines. **50% is a delete-the-product target**, not a compression target."
+      },
+      {
+        "tag": "DA-1",
+        "text": "Fatal: the plan answers the metric it chose, and **spends the only refusal at v1**."
+      },
+      {
+        "tag": "DC-1",
+        "text": "Fatal: the tree an agent opens is 142,456 lines; the plan moves **0.38%** of it."
+      },
+      {
+        "tag": "DA-2",
+        "text": "Fatal: **80 hours buys 496 lines; 3.5 hours buys 120,945.** The middle has no stated value."
+      },
+      {
+        "tag": "DC-2",
+        "text": "Fatal: a 15-hour default would sign an 80-hour spend nobody decided."
+      }
+    ],
+    "evidence": [
+      "**measured:** 62 Kotlin files / 10,348 raw = 7,677 code + 978 imports + 889 comments + 804 blank; main 9,026, test 1,322; 108 tests / 11 suites / 0 failures; lint exit 0.",
+      "**measured:** 350 tracked files; tracked text 286 files / 142,456 lines; `docs/legal/sources/` 73 files / 121,300 lines (85.15%); `.html` 121,592 in 24 files.",
+      "**audited:** 14 findings (3 High) in `parts/03-audit.md`; pack F6 corrected (22% import windows), F9 overreaches, F10 stale at HEAD b687f16, dead set wrong."
+    ]
+  },
+  "blocks": [
+    {
+      "kind": "beat",
+      "time": "00:00",
+      "title": "The room opens / the Expert is called before anyone presents"
+    },
+    {
+      "kind": "note",
+      "text": "[recorder] The evidence pack is a contract, not a pitch: constraints C1-C6, measured facts F1-F15, and the three targets the owner named. The Engineer waits. The Maestro takes the corner seat and says nothing."
+    },
+    {
+      "kind": "msg",
+      "role": "expert",
+      "label": "The Expert / called first",
+      "time": "00:04",
+      "paras": [
+        "I read the tree, not the pitch. Sixty-two Kotlin files, 10,348 raw lines: 7,677 code, 978 imports, 889 comments, 804 blank. Main is 9,026 of that; the 108 tests are 1,322. The numbers in the pack re-derive exactly, and I re-derived them myself before trusting a single one.",
+        "The question on trial is a compression ratio under three invariants: no user-visible change (C1); the 108 tests byte-identical (T1) or rewritten (T2); no comment, blank-line or readability trick (C5). I decompose the corpus under those: 7,270 lines are behaviour, 407 are ceremony, and 2,671 are unavoidable overhead - imports, comments, blank separators. Overhead alone is 25.8%.",
+        "That decomposition settles the arithmetic before anyone writes a plan. Halving the corpus means 5,174 lines, of which 1,322 are frozen tests, so main would have to fall from 9,026 to 3,852. **Deleting the entire `ui` package - 5,021 lines, every screen and component - leaves the corpus at 5,327, still 153 lines over the halving line.** The quarter target, 2,587, is below the overhead floor plus tests; the tenth, 1,035, is below the test files alone. All three are impossible under T1 and T2. The honest floor is about 9,796 lines: a 5.3% reduction.",
+        "Four qiyas cards, each with its cause. Data-driven UI: the cause is nine screens rendering the same card shapes; the branch is worth 245 lines, not 2,000. Service hosts: the cause is two services with different foreground types and teardown; extract 45, never merge. Material widgets: zero - the custom canvas is the product identity. One-use indirection: 117 lines.",
+        "The boundary that matters: the frozen oracle observes 1,106 of the 10,348 lines - 10.7% - and there is no `androidTest` source set. Any 'safe' shrink is safe only for the tenth of the code a test can see; the rest is witnessed by screenshots that do not exist in the repo today.",
+        "I will judge every plan against one metric: **witnessed shrink** - a deleted line counts only if it removes no behaviour or test assertion, and its behaviour is observed green before and after by a frozen oracle. Raw line count is reported beside it, never alone."
+      ],
+      "foot": "first principles / the oracle is the ceiling"
+    },
+    {
+      "kind": "beat",
+      "time": "00:18",
+      "title": "The Engineer presents a floor, not a rewrite"
+    },
+    {
+      "kind": "msg",
+      "role": "engineer",
+      "label": "The Engineer / presenting",
+      "time": "00:21",
+      "paras": [
+        "Measured and re-derived in this session: 62 files / 10,348 raw; main 9,026; tests 1,322. The suite is 108 tests in 11 suites, 0 failures, 0 skipped; lint exits 0. I adopt T1: test files byte-identical, a SHA-256 manifest at baseline.",
+        "I reject 50%, 25% and 10%. Under T1 the corpus may be 5,174, tests are frozen at 1,322, so main may be 3,852 - and deleting all of `ui` still leaves the corpus at 5,327. That is arithmetic, not opinion. **Committed: main 9,026 to 8,480, corpus 10,348 to 9,802 - 546 lines, 5.3%.**",
+        "Nine phases, ten engineer-days: P0 baseline, T1 manifest and a screenshot matrix; P1 zero-delta splits of the 511-line `SettingsScreen()` and four other giant functions; P2 shared primitives -296; P3 screen-local -77; P4 ViewModels -63; P5 data -26; P6 domain -14; P7 shared foreground/notification machinery -45, riskiest and last; P8 dead members -25.",
+        "The riskiest step is P7 and I put it last on purpose. Zero of 108 tests touch a service; the two services run at once with different foreground types and different teardown; one wrong start/stop order crashes the walk on Android 12+. It goes behind six green gates, a device matrix on API 26/34/36 and one OEM phone, and one commit per service so a bisect has a clean target.",
+        "The sentence that makes this plan sound safe: 'every phase is pure de-duplication ... so if it compiles and the 108 tests and lint stay green, nothing can have changed.' **That sentence is false for P3, P5 and P7 - the suite sees none of that code.** The real witnesses are the screenshot matrix and the device matrix, and neither exists in this repo today."
+      ],
+      "foot": "draft v1 / a floor, not the ambition"
+    },
+    {
+      "kind": "beat",
+      "time": "00:34",
+      "title": "The room rejects the first plan"
+    },
+    {
+      "kind": "msg",
+      "role": "advocate",
+      "label": "Devil's Advocate",
+      "time": "00:36",
+      "fatal": true,
+      "evidence": [
+        "parts/02-plan-v1.md:25",
+        "parts/02-plan-v1.md:29",
+        "parts/02-plan-v1.md:32",
+        "parts/02-plan-v1.md:33"
+      ],
+      "falsification": "one sentence in v1 that maps 50/25/10 to 94.7% without oracle coverage as the independent variable, or the owner's written answer choosing the floor over any priced C1 relaxation; neither exists",
+      "paras": [
+        "Rejected. This is not a plan for the question on trial; it is the room's ruling written at beat two, with a phase table attached.",
+        "Victory is redefined. The owner asked 50%, 25%, 10%; the commitment is printed as **94.7% retained** - the fraction of the corpus that stays, 45 points away from the frame the owner used - and 'honest' moves from 'as far as the source compresses' to 'where the Expert's floor sits'. The only variable that maps one to the other is the oracle's 10.7% coverage.",
+        "The middle this creates is never priced. Delete Diagnostics (318 raw) and Insights (151) and their ViewModels (90) - about **560 lines, more than the entire 546-line plan** - and the owner has a real decision to make about C1. The plan never offers it.",
+        "And the plan spends the one refusal the protocol reserves for v3 at v1: 'I refuse to plan to 50%'. After that sentence, the room can only revise the floor, not the answer."
+      ],
+      "foot": "fatal flaw: the metric was chosen, not the question answered"
+    },
+    {
+      "kind": "msg",
+      "role": "customer",
+      "label": "The Dumb Customer",
+      "time": "00:41",
+      "fatal": true,
+      "evidence": [
+        "parts/02-plan-v1.md:27",
+        "parts/02-plan-v1.md:81",
+        "evidence-pack.md:55"
+      ],
+      "falsification": "show me a line in my brief or in the README that limits 'the project' to app/src; the evidence pack says the opposite at :55",
+      "paras": [
+        "I asked for half, a quarter, a tenth of the project. I was handed **546 lines: 5.3% of the Kotlin, 0.38% of what I actually open.**",
+        "I measured the tree: 350 tracked files, 142,456 text lines. `docs/legal/sources/` alone is 73 files and 121,300 lines - 85.2%. The plan's primary metric is `app/src/main`, 7.3% of the tree, and the word 'agent' does not appear in the plan at all, though the brief says readable for humans, machines and agents.",
+        "Ten days from now the app is identical, the tests are byte-identical, and the repository I hand an agent has moved **0.38%**. I cannot tell that from a no-op by the only reader I named.",
+        "And 'same tests' is bought with an oracle that does not exist: 180 hand screenshots, no capture tool, no CI step, half a day budgeted for 4.5 to 7.5 hours of work before any code moves. **506 of the 546 lines have no unit-test witness** - the plan says so itself: 'green means compiles'.",
+        "Cheapest demand: one command that prints the tree by class, one decision that the metric is the tree I hand an agent, and a two-hour move of the legal evidence to a tagged archive with a hash manifest - **6.7x the tree, zero app change**. If legal refuses, print the refusal on the plan's cover."
+      ],
+      "foot": "customer / the tree I actually open"
+    },
+    {
+      "kind": "beat",
+      "time": "00:50",
+      "title": "The audit lands - independent findings with file and line"
+    },
+    {
+      "kind": "note",
+      "text": "[recorder] A read-only seat returns 14 findings - 3 High, 7 Medium, 4 Low - each with severity, file:line, mechanism, consequence and a falsification test. It also re-derives F1-F13 and corrects the pack: F6's 8,655 denominator includes 978 import lines and 22% of its duplicate windows are imports; F9's parity test parses only strings.xml, not the 26 sensor strings x2 locales; F10 has drifted with HEAD b687f16; the dead-code detector found zero of the four real dead declarations. The Engineer goes quiet and reads it twice."
+    },
+    {
+      "kind": "msg",
+      "role": "expert",
+      "label": "The Expert / reading the audit",
+      "time": "00:56",
+      "paras": [
+        "The audit does not invalidate the plan; it reclassifies it. Three High findings are exactly the 'duplicates' a shrink would naturally merge: the two language stores, the notification copy, the erase choreography. Each has a named user-visible failure if merged - the language choice stops applying and the activity never recreates; Arabic users see English units in the shade; a day row resurrects, or counting stops until process death.",
+        "Count the lines in those six clusters - language, erase, checkpoint codecs, formatters, status polls, day resets - about 450 production lines. **Every one is load-bearing and untested.** So duplication in this app is bimodal: about 400 lines of presentation ceremony that can go, and about 450 lines of boundary redundancy that cannot, because the redundancy is the contract between two concurrent services, two stores, two locales and two process lifetimes.",
+        "The plan's total does not survive its own rows. P7 cannot be -45: its own helper signature passes type and notification in, so both type ladders, both builders and both failure reactions stay with the callers; the ceiling is -10 to -18. P8 grows by 12 because two dead declarations were missed. The corrected ledger is **503-521 raw lines, corpus 9,827-9,845 - the committed 9,802 sits 25 to 43 lines below its own floor.**",
+        "The dead-surface claim is worse than a rounding error: the detector matches only column-0 declarations and found none of the four real dead declarations. The plan inherited a number that was never measured."
+      ],
+      "foot": "audit absorbed / the duplicate field is bimodal"
+    },
+    {
+      "kind": "beat",
+      "time": "01:06",
+      "title": "The Expert prices the second-order bill"
+    },
+    {
+      "kind": "msg",
+      "role": "expert",
+      "label": "The Expert / second dissection",
+      "time": "01:10",
+      "paras": [
+        "Two of the plan's own abstractions should be cut outright. `StatCardGrid`, the largest row, is a spec-growth trap: the cost at each site is the entries, not the stacked branch, and the first card that needs an action or a tone grows the type for every other grid. The shared status flows are not a shrink at all but a contract decision - Home polls at 5 s and Diagnostics at 3 s; one shared interval changes either battery posture or the documented freshness. Their corrected value is a parameterised -10, not -20.",
+        "The safe-helper rule the plan should have used: no parameter whose value is fixed at every call site, and a third call site must not require a new parameter. By that rule two of the six helpers are cut and a third - the settings row shell - must keep its font-scale read at the call site.",
+        "The oracle install is the largest hidden cost. 180 captures at 90-150 s each is **4 to 7 unaccounted engineer-days**; the states are device-dependent, the saved AVD is sensorless, the recorded validation image returns blank screencaps, and there is no owner, no pinned image, no committed hashes, no non-author adjudicator. A manual oracle that certifies its author is a ritual, not a witness.",
+        "The customer's denominator is valid as framing and a category error as a code KPI. The 85% is legal evidence that the house rule says is KEPT; moving it is a repository and legal decision, not compression. But the plan is still wrong to measure one plane. Use three: **L1 code** - all Kotlin under `app/src`, the only plane a code shrink may claim; **L2 task-read** - files, lines and tokens to change one named thing; **L3 tree** - reported always, owned separately, never a target. Never sum the planes.",
+        "The 2x refutation holds only inside the pinned-corpus invariant: the measured set is all Kotlin under `app/src`, no relocation, generation or language change; the oracle is the 108 frozen tests; C1 fixes every pixel and string. Drop any one and the arithmetic is a different problem - which is why the only honest 2x left is a product decision."
+      ],
+      "foot": "second-order effects / the object on trial"
+    },
+    {
+      "kind": "beat",
+      "time": "01:16",
+      "title": "The Engineer revises under fire"
+    },
+    {
+      "kind": "msg",
+      "role": "engineer",
+      "label": "The Engineer / revising",
+      "time": "01:19",
+      "revision": true,
+      "paras": [
+        "Conceded, with the corrected number: I committed 0.38% of the tree the owner opens and called it 94.7%. v2 reports three planes - L1 code, L2 task-read, L3 tree - and moves the tree first.",
+        "Conceded: P1 is not delta zero. File-scoped imports, 26 locals and 16 call sites make the split +80 to +130 lines; it is removed from the plan and priced at 1.5 days and +110 lines as readability debt only. P7 is removed too: its helper cannot save 45 because its own signature passes the type and notification in, and its witness cannot run - no `androidTest`, no recorded device run, a sensorless AVD. It reopens only on a named trigger.",
+        "Corrected: the dead set is 5 symbols and 27 lines, not 15; P4 is 49 because the two status polls are parameterised at 5 s and 3 s rather than merged; no row derives from the 7.8% duplication figure. The ledger is 503-521 lines. **v2 commits 496: L1 10,348 to 9,852, L3 142,456 to 21,254 in three hours, 6.70x.**",
+        "The cost is now explicit and ugly: 80 hours - 47 code, 18 human witness, 15 overhead - 6.2 lines an hour, against 40,401 lines an hour for the tree phase. That ratio is the room's next question, not mine to hide.",
+        "**Refused, kept for v3: I will not strip comments, KDoc, blanks or imports, or weaken tests, to reach a number.** It buys 1.9% of the tree, kills C5, and removes the witness the P5/P6 rows stand on. The 50% refusal from v1 is withdrawn, not spent twice; the deletion branches are priced and belong to the owner."
+      ],
+      "foot": "draft v2 / three planes, tree first, one refusal kept"
+    },
+    {
+      "kind": "beat",
+      "time": "01:28",
+      "title": "Second attack - the ratio and the witness"
+    },
+    {
+      "kind": "msg",
+      "role": "advocate",
+      "label": "Devil's Advocate / second attack",
+      "time": "01:30",
+      "fatal": true,
+      "evidence": [
+        "parts/07-plan-v2.md:60",
+        "parts/07-plan-v2.md:62",
+        "parts/07-plan-v2.md:108",
+        "parts/07-plan-v2.md:115"
+      ],
+      "falsification": "a stated rule showing why 462 lines are worth 55.5 hours plus a new oracle, and a matrix that two independent operators reproduce without the sponsor adjudicating",
+      "paras": [
+        "v2 fixes my three flaws. It still fails on value, and the failure is arithmetic.",
+        "**80 hours buys minus 496 L1. Three hours buys the entire L3 win.** The middle - P2 to P6 - is 55.5 hours plus a 15-to-28-hour oracle for 462 lines: 4.5% of L1 and 0.32% of L3. Only P2 clears the program mean, and P2 is the row the Expert cut as the riskiest. The plan never states why those 462 lines are worth the week, and its menu never offers the subset that is worth the week.",
+        "The 80 is really 88 to 103: 2 hours budgeted for 8 gates against roughly 32 commits under one commit per row; a 3-hour revert buffer smaller than one failed UI row; the matrix priced at 80 seconds a cell against the Expert's measured 90 to 150.",
+        "And the oracle still certifies its author. Adjudication sits with the sponsor whose silence funds the plan; there is no pinned image, no committed hash, no second operator, no capture tool in the tooling list. The 30 states are never enumerated, and the sensorless AVD cannot produce the granted or stopped cells.",
+        "Recommendation, not a plan: fund P0-lite, P1 and P8 - about 12 hours, 6.7x the tree, 34 lines of code, no new oracle. Defer the rest until the owner names a code KPI."
+      ],
+      "foot": "second attack / the ratio is the plan"
+    },
+    {
+      "kind": "msg",
+      "role": "customer",
+      "label": "The Dumb Customer / second look",
+      "time": "01:35",
+      "fatal": true,
+      "evidence": [
+        "parts/07-plan-v2.md:102",
+        "parts/07-plan-v2.md:108",
+        "parts/07-plan-v2.md:115"
+      ],
+      "falsification": "the five-row consequence page exists and the default is split into the tree move only, with no code phases bound by silence",
+      "paras": [
+        "I believe the 6.70x. I re-derived it from the tree, not the prose. **The tree move would have kept me** - I sign it now, with one added AC: redirect the nine remaining legal citations and label the result working tree, never repo.",
+        "But 95.2% is retention, not compression: minus 496 lines for 80 hours is 9.7 minutes a line, while the tree phase moves 40,401 lines an hour. I would fund the 5 hours and none of the 80.",
+        "First fatal: the decision you ask me to make is not decidable. B5 and B6 price files, not consequences. Which screens disappear? What stops working? What do the 108 tests prove afterwards? What happens to saved walks, CSV, the first-run disclosure, the Play declarations? Who signs the C1 exemption? Give me one page with five rows, or the branch is not an offer.",
+        "Second fatal: 15 of the 80 hours are my eyes - 136 cells by five passes, hand-adjudicated by the sponsor. Commit a capture-and-diff harness, prove it on the baseline, put it in the gate, and make task-read a gate instead of a footnote. Otherwise the second week is a QA ritual for a refactor that is supposed to change nothing.",
+        "And the date: 2026-11-20 12:00 is fourteen hours away, and my silence would sign the 80 hours. I accept 2026-11-24 12:00 for the code plan; the tree move I decide today."
+      ],
+      "foot": "second look / the tree kept me, the rest did not"
+    },
+    {
+      "kind": "beat",
+      "time": "01:44",
+      "title": "The Engineer's last word"
+    },
+    {
+      "kind": "msg",
+      "role": "engineer",
+      "label": "The Engineer / final plan",
+      "time": "01:46",
+      "paras": [
+        "Committed set: 13.5 hours. P0-lite 4.5 - `tools/shrink`, L1 5-tuple and tokens, T1 manifest, the L2 three-task read-closure, baseline record. P1 tree 3.5 - 73/73 hash proof, tag object SHA, nine citation redirects, labelled working tree. P8 3.5 - 34 dead lines, truthful KDocs, `AGENTS.md`. Plus 2 hours of commits and buffer. **L1 10,348 to 10,314; L3 142,456 to 21,511, 6.62x. No code headline is claimed.**",
+        "Gated, not committed: P2 226, P3 77, P4 39 - **342 lines in 36 hours**, the 422 minus the two rows the Expert cut. With P5/P6 it is 416 lines and a corpus of 9,932, which is 87 above the Expert's 9,845; I say that rather than pad it.",
+        "Three gates. G1, the harness: pinned API 34 image, four fixed configs including the 1.35 and 1.4 thresholds, enumerated states only, status-bar-cropped captures, SHA-256 per cell, CI at 1.5 hours a pass, two operators byte-identical, non-author adjudication, proven on the pre-refactor commit. G2, read-closure: a measured drop on a named task before a phase starts and no regression after it lands. G3, the owner's explicit yes by 2026-11-24 12:00. Any gate missing means no start and no C1 claim.",
+        "**Refused, and this is the one: I will not run the 422 UI lines against a manual oracle adjudicated by the person who ordered the refactor.** They wait for the harness. Comment-stripping and module-relabelling are invariants, not a second refusal.",
+        "The five-row B5/B6 page is written: screens and routes, capabilities in the user's words, what the 108 tests prove, data and Play declarations including the first-run disclosure, hours, irreversibility and who signs the C1 exemption. B5 is 48.6% for 24 hours; B6 is 73.9% for 30 and still 2,470 over. Page and harness proof by 2026-11-23 18:00; decision 2026-11-24 12:00. Deferred: P5/P6 to a second tranche, P7 to its trigger, the settings split because it costs lines without a task-read witness, B4 because its tenth needs deleting the blockers record and the migration contract."
+      ],
+      "foot": "draft v3 / 13.5 hours committed, 342 lines gated, one refusal"
+    },
+    {
+      "kind": "msg",
+      "role": "expert",
+      "label": "The Expert / closing the argument",
+      "time": "01:50",
+      "paras": [
+        "One condition before the Maestro speaks, dated 2026-12-10. The test tree byte-identical and 108/11/0/0. The committed numbers published with the 5-tuple and tokens. The three riskiest screens reproduced byte-identical on a pinned emulator image by two independent operators, hashes committed, diffs adjudicated by someone other than the change's author. And no landed helper with a parameter constant at every call site.",
+        "Fail the first two and the shrink failed and reverts to the last green tag. Fail the last two and it is arithmetically done and unwitnessed - and it may not claim that nothing changed."
+      ],
+      "foot": "argument exhausted"
+    },
+    {
+      "kind": "verdict_open",
+      "title": "The Maestro's ruling - the implementable answer",
+      "subtitle": "built from the corrections above / no summary of the debate"
+    },
+    {
+      "kind": "section",
+      "kicker": "0 / the decision",
+      "title": "Rewrite nothing for line count: by 2026-11-24 spend 21.5 hours to move 121,300 lines of legal evidence out of the working tree, kill 34 dead lines, correct four false documents and build the witness; the 342-line consolidation and the 2x feature decision wait for three gates that can be observed.",
+      "paras": [
+        "The code cannot be halved under the owner's own invariants. Two times needs main at 3,852 lines, and deleting every screen in the app - all 5,021 lines of `ui` - still leaves the corpus 153 lines over the halving line. Four times is below the import-comment-blank floor and ten times is below the frozen test files alone. No rewrite shape changes that arithmetic. The shapes that appear to - moving code into a second module, a second source set or generated files - are denominator moves, and this ruling counts every Kotlin line Gradle compiles, wherever it is put.",
+        "What can be done is smaller and more honest. The working tree the owner and his agents open falls from 142,456 text lines to 21,511 in 3.5 hours, because 85% of it is third-party legal evidence that is kept as evidence, not read to change a screen. The code that remains is 10,348 Kotlin lines whose problem is not length but legibility: a 511-line function, a 908-line file, 34 dead lines, and four KDoc statements the audit proved false. The committed work makes the tree 6.62x smaller and the code 34 lines shorter; it does not pretend to halve anything.",
+        "Order: measure in one script; archive the evidence with a hash proof and a legal signature; delete the dead code and correct the lying documents; build the witness that can fail against its author; then let the 342-line consolidation start only behind the witness, a task-read gate and the owner's explicit yes. The 2x question is the owner's, from a five-row consequence page, by 2026-12-10."
+      ],
+      "callout": {
+        "label": "",
+        "text": "A line count is a claim about a repository. The tree an agent opens and the function a human must hold are claims about the work."
+      }
+    },
+    {
+      "kind": "table",
+      "kicker": "1 / preconditions",
+      "title": "",
+      "headers": [
+        "check",
+        "command / evidence",
+        "state"
+      ],
+      "rows": [
+        [
+          "tree clean at HEAD",
+          "`git status --porcelain`; `git diff 7c48fe2..HEAD -- app/src` empty",
+          "in flight"
+        ],
+        [
+          "tests frozen and green",
+          "108 / 11 / 0 / 0; `git diff --name-only -- app/src/test` empty",
+          "green"
+        ],
+        [
+          "instrument in repo",
+          "`python tools/shrink/tree.py` prints 286 files / 142,456 lines and 62 / 10,348 raw",
+          "not yet"
+        ],
+        [
+          "legal signature",
+          "owner and legal co-sign the tag and the manifest wording",
+          "owner action"
+        ],
+        [
+          "owner's C1 signature",
+          "the five-row page for B5/B6, signed in `ruling.md`",
+          "by 2026-12-10"
+        ]
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "1",
+      "title": "Measure before touching anything",
+      "when": "day 1 / 4.5 hours",
+      "steps": [
+        {
+          "head": "Commit the instrument",
+          "text": "Move the room's one-off scripts into `tools/shrink/` - tree by class, L1 five-tuple, tokens, SHA-256. No number leaves this room that the repository cannot re-derive on another machine."
+        },
+        {
+          "head": "Record the three planes",
+          "text": "L1: 62 files / 10,348 raw = 7,677 code + 978 imports + 889 comments + 804 blank; tokens 31,198 main and 4,455 test. L2: for three named tasks - change the goal default, add a settings row, resume an interrupted walk - record the files, lines and tokens read and changed. L3: 286 files / 142,456 lines by class."
+        },
+        {
+          "head": "Freeze T1",
+          "text": "SHA-256 manifest of the 11 test files, `@Test` count 108, and one four-task gate run that is green before the first edit."
+        }
+      ],
+      "accept": [
+        "AC-1: `python tools/shrink/tree.py` on a clean checkout reproduces 286 files / 142,456 lines, 62 files / 10,348 raw, and the token counts above.",
+        "AC-2: the three L2 tasks are recorded as files, lines and tokens in `docs/review/2026-11-19/code-shrink/metrics/l2-baseline.md`, one row per task.",
+        "AC-3: the T1 manifest matches all 11 files and the gate is 108 / 11 / 0 / 0."
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "2",
+      "title": "Archive the evidence, do not destroy it",
+      "when": "day 1 / 3.5 hours + legal sign-off",
+      "steps": [
+        {
+          "head": "Tag the snapshot",
+          "text": "Annotated tag `legal-sources-2026-11-19` on a commit whose `docs/legal/sources/` tree is byte-identical to today's; the tag message records 73 files, 121,300 lines and the sign-off."
+        },
+        {
+          "head": "Hash and point",
+          "text": "`docs/legal/SOURCES.sha256.txt` - 73 lines, verifiable from a tag checkout; a 25-line `SOURCES.md` carries the house rule verbatim, the tag name and the manifest path."
+        },
+        {
+          "head": "Redirect and remove",
+          "text": "The nine remaining `docs/legal/sources/` citations in four documents point at the tag; `git rm -r` the 73 files in one commit; nothing under `app/`, `.github/`, `gradle/` or any build file changes."
+        }
+      ],
+      "accept": [
+        "AC-4: `sha256sum -c docs/legal/SOURCES.sha256.txt` passes 73/73 from a tag checkout, and `git revert` restores the tree in under five minutes.",
+        "AC-5: tracked text is 21,511 lines (6.62x) and `git diff --name-only` contains no path under `app/`, `.github/`, `gradle/` or any build file.",
+        "AC-6: all nine citations resolve to the tag, and every place that quotes 6.62x says working tree, never repository or code."
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "3",
+      "title": "Kill the dead code and the four lies",
+      "when": "day 2 / 3.5 hours",
+      "steps": [
+        {
+          "head": "The measured dead set",
+          "text": "Five symbols, 27 lines: `StepCadence.minuteKeys` (write-only, witnessed by `StepCadenceTest`), `WalkTrackingService.resetSession`, `Permissions.hasStepSensor`, `StepSourcePolicy.bestMeasured`, `Daos.getSince`. Each is grep-verified and deleted with a compile."
+        },
+        {
+          "head": "Four KDoc corrections",
+          "text": "`syncLanguage` names the wrong writer; the checkpoint version is written and never read; `CsvIo` claims a guard that runs after the read; the notification-channel text claims importance can change after creation when it cannot."
+        },
+        {
+          "head": "The code map",
+          "text": "`AGENTS.md`: module map, the task paths for the three L2 tasks, which test pins what, and the untested areas named plainly - ui, services, Notifications, Reminders, repository and settings store."
+        }
+      ],
+      "accept": [
+        "AC-7: `git grep -n` returns the declaration only for the five dead symbols, and `:app:testDebugUnitTest` is green including `StepCadenceTest`.",
+        "AC-8: the four corrected KDoc statements agree with the code the audit read; no new KDoc claim is added without a test or a witness.",
+        "AC-9: a reader with no chat context answers the three L2 tasks from `AGENTS.md` plus the tree in under ten minutes, and the answers are recorded, not judged."
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "4",
+      "title": "Build the witness nobody can authorise alone",
+      "when": "day 2-3 / 8 hours",
+      "steps": [
+        {
+          "head": "Capture and diff",
+          "text": "A scripted capture for four fixed configs with the 1.35 and 1.4 threshold cells, status bar cropped, one SHA-256 per cell, a pixel diff, and a pinned API 34 image and ABI named in the script."
+        },
+        {
+          "head": "Prove it can fail",
+          "text": "Run it on the pre-refactor commit; make a deliberately wrong edit and produce a non-empty diff and a red CI job; keep both as the harness's own record."
+        },
+        {
+          "head": "Two operators",
+          "text": "A second machine reproduces byte-identical hashes; a diff is adjudicated by someone other than the author of the change; the CI job uploads the diff and the manifest."
+        }
+      ],
+      "accept": [
+        "AC-10: the harness reproduces the baseline hashes byte-identically on two independent machines and runs as a CI job.",
+        "AC-11: one pass completes in 1.5 hours or less and covers Home granted and stopped, Settings with each dialog, Walk live and summary, History, Insights - in en and ar.",
+        "AC-12: the deliberately wrong edit produces a non-empty diff and a red job; the harness record shows it failing."
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "5",
+      "title": "Consolidate only behind three gates",
+      "when": "from 2026-11-24 12:00 / 36 hours + 10.5-hour second tranche",
+      "steps": [
+        {
+          "head": "Gate 1 - the witness",
+          "text": "AC-10, AC-11 and AC-12 are all evidenced in the phase record before a row starts."
+        },
+        {
+          "head": "Gate 2 - read-closure",
+          "text": "The named task's read-closure is at least 5% better than the AC-2 baseline, and does not regress after the row lands. A line count that improves while the task gets harder is a failure."
+        },
+        {
+          "head": "Gate 3 - the owner",
+          "text": "The owner's explicit yes on the named subset and the hours. Silence funds nothing; there is no default in this plan."
+        },
+        {
+          "head": "Execution",
+          "text": "P2 226, P3 77, P4 39 in that order; `StatCardGrid` and the shared status flows stay cut; every row is reverted whole if either gate moves the wrong way. P5/P6 - 40 lines with free unit witnesses - are the first rows of the second tranche."
+        }
+      ],
+      "accept": [
+        "AC-13: no row starts before all three gates are evidenced in the phase record, and the evidence names the operator and the adjudicator.",
+        "AC-14: with every row landed, L1 is 9,932 at most (416 lines removed including P5/P6); any row that measures more than 20% short of plan is cut and the total moves - never padded.",
+        "AC-15: the three L2 tasks are better than the AC-2 baseline, and the test tree is still byte-identical."
+      ]
+    },
+    {
+      "kind": "phase",
+      "num": "6",
+      "title": "Decide the only 2x from one page",
+      "when": "page by 2026-11-23 18:00 / signed by 2026-11-24 12:00 / closed by 2026-12-10",
+      "steps": [
+        {
+          "head": "The five rows",
+          "text": "For each branch, B5 deleting the UI and B6 deleting features: screens and routes kept; capabilities lost in the user's words; what the 108 tests prove afterwards; data, Play Data Safety and the first-run disclosure; hours, irreversibility and who signs the C1 exemption."
+        },
+        {
+          "head": "The signature",
+          "text": "The owner writes yes or no in `ruling.md`. A yes starts a new product plan, not this one; a no closes 2x, 4x and 10x permanently: the code is correctly sized for the product."
+        }
+      ],
+      "accept": [
+        "AC-16: the one-page table exists with five rows per branch, the measured line counts, and the legal artefact each branch touches, including the first-run disclosure.",
+        "AC-17: the owner's yes or no is signed and dated in `ruling.md`; no feature is deleted, no test rewritten and no C1 exemption taken before that signature.",
+        "AC-18: if the answer is no, the 2x/4x/10x question is recorded closed and does not reopen without a product change - not a refactor."
+      ]
+    },
+    {
+      "kind": "table",
+      "kicker": "3 / what waits, and the evidence that reopens it",
+      "title": "",
+      "headers": [
+        "item",
+        "when",
+        "the evidence that reopens it"
+      ],
+      "rows": [
+        [
+          "the 342-line UI consolidation",
+          "after 2026-11-24 12:00",
+          "harness green in CI, read-closure 5% better, owner's explicit yes - three gates, not a date"
+        ],
+        [
+          "P5/P6, 40 lines with free witnesses",
+          "first tranche after the gates",
+          "the same three gates; no new oracle required"
+        ],
+        [
+          "shared foreground and notification machinery, at most 18 lines",
+          "next device cycle",
+          "a recorded physical-device matrix with B7 closed, or an androidTest covering both services' start and stop"
+        ],
+        [
+          "test rewrite under T2",
+          "not in this plan",
+          "suite runtime over 90 s, or a failure-localisation defect T1 cannot find"
+        ],
+        [
+          "archiving every document for a 10x tree",
+          "never as a shrink target",
+          "a legal or compliance decision with its own owner; it removes READMEs, blockers and the migration contract, not code"
+        ],
+        [
+          "moving code to a second module",
+          "only for a build-time reason",
+          "a measured build-time or ownership win; it is 0% compression and every compiled Kotlin line counts here"
+        ],
+        [
+          "stripping comments, blanks, imports or tests",
+          "never",
+          "no witness exists, C5 dies, and it buys 1.9% of the tree"
+        ]
+      ],
+      "note": "After release is never a sentence. Every deferral above has a trigger that can be observed, and none of them reopens by silence."
+    },
+    {
+      "kind": "commands",
+      "kicker": "4 / the run of commands",
+      "title": "",
+      "code": "python tools/shrink/tree.py\n./gradlew.bat --offline :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease\n\n# after legal sign-off - archive, never destroy\ngit tag -a legal-sources-2026-11-19 -m '73 files / 121,300 lines / archived, not destroyed'\npython tools/shrink/hash.py --write docs/legal/SOURCES.sha256.txt\ngit rm -r docs/legal/sources\ngit commit -m 'P1: archive legal evidence to tag legal-sources-2026-11-19'\npython tools/shrink/tree.py\n\n# witness - two operators, non-author adjudication\npython tools/shrink/capture.py --configs en-ar-1.0-1.35-1.5 --hash --ci"
+    },
+    {
+      "kind": "scope",
+      "kicker": "5 / the scope fence",
+      "items": [
+        "No user-visible change (C1); the 11 test files byte-identical (T1); no task, string, permission, manifest, schema or dependency change.",
+        "No code excluded by module, source set, variant, directory or generation: every Kotlin file Gradle compiles counts; relocation is 0% and is never claimed.",
+        "No comment, blank line, import or test stripped to reach a number.",
+        "No feature deleted, no test rewritten and no C1 exemption taken before the owner's signed 2026-11-24 decision; a yes starts a new plan, not this one.",
+        "No legal evidence destroyed: the tag, the 73-file manifest, the pointer and the sign-off, or the phase does not run.",
+        "6.62x is a working-tree figure and is never quoted as code compression; clone size is a separate decision with its own owner."
+      ]
+    },
+    {
+      "kind": "section",
+      "kicker": "6 / the kill-criterion",
+      "title": "2026-12-10 - the date this thesis is tested.",
+      "paras": [
+        "By 2026-12-10: the tree is at or below 21,511 lines with the tag and manifest verified; the harness runs from two operators in CI; the three L2 tasks have a recorded baseline and at least one has stopped getting harder; and the owner has signed the 2x page.",
+        "If any of those is missing, the shrink thesis is dead. The correct conclusion is not that the refactor needs more time - it is that the codebase is sized for its product, and the only remaining lever is the product decision the owner already has in front of him. A 2x that needs the walk, the history, the insights, the onboarding and the CSV deleted is a product decision, and the owner - not an engineer - signs it."
+      ]
+    }
+  ],
+  "footer": [
+    "session SB-2026-11-19 / Sabeel (سبيل) steps_app / recorded 2026-11-19 20:06-21:58 Asia/Baghdad",
+    "kill-criterion: 2026-12-10 - tree 6.62x verified, witness in CI, task-read recorded and better, owner 2x page signed",
+    "regenerate with: python build_transcript.py docs/review/2026-11-19/code-shrink/session.json --out docs/review/2026-11-19/code-shrink/review-room-transcript.html"
+  ]
+}

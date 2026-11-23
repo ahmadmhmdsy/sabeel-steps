@@ -20,6 +20,9 @@ keystore.properties
 # Agent workspace state / transcripts
 .dsh/
 
+# Local competitor/third-party research copies (never published)
+.external/
+
 # IDE / OS noise
 .idea/
 *.iml

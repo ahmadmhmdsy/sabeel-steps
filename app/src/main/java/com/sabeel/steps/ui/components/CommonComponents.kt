@@ -261,36 +261,55 @@ fun CountingStatusCard(
     modifier: Modifier = Modifier,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    critical: Boolean = false,
+    secondaryActionLabel: String? = null,
+    onSecondaryAction: (() -> Unit)? = null,
 ) {
+    // A critical card is the "Android stopped counting" state: it must read as an alarm, not as
+    // another neutral note, so it uses the error container and an error-tinted warning icon.
+    val container = if (critical) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
+    val content = if (critical) {
+        MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        colors = CardDefaults.cardColors(containerColor = container),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Filled.Warning,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary,
+                    tint = if (critical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(20.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = if (critical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
                 )
             }
             Spacer(Modifier.size(6.dp))
             Text(
                 text = body,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = content,
             )
             if (actionLabel != null && onAction != null) {
                 Spacer(Modifier.size(12.dp))
                 SabeelPrimaryButton(text = actionLabel, onClick = onAction)
+            }
+            if (secondaryActionLabel != null && onSecondaryAction != null) {
+                Spacer(Modifier.size(4.dp))
+                SabeelSecondaryButton(text = secondaryActionLabel, onClick = onSecondaryAction)
             }
         }
     }

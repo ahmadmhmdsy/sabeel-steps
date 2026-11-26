@@ -358,6 +358,7 @@
     <string name="home_system_stopped_body">أوقف أندرويد العدّ — اضغط لإعادة التشغيل. آخر فحص %1$s.</string>
     <string name="home_system_stopped_body_none">أوقف أندرويد العدّ — اضغط لإعادة التشغيل.</string>
     <string name="home_system_stopped_action">أعد تشغيل العدّ</string>
+    <string name="home_system_stopped_share">شارك التقرير</string>
 
     <!-- مفتاح الإعدادات: نفس النية المحفوظة التي تعبّر عنها حلقة الرئيسية. -->
     <string name="settings_section_counting">العدّ</string>
@@ -392,6 +393,19 @@
     <string name="diagnostics_share_note">لا يحتوي النص المشارَك على أي بيانات موقع أو أماكن.</string>
     <string name="diagnostics_share_error">تعذّر فتح تطبيق للمشاركة.</string>
     <string name="diagnostics_share_footer">أُرسل من سبِيل. لا يحتوي على بيانات موقع أو أماكن.</string>
+    <!-- إصدار الميدان: تقرير دعم بلمسة واحدة (معاينة وبيانات مسموحة ومسح). -->
+    <string name="diagnostics_report_share">شارك التقرير الكامل</string>
+    <string name="diagnostics_report_title">راجع قبل المشاركة</string>
+    <string name="diagnostics_report_body">يُنشأ هذا التقرير على هاتفك. يحتوي على طراز الجهاز وإصدارَي أندرويد والتطبيق ومجاميع الخطوات والتوقيت وحالة الطاقة والأذونات وسجل أحداث العدّ. لا يحتوي على موقعك أو جهات اتصالك أو إشعاراتك أو قائمة تطبيقاتك أو أي معرّف حساب. شاركه مع مطوّر سبِيل فقط.</string>
+    <string name="diagnostics_report_preview_note">في الأسفل ملف report.txt كما سيُشارَك تمامًا. ويحتوي ملف ZIP أيضًا على سجل الأحداث الخام وملف بيانات صغير.</string>
+    <string name="diagnostics_report_confirm">شارك التقرير</string>
+    <string name="diagnostics_report_cancel">إلغاء</string>
+    <string name="diagnostics_report_error">تعذّر إنشاء التقرير.</string>
+    <string name="diagnostics_report_chooser">شارك تقرير سبِيل</string>
+    <string name="diagnostics_report_wipe">احذف بيانات التشخيص</string>
+    <string name="diagnostics_report_wipe_body">هل تريد حذف سجل الأحداث وبيانات التشخيص التي حفظها سبِيل على هذا الهاتف؟ لا يمكن التراجع عن ذلك.</string>
+    <string name="diagnostics_report_wipe_confirm">احذف</string>
+    <string name="diagnostics_report_wipe_done">حُذفت بيانات التشخيص.</string>
     <!-- الجلسات المخصّصة (المرحلة 2): الإعداد والجلسة الجارية والملخص وعناوين السجل. -->
     <string name="session_setup_title">جلسة جديدة</string>
     <string name="session_activity_label">النشاط</string>

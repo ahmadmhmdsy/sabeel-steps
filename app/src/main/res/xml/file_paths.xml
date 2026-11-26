@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The only thing Sabeel ever shares through its FileProvider is a diagnostics ZIP written to
+     cacheDir/diagnostics. Nothing else in app storage is exposed. -->
+<paths>
+    <cache-path name="diagnostics" path="diagnostics/" />
+</paths>

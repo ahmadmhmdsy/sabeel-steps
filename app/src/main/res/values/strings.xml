@@ -342,6 +342,7 @@
     <string name="home_system_stopped_body">Android stopped counting — tap to restart. Last check-in %1$s.</string>
     <string name="home_system_stopped_body_none">Android stopped counting — tap to restart.</string>
     <string name="home_system_stopped_action">Restart counting</string>
+    <string name="home_system_stopped_share">Share report</string>
 
     <!-- Settings switch: same persisted intent as the Home ring. -->
     <string name="settings_section_counting">Counting</string>
@@ -376,6 +377,19 @@
     <string name="diagnostics_share_note">The shared text contains no location or place data.</string>
     <string name="diagnostics_share_error">Could not open a sharing app.</string>
     <string name="diagnostics_share_footer">Shared from Sabeel. Contains no location or place data.</string>
+    <!-- Field build: one-tap support report (preview, allowlist, wipe). -->
+    <string name="diagnostics_report_share">Share full report</string>
+    <string name="diagnostics_report_title">Review before sharing</string>
+    <string name="diagnostics_report_body">This report is built on your phone. It contains the device model, Android and app versions, step totals, timing, power state, permissions, and a log of counting events. It does not contain your location, contacts, notifications, app list, or any account identifier. Share it only with Sabeel’s developer.</string>
+    <string name="diagnostics_report_preview_note">Below is report.txt exactly as it will be shared. The ZIP also carries the raw event log and a small meta file.</string>
+    <string name="diagnostics_report_confirm">Share report</string>
+    <string name="diagnostics_report_cancel">Cancel</string>
+    <string name="diagnostics_report_error">Could not build the report.</string>
+    <string name="diagnostics_report_chooser">Share Sabeel report</string>
+    <string name="diagnostics_report_wipe">Delete diagnostic data</string>
+    <string name="diagnostics_report_wipe_body">Delete the event log and diagnostics facts Sabeel stored on this phone? This cannot be undone.</string>
+    <string name="diagnostics_report_wipe_confirm">Delete</string>
+    <string name="diagnostics_report_wipe_done">Diagnostic data deleted.</string>
     <!-- Custom sessions (Phase 2): setup, live session, summary and history labels. -->
     <string name="session_setup_title">New session</string>
     <string name="session_activity_label">Activity</string>

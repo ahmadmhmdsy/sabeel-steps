@@ -17,8 +17,12 @@ import androidx.core.content.ContextCompat
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.data.repo.StepSnapshot
+import com.sabeel.steps.diagnostics.DeviceStateReader
+import com.sabeel.steps.diagnostics.FlightRecorder
+import com.sabeel.steps.diagnostics.MidnightBaseline
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.MotionStepDetector
+import com.sabeel.steps.domain.PipelineObserver
 import com.sabeel.steps.domain.SilenceWatchdog
 import com.sabeel.steps.domain.StepPipeline
 import com.sabeel.steps.domain.StepSource
@@ -144,16 +148,33 @@ class StepCounterService : Service(), SensorEventListener {
     private var statusDay = ""
     private var lastNotificationTitle = ""
 
+    /** Maps a pipeline decision to one flight-recorder line. Dormant when the recorder is off. */
+    private val pipelineObserver = PipelineObserver { event ->
+        FlightRecorder.log("pipeline", mapOf("ev" to event.name))
+    }
+
+    /** Last registration outcome, so a failed re-registration is logged once, not every heartbeat. */
+    private var lastRegistrationLog = ""
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         try {
+            FlightRecorder.log(
+                "service_create",
+                mapOf(
+                    "pid" to android.os.Process.myPid(),
+                    "intended" to countingIntended(),
+                    "exempt" to MidnightBaseline.isExempt(this),
+                ),
+            )
             // The user's intent is the first gate, written before any action: a START_STICKY
             // restart after a deliberate stop must never resurrect the service (the service never
             // self-enables). No foreground start happens here, so stopSelf() is legal.
             if (!countingIntended()) {
                 runCatching { StatusStore.mark(this, StepServiceStatus.OFF_BY_USER) }
+                FlightRecorder.log("service_off_intent")
                 stopSelf()
                 return
             }
@@ -191,6 +212,9 @@ class StepCounterService : Service(), SensorEventListener {
         if (!startInForeground()) {
             // The platform refused the foreground start (background start restriction, revoked
             // prerequisite race). STOPPED is the truthful state; a permission card would be wrong.
+            // A visible notification is the only way to tell the user after the process is gone.
+            FlightRecorder.recordStart("FOREGROUND_REFUSED", mapOf("mode" to mode.name))
+            runCatching { Notifications.notifyCountingPaused(this, urgent = true) }
             markStoppedWithoutErase()
             stopSelf()
             return
@@ -198,6 +222,9 @@ class StepCounterService : Service(), SensorEventListener {
         mode = Mode.COUNTING
         runningInstance = true
         markAlive(force = true)
+        // The daily baseline is what makes the first morning sample attributable; arm it while the
+        // process is definitely alive, not only when the user opens the app.
+        runCatching { MidnightBaseline.ensureScheduled(this) }
         watchdog.onStart(System.currentTimeMillis())
 
         scope.launch {
@@ -228,7 +255,10 @@ class StepCounterService : Service(), SensorEventListener {
             .getOrDefault(0)
         cadence.seed(today, seededActive, now)
         runCatching {
-            app.container.steps.reconcile(activeMinutesToday = cadence.activeMinutesFor(today))
+            app.container.steps.reconcile(
+                activeMinutesToday = cadence.activeMinutesFor(today),
+                observer = pipelineObserver,
+            )
         }
         // A deliberate pause ended: rebase explicitly instead of letting the counter catch-up path
         // count the paused gap. Runs after reconcile (so today's persisted state is current) and
@@ -249,6 +279,14 @@ class StepCounterService : Service(), SensorEventListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        FlightRecorder.log(
+            "service_start",
+            mapOf(
+                "action" to (intent?.action ?: "null"),
+                "startId" to startId,
+                "running" to runningInstance,
+            ),
+        )
         if (intent?.action == ACTION_STOP) {
             // Explicit stop from the controller/UI. The controller has already persisted the off
             // intent; onDestroy writes the pause baseline and marks OFF_BY_USER.
@@ -309,6 +347,12 @@ class StepCounterService : Service(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
+    override fun onTrimMemory(level: Int) {
+        // Memory pressure is a plausible prelude to a low-memory kill; one line makes it visible.
+        FlightRecorder.log("trim_memory", mapOf("level" to level))
+        super.onTrimMemory(level)
+    }
+
     private fun onCounterEvent(raw: Float, eventNanos: Long, now: Long) {
         if (!raw.isFinite()) return
         synchronized(pendingLock) {
@@ -316,6 +360,7 @@ class StepCounterService : Service(), SensorEventListener {
             pendingCounterNanos = eventNanos
         }
         counterEventAt = now
+        FlightRecorder.noteSensor("counter")
         onMeasuredEvent(now)
     }
 
@@ -326,6 +371,7 @@ class StepCounterService : Service(), SensorEventListener {
             pendingDetectorNanos = eventNanos
         }
         detectorEventAt = now
+        FlightRecorder.noteSensor("detector")
         onMeasuredEvent(now)
     }
 
@@ -342,6 +388,7 @@ class StepCounterService : Service(), SensorEventListener {
                 synchronized(pendingLock) { pendingEstimateSteps += detected }
                 estimateEventAt = now
                 lastEstimateAt = now
+                FlightRecorder.noteSensor("estimate")
             }
         }
     }
@@ -357,6 +404,12 @@ class StepCounterService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         runningInstance = false
+        val endReason = when {
+            eraseInProgress -> "erase"
+            !countingIntended() -> "off"
+            mode == Mode.COUNTING -> "stopped"
+            else -> mode.name
+        }
         try {
             writeJob?.cancel()
             heartbeatJob?.cancel()
@@ -376,9 +429,12 @@ class StepCounterService : Service(), SensorEventListener {
                     // current, so the next start resumes with delta 0 instead of counting the gap.
                     runCatching { flushPauseOnStop() }
                     runCatching { StatusStore.mark(this, StepServiceStatus.OFF_BY_USER) }
+                    runCatching { MidnightBaseline.cancel(this) }
                 }
                 mode == Mode.COUNTING -> StatusStore.markStopped(this)
             }
+            FlightRecorder.logSync("service_destroy", mapOf("reason" to endReason))
+            FlightRecorder.recordCleanStop(endReason)
         } catch (ignored: Exception) {
             // Teardown must never throw.
         } finally {
@@ -390,6 +446,7 @@ class StepCounterService : Service(), SensorEventListener {
     override fun onTaskRemoved(rootIntent: Intent?) {
         // The user swiped the app away; the service is sticky, but flush the last seconds now in
         // case the OEM kills the process immediately after the task removal.
+        FlightRecorder.log("task_removed")
         if (!eraseInProgress) scope.launch { writeSnapshot() }
         super.onTaskRemoved(rootIntent)
     }
@@ -403,6 +460,20 @@ class StepCounterService : Service(), SensorEventListener {
         }
         if (detectorSensor != null && !detectorRegistered) {
             detectorRegistered = registerPlain(detectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+        logRegistrationState()
+    }
+
+    /** One line when the measured registration picture changes; silence means "unchanged". */
+    private fun logRegistrationState() {
+        val state = "creg=" + counterRegistered +
+            " dreg=" + detectorRegistered +
+            " hasC=" + (counterSensor != null) +
+            " hasD=" + (detectorSensor != null) +
+            " est=" + estimateActive
+        if (state != lastRegistrationLog) {
+            lastRegistrationLog = state
+            FlightRecorder.log("registration", mapOf("state" to state))
         }
     }
 
@@ -541,7 +612,7 @@ class StepCounterService : Service(), SensorEventListener {
         val snapshot = takePendingSnapshot() ?: return
         val activeBefore = cadence.activeMinutesFor(today)
         val row: com.sabeel.steps.domain.DailyStep? = try {
-            app.container.steps.record(snapshot, now, activeBefore)
+            app.container.steps.record(snapshot, now, activeBefore, pipelineObserver)
         } catch (cancel: kotlinx.coroutines.CancellationException) {
             throw cancel
         } catch (failed: Exception) {
@@ -549,6 +620,7 @@ class StepCounterService : Service(), SensorEventListener {
             return
         }
         onWriteSuccess()
+        FlightRecorder.noteWrite(row?.steps ?: 0)
         if (row != null) {
             cadence.onEvent(row.steps.toFloat(), now, today)
             val activeAfter = cadence.activeMinutesFor(today)
@@ -593,6 +665,7 @@ class StepCounterService : Service(), SensorEventListener {
         consecutiveWriteFailures++
         if (consecutiveWriteFailures == 1 || consecutiveWriteFailures % 30 == 0) {
             runCatching { StatusStore.markStorageFault(this, true) }
+            FlightRecorder.noteWrite(-1, failed = true)
         }
     }
 
@@ -614,6 +687,16 @@ class StepCounterService : Service(), SensorEventListener {
                     runCatching {
                         markAlive(force = true)
                         markSourceStatus(force = true)
+                        FlightRecorder.heartbeat(
+                            this@StepCounterService,
+                            mapOf(
+                                "mode" to mode.name,
+                                "src" to activeSource.name,
+                                "hc" to healthConnectReady,
+                                "creg" to counterRegistered,
+                                "dreg" to detectorRegistered,
+                            ) + DeviceStateReader.read(this@StepCounterService).toFields(),
+                        )
                         withContext(Dispatchers.Main) {
                             ensureMeasuredRegistrations()
                             if (estimateActive) registerAccelerometer(SensorManager.SENSOR_DELAY_UI)
@@ -887,10 +970,20 @@ class StepCounterService : Service(), SensorEventListener {
         } else {
             0
         }
-        val started = runCatching {
+        val attempt = runCatching {
             ServiceCompat.startForeground(this, Notifications.ID_STEP_SERVICE, buildNotification(), type)
-        }.isSuccess
+        }
+        val started = attempt.isSuccess
         foregroundStarted = started
+        FlightRecorder.log(
+            "foreground",
+            mapOf(
+                "started" to started,
+                "type" to type,
+                "notif" to Permissions.hasNotifications(this),
+                "exception" to (attempt.exceptionOrNull()?.javaClass?.name ?: ""),
+            ),
+        )
         return started
     }
 
@@ -992,6 +1085,15 @@ class StepCounterService : Service(), SensorEventListener {
          */
         fun ensureStarted(context: Context): StartResult {
             val appContext = context.applicationContext
+            FlightRecorder.log(
+                "start_request",
+                mapOf(
+                    "intended" to CountingStore.get(appContext).current().enabled,
+                    "ar" to Permissions.hasActivityRecognition(appContext),
+                    "sensor" to StepSensors.hasAny(appContext),
+                    "exempt" to MidnightBaseline.isExempt(appContext),
+                ),
+            )
             val result = runCatching {
                 if (!CountingStore.get(appContext).current().enabled) {
                     StatusStore.mark(appContext, StepServiceStatus.OFF_BY_USER)
@@ -1010,8 +1112,11 @@ class StepCounterService : Service(), SensorEventListener {
                     Intent(appContext, StepCounterService::class.java),
                 )
                 StartResult.STARTED
+            }.onFailure {
+                FlightRecorder.log("start_exception", mapOf("type" to it.javaClass.name))
             }.getOrDefault(StartResult.REFUSED)
             runCatching { StatusStore.recordStartResult(appContext, result.name) }
+            FlightRecorder.recordStart(result.name, mapOf("running" to runningInstance))
             return result
         }
 

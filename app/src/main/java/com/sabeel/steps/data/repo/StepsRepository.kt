@@ -8,6 +8,7 @@ import com.sabeel.steps.data.db.toEntity
 import com.sabeel.steps.data.prefs.SettingsRepository
 import com.sabeel.steps.domain.DailyStep
 import com.sabeel.steps.domain.DateKey
+import com.sabeel.steps.domain.PipelineObserver
 import com.sabeel.steps.domain.StepMath
 import com.sabeel.steps.domain.StepPipeline
 import com.sabeel.steps.domain.StepState
@@ -114,6 +115,7 @@ class StepsRepository(
         snapshot: StepSnapshot,
         now: Long = System.currentTimeMillis(),
         activeMinutesToday: Int = -1,
+        observer: PipelineObserver? = null,
     ): DailyStep? = mutex.withLock {
         if (snapshot.isEmpty) return@withLock null
         val today = DateKey.today(now)
@@ -128,6 +130,7 @@ class StepsRepository(
                 today = today,
                 eventNanos = snapshot.counterEventNanos,
                 nowMillis = now,
+                observer = observer,
             )
             state = update.state
             rolled = rolled || update.rolledOver
@@ -139,6 +142,7 @@ class StepsRepository(
                 today = today,
                 eventNanos = snapshot.detectorEventNanos,
                 nowMillis = now,
+                observer = observer,
             )
             state = update.state
             rolled = rolled || update.rolledOver
@@ -192,11 +196,12 @@ class StepsRepository(
     suspend fun reconcile(
         now: Long = System.currentTimeMillis(),
         activeMinutesToday: Int = -1,
+        observer: PipelineObserver? = null,
     ): DailyStep? = mutex.withLock {
         val today = DateKey.today(now)
         val legacyUpgrade = !settings.isManifoldSchema()
         val prior = settings.readStepState(today)
-        val update = StepPipeline.reconcile(prior, today, now)
+        val update = StepPipeline.reconcile(prior, today, now, observer)
         var state = update.state
         val existing = dao.today(today)?.toDomain()
         val steps = StepPipeline.resolveTodaySteps(state, existing?.steps)

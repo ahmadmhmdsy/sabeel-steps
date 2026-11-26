@@ -127,3 +127,15 @@ On a physical phone with both sensors, in a 5-minute session:
 
 ### First action
 Write the failing unit tests for the fusor (reboot, reboot mid-day, out-of-order, detector duplicate guard, HC floor, estimate marker shrink, midnight rollover, process-death catch-up) and run Step Zero items 1–3 on the available physical device if one is attached; if only the emulator is available, run items 2–3 with the estimate path and record the sensor limitation as evidence. Then implement the state layer before the service.
+
+---
+
+## Amendment — 2026-11-26: field diagnostics and P6 (midnight alarm) re-admitted
+
+The Maestro ruling above rejected **P6** ("wake the service at midnight"). Field evidence since then (owner's phone: count works, today stays 0, last update "not counted yet", service shown as stopped by Android, battery optimization already unrestricted) shows the failure mode P6 targeted: the process is dead at midnight, so no sample is processed and the first sample tomorrow cannot be attributed across the day boundary. The earlier rejection was about a *wake-up that would cost battery or need special permission*; the amended form is narrower:
+
+- **P6-D2-d (adopted):** a single inexact `AlarmManager.setAndAllowWhileIdle` wake-up at ~00:05 local. No `SCHEDULE_EXACT_ALARM`, no wakelock, no polling. On delivery it starts the counting service **only** if counting is wanted, the app is battery-exempt (the documented background-FGS-start exemption) and the service is dead; otherwise it records the outcome and re-arms. If the alarm does not run (OEM deep-clean, force-stop), the existing rule still **drops** the unattributable cross-midnight delta.
+- **Recovery amendment:** `ReconcileWorker` and `BootHealthWorker` now perform the same exemption-gated self-heal rather than only notifying, and post a visible (not silent) alert when they cannot start the service.
+- **Evidence amendment (P2, adopted):** a field-only flight recorder + post-mortem + one-tap ZIP report (gated by `BuildConfig.FIELD_DIAGNOSTICS`, release-key signed, versionCode 4, `1.3.1-field`) was added so the Step Zero outcome is observable on the owner's device. It records events, not step values or identifiers, has no INTERNET permission, and is dormant in public builds.
+
+**Step Zero for this amendment** (physical device): install the field build as an in-place update → open once with counting on → Settings → Force stop → wait ≥ 2 min → open → Diagnostics → *Share full report* **before** restarting. Pass = `report.txt` shows a new process start after the gap, an exit record whose time matches the force-stop with reason `USER_STOPPED`/`REASON_*` (Android 11+), the last heartbeat before the stop, and no invented steps for the dead window. If that fails, the recorder is not observing the kill and the 72-hour escalation is one stock `adb bugreport`, not more in-app tooling.

@@ -21,7 +21,8 @@ import com.sabeel.steps.ui.i18n.AppLocale
 /**
  * Single owner of notification channels and of every notification Sabeel ever posts.
  *
- * Channels: steps (low, silent), reminders (default), goal (default). Every channel name and every
+ * Channels: steps (low, silent), counting_alerts (default, audible), reminders (default), goal
+ * (default). Every channel name and every
  * notification body is built from an [AppLocale.wrap] context, so the app language chosen in
  * Settings (or the device locale) is what the system notification shade shows. [ensureChannels] is
  * idempotent and re-creates the channels on every call, which is what updates their names in system
@@ -36,6 +37,13 @@ object Notifications {
     const val CHANNEL_REMINDERS = "reminders"
     const val CHANNEL_GOAL = "goal"
 
+    /**
+     * Visible, audible channel reserved for "counting stopped and Sabeel could not restart it".
+     * Android 13+ hides a low-importance notification after a short time, which is exactly the one
+     * case where the user must see it; this channel is default importance on purpose.
+     */
+    const val CHANNEL_ALERTS = "counting_alerts"
+
     const val ID_STEP_SERVICE = 4101
     const val ID_WALK = 4102
     const val ID_GOAL = 4103
@@ -43,6 +51,7 @@ object Notifications {
     const val ID_COUNTING_PAUSED = 4105
     const val ID_RECOVERY = 4106
     const val ID_SESSION_GOAL = 4107
+    const val ID_COUNTING_STOPPED = 4108
 
     private const val PREFS = "sabeel_notifications"
     private const val KEY_GOAL_NOTIFIED_DATE = "goal_notified_date"
@@ -72,6 +81,16 @@ object Notifications {
                 setShowBadge(false)
                 enableVibration(false)
                 setSound(null, null)
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ALERTS,
+                localized.getString(R.string.sensor_notif_channel_alerts),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply {
+                description = localized.getString(R.string.sensor_notif_channel_alerts_desc)
+                setShowBadge(true)
             },
         )
         manager.createNotificationChannel(
@@ -243,36 +262,54 @@ object Notifications {
 
     /**
      * Nudges the user to reopen the app when the counting heartbeat went stale (OEM cleaner, process
-     * kill, force-stop). Deliberately only a notification: a WorkManager job cannot legally start a
-     * foreground service on Android 12+, and a silent "restart" would be a lie about what was lost.
+     * kill, force-stop). A WorkManager job can legally start the health foreground service only when
+     * the app holds the battery-optimisation exemption (a documented background-start exemption);
+     * without it this notification is the honest fallback, and a silent "restart" would be a lie
+     * about what was lost.
      *
-     * At most once per [PAUSED_REMINDER_INTERVAL_MS]; the timestamp is written only after a post that
+     * The silent path is rate-limited to once per [PAUSED_REMINDER_INTERVAL_MS]. [urgent] is used
+     * when a start was actually attempted and refused: it uses [CHANNEL_ALERTS], is not rate-limited,
+     * and tells the user to tap and restart. The timestamp is written only after a post that
      * actually reached the notification manager.
      *
      * @return true when a notification was actually posted now.
      */
     @Synchronized
-    fun notifyCountingPaused(context: Context): Boolean {
+    fun notifyCountingPaused(context: Context, urgent: Boolean = false): Boolean {
         if (!Permissions.hasNotifications(context)) return false
         ensureChannels(context)
-        if (isChannelOff(context, CHANNEL_STEPS)) return false
+        val channel = if (urgent) CHANNEL_ALERTS else CHANNEL_STEPS
+        if (isChannelOff(context, channel)) return false
         val prefs = prefs(context)
         val last = prefs.getLong(KEY_PAUSED_NOTIFIED_AT, 0L)
-        if (System.currentTimeMillis() - last < PAUSED_REMINDER_INTERVAL_MS) return false
+        if (!urgent && System.currentTimeMillis() - last < PAUSED_REMINDER_INTERVAL_MS) return false
         val localized = AppLocale.wrap(context)
-        val notification = NotificationCompat.Builder(context, CHANNEL_STEPS)
+        val title = if (urgent) {
+            localized.getString(R.string.sensor_notif_stopped_title)
+        } else {
+            localized.getString(R.string.sensor_notif_paused_title)
+        }
+        val text = if (urgent) {
+            localized.getString(R.string.sensor_notif_stopped_text)
+        } else {
+            localized.getString(R.string.sensor_notif_paused_text)
+        }
+        val notification = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_stat_steps)
             .setColor(ACCENT_COLOR)
-            .setContentTitle(localized.getString(R.string.sensor_notif_paused_title))
-            .setContentText(localized.getString(R.string.sensor_notif_paused_text))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(localized.getString(R.string.sensor_notif_paused_text)))
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setContentIntent(openAppIntent(context))
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(
+                if (urgent) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_LOW,
+            )
             .build()
-        val posted = post(context, ID_COUNTING_PAUSED, notification)
+        val id = if (urgent) ID_COUNTING_STOPPED else ID_COUNTING_PAUSED
+        val posted = post(context, id, notification)
         if (posted) {
             prefs.edit().putLong(KEY_PAUSED_NOTIFIED_AT, System.currentTimeMillis()).apply()
         }

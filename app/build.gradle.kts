@@ -28,6 +28,17 @@ val hasReleaseKeystore = keystorePropertiesFile.exists() &&
 // Exposed as BuildConfig.PRIVACY_POLICY_URL; empty means "not configured".
 val privacyPolicyUrl = providers.gradleProperty("sabeel.privacyPolicyUrl").orElse("").get()
 
+// Field diagnostics build flag. The flight recorder, post-mortem capture and full-report export are
+// compiled in but dormant unless this property is true, so the public build keeps its "nothing is
+// recorded" promise while a tester can install a same-signature build that records locally:
+//   .\gradlew.bat :app:assembleRelease -Psabeel.fieldDiagnostics=true
+// It changes versionName to 1.3.1-field; versionCode stays 4 for every 1.3.1 build so the field
+// build installs over 1.3.0 in place and a later public 1.3.1 (versionCode 5) installs over it.
+val fieldDiagnostics = providers.gradleProperty("sabeel.fieldDiagnostics")
+    .map { it.equals("true", ignoreCase = true) }
+    .orElse(false)
+    .get()
+
 android {
     namespace = "com.sabeel.steps"
     compileSdk = 36
@@ -36,9 +47,10 @@ android {
         applicationId = "com.sabeel.steps"
         minSdk = 26
         targetSdk = 36
-        // Second version bump (1.1.0 -> 1.3.0) for the v1.3 session-engine release; required before upload.
-        versionCode = 3
-        versionName = "1.3.0"
+        // 1.3.1: field diagnostics build (versionCode 4). The next public release uses versionCode 5
+        // so a tester who installed 1.3.1-field can update to it in place, keeping data and signature.
+        versionCode = 4
+        versionName = if (fieldDiagnostics) "1.3.1-field" else "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -50,6 +62,7 @@ android {
             "PRIVACY_POLICY_URL",
             "\"${privacyPolicyUrl}\"",
         )
+        buildConfigField("boolean", "FIELD_DIAGNOSTICS", fieldDiagnostics.toString())
     }
 
     signingConfigs {

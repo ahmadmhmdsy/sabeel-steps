@@ -13,29 +13,41 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sabeel.steps.BuildConfig
 import com.sabeel.steps.R
 import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.diagnostics.DiagnosticsReport
+import com.sabeel.steps.diagnostics.DiagnosticsShare
+import com.sabeel.steps.diagnostics.FlightRecorder
+import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.StepSource
 import com.sabeel.steps.platform.BootAttempt
 import com.sabeel.steps.platform.HealthConnect
@@ -51,6 +63,10 @@ import com.sabeel.steps.ui.components.SectionHeader
 import com.sabeel.steps.ui.format.stepsText
 import com.sabeel.steps.ui.format.timeText
 import com.sabeel.steps.ui.viewmodel.DiagnosticsViewModel
+import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * "Why is my count low?" - an evidence screen, not a coaching one.
@@ -204,6 +220,55 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
         val chooser = Intent.createChooser(send, shareChooserTitle)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         shareError = !runCatching { context.startActivity(chooser) }.isSuccess
+    }
+
+    // Field build: one-tap support report. The preview shows report.txt exactly as it will be
+    // shared, so no file leaves the phone without the user reading what is inside it.
+    val scope = rememberCoroutineScope()
+    val fieldBuild = BuildConfig.FIELD_DIAGNOSTICS
+    var reportPreview by remember { mutableStateOf<String?>(null) }
+    var reportZip by remember { mutableStateOf<File?>(null) }
+    var reportBusy by remember { mutableStateOf(false) }
+    var reportError by remember { mutableStateOf(false) }
+    var wipeDone by remember { mutableStateOf(false) }
+    var showWipeConfirm by remember { mutableStateOf(false) }
+    val buildReport: () -> Unit = {
+        reportError = false
+        reportBusy = true
+        scope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val container = (context.applicationContext as SabeelApp).container
+                    val stateTotal = runCatching {
+                        container.settings.readStepState(DateKey.today()).total
+                    }.getOrDefault(ui.today?.steps ?: 0)
+                    val data = DiagnosticsReport.collect(context, ui.today?.steps ?: 0, stateTotal)
+                    DiagnosticsReport.prune(context)
+                    DiagnosticsReport.buildText(data) to DiagnosticsReport.buildZip(context, data)
+                }
+            }
+            reportBusy = false
+            result.onSuccess { pair ->
+                reportPreview = pair.first
+                reportZip = pair.second
+            }.onFailure { reportError = true }
+        }
+    }
+    val shareReport: () -> Unit = {
+        val zip = reportZip
+        if (zip == null || !DiagnosticsShare.share(context, zip)) {
+            reportError = true
+        }
+        reportPreview = null
+    }
+    val wipeReportData: () -> Unit = {
+        showWipeConfirm = false
+        scope.launch {
+            withContext(Dispatchers.IO) { FlightRecorder.wipe(context) }
+            reportZip = null
+            reportPreview = null
+            wipeDone = true
+        }
     }
 
     ScreenScaffold(title = stringResource(R.string.diagnostics_title), onBack = onBack) {
@@ -432,6 +497,31 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (fieldBuild) {
+            SabeelSecondaryButton(
+                text = stringResource(R.string.diagnostics_report_share),
+                onClick = buildReport,
+                enabled = !reportBusy,
+            )
+            if (reportError) {
+                Text(
+                    text = stringResource(R.string.diagnostics_report_error),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            if (wipeDone) {
+                Text(
+                    text = stringResource(R.string.diagnostics_report_wipe_done),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            SabeelSecondaryButton(
+                text = stringResource(R.string.diagnostics_report_wipe),
+                onClick = { showWipeConfirm = true },
+            )
+        }
         Text(
             text = stringResource(R.string.diagnostics_footer),
             style = MaterialTheme.typography.bodySmall,
@@ -439,6 +529,67 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             textAlign = TextAlign.Start,
         )
         Spacer(Modifier.height(8.dp))
+    }
+
+    reportPreview?.let { preview ->
+        AlertDialog(
+            onDismissRequest = { reportPreview = null },
+            title = { Text(text = stringResource(R.string.diagnostics_report_title)) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    Text(
+                        text = stringResource(R.string.diagnostics_report_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.diagnostics_report_preview_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = preview,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = shareReport) {
+                    Text(text = stringResource(R.string.diagnostics_report_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportPreview = null }) {
+                    Text(text = stringResource(R.string.diagnostics_report_cancel))
+                }
+            },
+        )
+    }
+
+    if (showWipeConfirm) {
+        AlertDialog(
+            onDismissRequest = { showWipeConfirm = false },
+            title = { Text(text = stringResource(R.string.diagnostics_report_wipe)) },
+            text = { Text(text = stringResource(R.string.diagnostics_report_wipe_body)) },
+            confirmButton = {
+                TextButton(onClick = wipeReportData) {
+                    Text(text = stringResource(R.string.diagnostics_report_wipe_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWipeConfirm = false }) {
+                    Text(text = stringResource(R.string.diagnostics_report_cancel))
+                }
+            },
+        )
     }
 }
 

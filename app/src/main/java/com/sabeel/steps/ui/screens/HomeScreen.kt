@@ -272,6 +272,9 @@ private fun HomeContent(
                 body = systemStoppedBody,
                 actionLabel = stringResource(R.string.home_system_stopped_action),
                 onAction = onStartCounting,
+                critical = true,
+                secondaryActionLabel = stringResource(R.string.home_system_stopped_share),
+                onSecondaryAction = onOpenDiagnostics,
             )
 
             ui.serviceStatus == StepServiceStatus.STOPPED -> CountingStatusCard(

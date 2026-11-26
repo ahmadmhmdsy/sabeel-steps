@@ -8,6 +8,8 @@
     <string name="sensor_notif_channel_reminders_desc">Your daily walk reminder</string>
     <string name="sensor_notif_channel_goal">Daily goal</string>
     <string name="sensor_notif_channel_goal_desc">A quiet note when you reach your step goal</string>
+    <string name="sensor_notif_channel_alerts">Counting alerts</string>
+    <string name="sensor_notif_channel_alerts_desc">A visible alert when Android stops step counting and Sabeel cannot restart it</string>
 
     <string name="sensor_notif_counting_title">Sabeel is counting your steps</string>
     <string name="sensor_notif_counting_text">Your steps stay on this phone.</string>
@@ -20,6 +22,8 @@
     <string name="sensor_notif_no_sensor_title">Step sensor not available</string>
     <string name="sensor_notif_paused_title">Step counting is paused</string>
     <string name="sensor_notif_paused_text">Tap to reopen Sabeel and resume counting. Your saved day is safe.</string>
+    <string name="sensor_notif_stopped_title">Step counting stopped</string>
+    <string name="sensor_notif_stopped_text">Sabeel could not restart counting by itself. Tap to open Sabeel and restart. If this keeps happening, allow Sabeel to run in the background in battery settings.</string>
     <string name="sensor_notif_no_sensor_text">This device reports no step counter, step detector or motion sensor. Walks are still saved.</string>
 
     <string name="sensor_notif_walk_title">Walk in progress</string>

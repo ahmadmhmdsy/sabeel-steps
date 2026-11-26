@@ -7,6 +7,8 @@
     <string name="sensor_notif_channel_reminders_desc">تذكيرك اليومي بالمشي</string>
     <string name="sensor_notif_channel_goal">الهدف اليومي</string>
     <string name="sensor_notif_channel_goal_desc">تنبيه هادئ عند بلوغ هدف خطواتك</string>
+    <string name="sensor_notif_channel_alerts">تنبيهات العدّ</string>
+    <string name="sensor_notif_channel_alerts_desc">تنبيه ظاهر عندما يوقف أندرويد عدّ الخطوات ولا يستطيع سبيل إعادة تشغيله</string>
 
     <string name="sensor_notif_counting_title">سبيل يعدّ خطواتك</string>
     <string name="sensor_notif_counting_text">خطواتك تبقى على هذا الهاتف.</string>
@@ -19,6 +21,8 @@
     <string name="sensor_notif_no_sensor_title">مستشعر الخطوات غير متاح</string>
     <string name="sensor_notif_paused_title">عدّ الخطوات متوقف مؤقتًا</string>
     <string name="sensor_notif_paused_text">اضغط لإعادة فتح سبيل ومتابعة العدّ. يومك المحفوظ آمن.</string>
+    <string name="sensor_notif_stopped_title">توقّف عدّ الخطوات</string>
+    <string name="sensor_notif_stopped_text">لم يستطع سبيل إعادة تشغيل العدّ من تلقاء نفسه. اضغط لفتح سبيل وإعادة التشغيل. إذا تكرّر ذلك، اسمح لسبيل بالعمل في الخلفية من إعدادات البطارية.</string>
     <string name="sensor_notif_no_sensor_text">هذا الجهاز لا يوفّر عدّاد خطوات ولا مستشعر اكتشاف خطوات ولا مستشعر حركة. تبقى المشيات محفوظة.</string>
 
     <string name="sensor_notif_walk_title">مشية قيد التتبع</string>

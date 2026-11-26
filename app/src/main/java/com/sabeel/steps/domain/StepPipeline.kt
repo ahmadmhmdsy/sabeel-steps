@@ -78,6 +78,36 @@ data class StepUpdate(
 )
 
 /**
+ * A decision the pipeline made about one sample that a support report needs to explain a gap.
+ * The enum is plain Kotlin (no Android types) so the pure pipeline stays unit-testable; the service
+ * maps it to a flight-recorder line.
+ */
+enum class PipelineEvent {
+    /** The local day changed; yesterday's ledgers were replaced by a fresh baseline. */
+    DAY_ROLLOVER,
+
+    /** First counter sample of the day: it becomes the baseline and counts nothing. */
+    BASELINE,
+
+    /** The counter value went backwards (reboot/reset): rebased without adding. */
+    REBOOT_REBASE,
+
+    /** A stale sensor sample arrived after a newer one and was ignored. */
+    OUT_OF_ORDER,
+
+    /** A jump exceeded the plausible cadence and part of it was dropped. */
+    CLAMPED,
+
+    /** The delta was accepted with no usable timestamp (first sample after a restart). */
+    CATCH_UP_UNKNOWN,
+}
+
+/** Optional diagnostics hook for [StepPipeline]. Never affects the arithmetic. */
+fun interface PipelineObserver {
+    fun onEvent(event: PipelineEvent)
+}
+
+/**
  * Pure manifold arithmetic. Public constants are the plausibility policy shared with tests/docs.
  */
 object StepPipeline {
@@ -130,14 +160,17 @@ object StepPipeline {
         today: String,
         eventNanos: Long = 0L,
         nowMillis: Long = 0L,
+        observer: PipelineObserver? = null,
     ): StepUpdate {
         if (!raw.isFinite()) return StepUpdate(state)
         val (base, rolled) = dayBase(state, today, nowMillis)
         var next = base.copy(initialized = true, updatedAt = if (nowMillis > 0) nowMillis else base.updatedAt)
+        if (rolled) observer?.onEvent(PipelineEvent.DAY_ROLLOVER)
 
         // First sample of the day/process: establish the baseline, count nothing. On a fresh install
         // this is what prevents the since-boot value from becoming today's steps.
         if (next.counterLastRaw.isNaN()) {
+            observer?.onEvent(PipelineEvent.BASELINE)
             return StepUpdate(
                 fuse(next.copy(counterLastRaw = raw, counterLastEventNanos = eventNanos.coerceAtLeast(0))),
                 rolled,
@@ -152,6 +185,7 @@ object StepPipeline {
             // Reboot, a counter reset, or a restored state from an older boot: the monotonic sensor
             // clock also restarted, so this must be checked BEFORE the out-of-order guard below.
             // Rebase without adding; steps already attributed today stay.
+            observer?.onEvent(PipelineEvent.REBOOT_REBASE)
             return StepUpdate(
                 fuse(next.copy(counterLastRaw = raw, counterLastEventNanos = eventNanos.coerceAtLeast(0))),
                 rolled,
@@ -160,7 +194,10 @@ object StepPipeline {
 
         // Out-of-order sensor delivery must not be re-applied: it would double count the same steps
         // (a stale sample has a HIGHER raw delta, so it cannot be confused with the reboot case).
-        if (eventNanos > 0 && lastNanos > 0 && eventNanos <= lastNanos) return StepUpdate(state)
+        if (eventNanos > 0 && lastNanos > 0 && eventNanos <= lastNanos) {
+            observer?.onEvent(PipelineEvent.OUT_OF_ORDER)
+            return StepUpdate(state)
+        }
 
         val accepted: Int
         if (delta <= 0f) {
@@ -171,10 +208,12 @@ object StepPipeline {
             accepted = if (elapsedNanos > 0) {
                 val plausible = (elapsedNanos / 1_000_000_000.0 * MAX_STEPS_PER_SECOND).toInt() +
                     CLAMP_GRACE_STEPS
+                if (whole > plausible) observer?.onEvent(PipelineEvent.CLAMPED)
                 min(whole, plausible)
             } else {
                 // Timestamp unknown (first event after a restart on old state): accept the catch-up
                 // rather than drop steps. The counter aggregate is trusted; only its rate is not.
+                if (whole > 0) observer?.onEvent(PipelineEvent.CATCH_UP_UNKNOWN)
                 whole
             }
         }
@@ -194,9 +233,11 @@ object StepPipeline {
         today: String,
         eventNanos: Long = 0L,
         nowMillis: Long = 0L,
+        observer: PipelineObserver? = null,
     ): StepUpdate {
         if (steps <= 0) return StepUpdate(state)
         val (base, rolled) = dayBase(state, today, nowMillis)
+        if (rolled) observer?.onEvent(PipelineEvent.DAY_ROLLOVER)
         var added = steps.coerceAtMost(MAX_DETECTOR_EVENT)
         if (eventNanos > 0 && base.detectorLastEventNanos > 0 &&
             eventNanos > base.detectorLastEventNanos &&
@@ -321,8 +362,14 @@ object StepPipeline {
     }
 
     /** Rolls to [today] without any new evidence (service start, midnight reconcile, boot). */
-    fun reconcile(state: StepState, today: String, nowMillis: Long = 0L): StepUpdate {
+    fun reconcile(
+        state: StepState,
+        today: String,
+        nowMillis: Long = 0L,
+        observer: PipelineObserver? = null,
+    ): StepUpdate {
         val (base, rolled) = dayBase(state, today, nowMillis)
+        if (rolled) observer?.onEvent(PipelineEvent.DAY_ROLLOVER)
         return StepUpdate(fuse(base), rolled)
     }
 

@@ -10,9 +10,12 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.sabeel.steps.SabeelApp
 import com.sabeel.steps.data.repo.StepSnapshot
+import com.sabeel.steps.diagnostics.FlightRecorder
+import com.sabeel.steps.diagnostics.MidnightBaseline
 import com.sabeel.steps.domain.DateKey
 import com.sabeel.steps.domain.UserSettings
 import com.sabeel.steps.service.StepCounterService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalTime
@@ -112,15 +115,21 @@ class ReminderWorker(
  * Periodic reconcile worker. Keeps today's row truthful after process death or midnight while the
  * step service is not running and catches up the goal notification.
  *
- * It deliberately does NOT start [com.sabeel.steps.service.StepCounterService]: a WorkManager job
- * runs in the background and Android 12+ forbids starting a foreground service from there
- * (ForegroundServiceStartNotAllowedException). Re-arming counting is the job of the foreground entry
- * points and of BootReceiver, which are allowed to do it.
+ * It starts [com.sabeel.steps.service.StepCounterService] only when Android has exempted Sabeel from
+ * battery optimisation: that exemption is the documented background foreground-service-start
+ * exemption. Without it the service start would be refused (ForegroundServiceStartNotAllowedException)
+ * and the worker posts the visible "counting stopped" notification instead. Either outcome is
+ * journaled, so a report shows whether a worker self-heal was possible and whether it worked.
  */
 class ReconcileWorker(
     context: Context,
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
+
+    private companion object {
+        /** Time for the started service to reach onCreate and set runningInstance. */
+        const val SELF_HEAL_CHECK_MS = 2_500L
+    }
 
     override suspend fun doWork(): Result {
         val context = applicationContext
@@ -165,9 +174,10 @@ class ReconcileWorker(
             }
         }
 
-        // 4. Honest recovery nudge: counting heartbeat is stale while this device can count. The
-        //    worker never starts the foreground service (Android 12+ forbids it from background);
-        //    it asks the user to reopen the app, at most once per 12 h.
+        // 4. Self-heal when the platform allows it, otherwise tell the user visibly.
+        //    A background foreground-service start is legal only while the app holds the
+        //    battery-optimisation exemption; when it does not, the start is pointless and the
+        //    notification is the honest path. Both branches are journaled for the report.
         runCatching {
             val canCount = Permissions.hasActivityRecognition(context) &&
                 (StepSensors.hasAny(context) || HealthConnect.isReady(context))
@@ -177,7 +187,30 @@ class ReconcileWorker(
                 !StepCounterService.runningInstance &&
                 (status == StepServiceStatus.STOPPED || status == StepServiceStatus.STOPPED_BY_SYSTEM)
             ) {
-                Notifications.notifyCountingPaused(context)
+                val exempt = MidnightBaseline.isExempt(context)
+                FlightRecorder.log(
+                    "worker_selfheal",
+                    mapOf("exempt" to exempt, "status" to status.name, "suppressed" to countingSuppressed),
+                )
+                if (exempt) {
+                    val start = StepCounterService.ensureStarted(context)
+                    FlightRecorder.recordWorker(
+                        "selfheal:" + start.name,
+                        mapOf("exempt" to true, "running_after_request" to StepCounterService.runningInstance),
+                    )
+                    // onCreate is posted to the main looper; a short wait distinguishes "accepted"
+                    // from "accepted then stood down" (permission race, sensor gone).
+                    delay(SELF_HEAL_CHECK_MS)
+                    if (!StepCounterService.runningInstance) {
+                        FlightRecorder.recordWorker("selfheal_refused:" + start.name)
+                        Notifications.notifyCountingPaused(context, urgent = true)
+                    }
+                } else {
+                    FlightRecorder.recordWorker("paused_no_exemption")
+                    Notifications.notifyCountingPaused(context, urgent = true)
+                }
+            } else {
+                FlightRecorder.recordWorker("no_action")
             }
         }
         return Result.success()

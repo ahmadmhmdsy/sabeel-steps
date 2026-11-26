@@ -22,6 +22,8 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+    <!-- No battery-optimisation or usage-access permission is declared: isIgnoringBatteryOptimizations
+         and the app standby bucket are read without one. Diagnostics only reports the state. -->
 
     <!-- Health Connect lives in its own provider package; the settings intent lets the user manage
          the grant. Both are visibility declarations, not permissions. -->
@@ -93,6 +95,31 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- Inexact daily wake-up a few minutes after local midnight. It gives the next day a
+             baseline so the first morning sample can be attributed instead of dropped. It is
+             scheduled with setAndAllowWhileIdle, so it needs no exact-alarm permission and no
+             SCHEDULE_EXACT_ALARM. exported=false: only our own PendingIntent can trigger it. -->
+        <receiver
+            android:name=".diagnostics.MidnightBaselineReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.sabeel.steps.action.MIDNIGHT_BASELINE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Read-only access to the one diagnostics ZIP in cacheDir/diagnostics. Not exported: only
+             the app can mint a URI, and the receiving app gets a temporary read grant. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

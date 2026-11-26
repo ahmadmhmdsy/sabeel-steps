@@ -7,6 +7,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.sabeel.steps.SabeelApp
+import com.sabeel.steps.diagnostics.FlightRecorder
+import com.sabeel.steps.diagnostics.MidnightBaseline
 import com.sabeel.steps.service.StepCounterService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +52,14 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     private suspend fun handleBoot(appContext: Context, action: String) {
+        FlightRecorder.log(
+            "boot_received",
+            mapOf(
+                "action" to action,
+                "exempt" to MidnightBaseline.isExempt(appContext),
+                "boot_wall_base" to (System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime()),
+            ),
+        )
         val container = runCatching { (appContext as? SabeelApp)?.container }.getOrNull()
         val settings = runCatching { container?.settings?.current() }.getOrNull()
         val onboarded = settings?.onboardingDone == true
@@ -99,7 +109,18 @@ class BootReceiver : BroadcastReceiver() {
             }
         }
         runCatching { StatusStore.updateLastBootAttempt(appContext, result, exception) }
+        FlightRecorder.log(
+            "boot_result",
+            mapOf(
+                "result" to result,
+                "exception" to (exception ?: ""),
+                "running" to StepCounterService.runningInstance,
+            ),
+        )
 
+        if (counting?.enabled == true) {
+            runCatching { MidnightBaseline.ensureScheduled(appContext) }
+        }
         if (settings != null) {
             runCatching { Reminders.reschedule(appContext, settings) }
         }
